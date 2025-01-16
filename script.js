@@ -1,11 +1,16 @@
-/* Constante contenant toutes les parties, chargée par la fonction getAllGames(username)*/
-let allGames = [];
-let allGamesAllTypes = [];
-let nombrePartiesTotal = 0;
+let allGames = []; /* Constante contenant toutes les parties d'un type (ou tous les types), Utiliser APRES avoir appelé sortbytype*/
+let allGamesAllTypes = []; /* Réponse de l'api, ne pas utiliser directement, prendre "allGames" */
+
+
+/* Utiliser après avoir appelé setTimeTinterval */
+
 let dateDebut;
 let dateFin;
-const RegExpDate = /\[UTCDate\s+"([^"]+)"\]/;
-let username = "";
+
+let nombrePartiesTotal = 0; /* Utiliser après avoir appelé getNombrePartiesTotal */
+let username = ""; /* Utiliser après avoir appelé getUsername */
+
+/* Constantes */
 
 const BLACK = 0;
 const WHITE = 1;
@@ -22,13 +27,20 @@ const MONTH = 1;
 const YEAR = 2;
 const ALL_TIME = 3;
 const CUSTOM = 4;
+const RegExpDate = /\[UTCDate\s+"([^"]+)"\]/;
 
-export function getUsername() {
+/***************/
+
+// pas utile, fonction de test, à modifier par ceux qui font le front end pour avoir l'username rentré dans la page
+export function getUsername(name) {
+  //username = name;
+  // vaut "titouannnnnn" pour test 
   username = "titouannnnnn";
   console.log("username :", username);
   return username;
 }
 
+/* Récupère dans allGamesAllTypes toutes les parties de l'utilisateur */
 async function getAllGamesONLINE() {
   try {
     const archiveResponse = await fetch(
@@ -50,17 +62,17 @@ async function getAllGamesONLINE() {
         );
       }
       const data = await response.json();
+      // Itère les valeurs dans AllGamesAllTypes
       allGamesAllTypes.push(...data.games);
     }
-    console.log(
-      `Nombre total de parties pour ${username} : ${allGamesAllTypes.length}`
-    );
+    
     console.log(allGamesAllTypes);
   } catch (error) {
     console.error("Erreur :", error);
   }
 }
 
+/* A utiliser en phase de test - Récupère dans allGamesAllTypes toutes les parties de l'utilisateur via le fichier chargé */
 async function getAllGamesOFFLINE() {
   try {
     const response = await fetch(`games.json`);
@@ -78,6 +90,7 @@ async function getAllGamesOFFLINE() {
   }
 }
 
+/* return le nombre de parties jouées par l'utilisateur dans la période donnée */
 function getNombrePartiesTotal() {
   nombrePartiesTotal = allGames.filter((game) => {
     const gameDate = new Date(game.pgn.match(RegExpDate)[1]);
@@ -85,11 +98,13 @@ function getNombrePartiesTotal() {
   }).length;
 }
 
+/* Initialisation des dates de début et de fin */
 function initTimeInterval() {
   dateDebut = new Date(allGames[0].pgn.match(RegExpDate)[1]);
   dateFin = new Date(allGames[allGames.length - 1].pgn.match(RegExpDate)[1]);
 }
 
+/* return le tableau : [winrate, nombre de victoires, nombre de défaites, nombre de matchs nuls] */
 function WinrateByColor(color) {
   let win = 0;
   let lose = 0;
@@ -132,6 +147,7 @@ function WinrateByColor(color) {
   };
 }
 
+/* Init le tableau allGames avec les parties du type donné : bullet/blitz/rapide/classic */
 function sortByGameType(type) {
   switch (type) {
     case BULLET:
@@ -158,6 +174,14 @@ function sortByGameType(type) {
   console.log("All games :", allGames);
 }
 
+/*
+  type : type de temps (semaine, mois, année, all time, custom)
+  debut : date de début (format : "YYYY-MM-DD")
+  fin : date de fin (format : "YYYY-MM-DD")
+
+  par défaut si aucun argement donné -> all time
+*/
+
 function setTimeTinterval(type, debut, fin) {
   switch (type) {
     case CUSTOM:
@@ -177,21 +201,23 @@ function setTimeTinterval(type, debut, fin) {
       dateDebut = new Date(allGames[0].pgn.match(RegExpDate)[1]);
       break;
     default:
-      console.error("Erreur type de temps");
+      dateDebut = new Date(allGames[0].pgn.match(RegExpDate)[1]);
+      console.error("type de temps non défnini, all time par défaut");
   }
 }
 
+/* return accuracy sous forme de float  */
 function GetAccuracy() {
   let accuracy = 0;
   let nbGames = 0;
+  let playerColor = -1;
   for (const game of allGames) {
     const gameDate = new Date(game.pgn.match(RegExpDate)[1]);
     if (gameDate >= dateDebut && gameDate <= dateFin) {
-      //get the color of the player
       if (game.white.username == username) {
-        playerColor = 1;
+        playerColor = WHITE;
       } else if (game.black.username == username) {
-        playerColor = 0;
+        playerColor = BLACK;
       } else {
         console.error("Erreur couleur joueur");
       }
@@ -203,7 +229,9 @@ function GetAccuracy() {
   }
   return accuracy / nbGames;
 }
-/*
+
+
+
 (async () => {
     getUsername();
     console.log("Récupération des parties hors ligne");
@@ -229,4 +257,4 @@ function GetAccuracy() {
     console.log(GetAccuracy());
     
 
-})(); */
+})(); 
