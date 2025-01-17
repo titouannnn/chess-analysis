@@ -230,6 +230,74 @@ function GetAccuracy() {
   return accuracy / nbGames;
 }
 
+/* return tableau contenant les timestamps et les accuracies des parties dans la période donnée
+ { timestamp: 1703440514, accuracy: 98.5, color: 1 }
+  rappel : color = 1 -> blanc, color = 0 -> noir
+ */
+function getAccuracyList() {
+  let accuracyList = [];
+  console.log("Récupération des accuracies");
+
+  for (const game of allGames) {
+    const match = game.pgn.match(RegExpDate);
+    if (match) {
+      const gameDate = new Date(match[1]);
+      if (gameDate >= dateDebut && gameDate <= dateFin) {
+        let playerColor = -1;
+        if (game.white.username == username) {
+          playerColor = WHITE;
+        } else if (game.black.username == username) {
+          playerColor = BLACK;
+        } else {
+          console.error("Erreur couleur joueur");
+        }
+        if (game.accuracies) {
+          accuracyList.push({
+            timestamp: game.end_time,
+            accuracy: game.accuracies[playerColor === WHITE ? "white" : "black"],
+            color : playerColor
+          });
+        }
+      }
+    }
+  }
+  console.log(accuracyList);
+  return accuracyList;
+}
+
+
+
+
+/* return tableau contenant les elos du joueur dans la période donnée 
+ format : 
+ { timestamp: 1703440514, rating: 996 }
+ */
+function getElo() {
+  let eloList = [];
+  console.log("Récupération des elos");
+  for (const game of allGames) {
+    const match = game.pgn.match(RegExpDate);
+    if (match) {
+      const gameDate = new Date(match[1]);
+      if (gameDate >= dateDebut && gameDate <= dateFin) {
+        if (game.white.username == username) {
+          if (game.white.rating) {
+            eloList.push({ timestamp: game.end_time, rating: game.white.rating });
+          }
+        } else if (game.black.username == username) {
+          if (game.black.rating) {
+            eloList.push({ timestamp: game.end_time, rating: game.black.rating });
+          }
+        } else {
+          console.error("Erreur couleur joueur");
+        }
+      }
+    }
+  }
+
+  console.log(eloList);
+  return eloList;
+}
 
 
 (async () => {
@@ -239,6 +307,7 @@ function GetAccuracy() {
     sortByGameType(RAPID);
     initTimeInterval();
     setTimeTinterval(YEAR);
+    /*
     console.log(allGames);
     getNombrePartiesTotal();
     console.log("nombre parties total :",nombrePartiesTotal);
@@ -255,6 +324,10 @@ function GetAccuracy() {
 
     console.log("Calcul de l'accuracy");
     console.log(GetAccuracy());
+
+    */
+    getElo();
+    getAccuracyList();
     
 
 })(); 
