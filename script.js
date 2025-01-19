@@ -274,7 +274,6 @@ function getAccuracyList() {
  */
 function getElo() {
   let eloList = [];
-  console.log("Récupération des elos");
   for (const game of allGames) {
     const match = game.pgn.match(RegExpDate);
     if (match) {
@@ -299,6 +298,110 @@ function getElo() {
   return eloList;
 }
 
+/*
+* return un tableau contenant les openings joués par le joueur dans la période donnée
+* format :
+* { timestamp: 1703440514, opening: "Sicilian Defense", color: 1, result: 1 }
+* rappel : color = 1 -> blanc, color = 0 -> noir / result = 1 -> win, result = 0 -> lose
+*/
+
+function getOpenings() {
+  let openingsTab = [];
+  let whiteWin = 0, whiteLose = 0, whiteDraw = 0;
+  let blackWin = 0, blackLose = 0, blackDraw = 0;
+  let playerColor = -1;
+
+  for (const game of allGames) {
+    const match = game.pgn.match(RegExpDate);
+    if (!match) continue;
+    const gameDate = new Date(match[1]);
+    if (gameDate < dateDebut || gameDate > dateFin) continue;
+
+    if (game.white.username === username) {
+      playerColor = WHITE;
+      if (game.white.result === "win") {
+        whiteWin++;
+      } else if (game.white.result === "draw") {
+        whiteDraw++;
+      } else {
+        whiteLose++;
+      }
+    } else if (game.black.username === username) {
+      playerColor = BLACK;
+      if (game.black.result === "win") {
+        blackWin++;
+      } else if (game.black.result === "draw") {
+        blackDraw++;
+      } else {
+        blackLose++;
+      }
+    } else {
+      console.error("Erreur couleur joueur");
+    }
+
+    let opening = game.eco.substring(game.eco.lastIndexOf("/") + 1);
+    let existingOpening = openingsTab.find(o => o.opening === opening);
+
+    let isWin = (playerColor === WHITE && game.white.result === "win")
+             || (playerColor === BLACK && game.black.result === "win");
+    let isDraw = (playerColor === WHITE && game.white.result === "draw")
+              || (playerColor === BLACK && game.black.result === "draw");
+
+    if (existingOpening) {
+      existingOpening.games.push(game.end_time);
+      existingOpening.total++;
+      if (isWin) {
+        existingOpening.wins++;
+        if (playerColor === WHITE) existingOpening.WinAsWhite++;
+        else existingOpening.WinAsBlack++;
+      } else if (isDraw) {
+        existingOpening.draws++;
+        if (playerColor === WHITE) existingOpening.DrawAsWhite++;
+        else existingOpening.DrawAsBlack++;
+      } else {
+        existingOpening.losses++;
+        if (playerColor === WHITE) existingOpening.LooseAsWhite++;
+        else existingOpening.LooseAsBlack++;
+      }
+    } else {
+      openingsTab.push({
+        opening,
+        total: 1,
+        wins: isWin ? 1 : 0,
+        losses: !isWin && !isDraw ? 1 : 0,
+        draws: isDraw ? 1 : 0,
+        games: [game.end_time],
+        WinAsBlack: playerColor === BLACK && isWin ? 1 : 0,
+        WinAsWhite: playerColor === WHITE && isWin ? 1 : 0,
+        LooseAsWhite: playerColor === WHITE && !isWin && !isDraw ? 1 : 0,
+        LooseAsBlack: playerColor === BLACK && !isWin && !isDraw ? 1 : 0,
+        DrawAsWhite: playerColor === WHITE && isDraw ? 1 : 0,
+        DrawAsBlack: playerColor === BLACK && isDraw ? 1 : 0,
+      });
+    }
+  }
+
+  console.log(openingsTab);
+  return openingsTab;
+}
+
+
+// Ne marche pas encore c'est normal
+function sortOpenings(openingsTab) {
+  // Tri par ordre alphabétique (openings)
+  openingsTab.sort((a, b) => {
+    if (a.opening < b.opening) {
+      return -1;
+    }
+    if (a.opening > b.opening) {
+      return 1;
+    }
+    return 0;
+  });
+  let grouped = {};
+  
+}
+
 
 (async () => {
     getUsername();
@@ -320,14 +423,14 @@ function getElo() {
     console.log("Calcul du winrate pour les blancs");
     console.log(WinrateByColor(1));
     console.log("Calcul du winrate pour les noirs");
-    console.log(WinrateByColor(0));
+    
 
     console.log("Calcul de l'accuracy");
     console.log(GetAccuracy());
 
     */
+    console.log(WinrateByColor(0));
     getElo();
-    getAccuracyList();
-    
-
+    const openingsTab = getOpenings();
+    sortOpenings(openingsTab);
 })(); 
