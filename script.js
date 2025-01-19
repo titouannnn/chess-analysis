@@ -402,6 +402,33 @@ function sortOpenings(openingsTab) {
   
 }
 
+// Fonction pour récupérer les openings les plus joués
+function getMostPlayedOpenings(openingsTab) {
+  let mostPlayed = openingsTab.sort((a, b) => b.total - a.total).slice(0, 5);
+  // renvoie un dictio avec les openings les plus joués, la clé opening contient le nom de l'ouverture et la clé total contient le nombre de fois que l'ouverture a été jouée
+  let dict = mostPlayed.map(o => ({ opening: o.opening, total: o.total }));
+  return dict;
+}
+
+// Fonction pour récupérer les openings les plus gagnants
+function getMostWinningOpenings(openingsTab) {
+  
+
+  // On ne prend que les openings joués plus de 3 fois car forcement quand l'ouverture est jouée une seule fois et elle gagne, elle est gagnante a 100%
+  let mostWinning = openingsTab.filter(a => a.total > 3).sort((a, b) => (b.wins / b.total) - (a.wins / a.total)).slice(0, 5);
+  // renvoie un dictio avec les openings les plus gagnants, la clé opening contient le nom de l'ouverture et la clé winrate contient le winrate de l'ouverture
+  let dict = mostWinning.map(o => ({ opening: o.opening, winrate: ((o.wins / o.total) * 100).toFixed(2) }));
+  return dict;
+}
+
+// Fonction pour récupérer les openings les plus perdants
+function getMostLoosingOpenings(openingsTab) {
+  
+  let mostLoosing = openingsTab.filter(a => a.total > 3).sort((a, b) => (b.losses / b.total) - (a.losses / a.total)).slice(0, 5);
+  // renvoie un dictio avec les openings les plus perdants, la clé opening contient le nom de l'ouverture et la clé winrate contient le winrate de l'ouverture
+  let dict = mostLoosing.map(o => ({ opening: o.opening, winrate: ((o.wins / o.total) * 100).toFixed(2) }));
+  return dict;
+}
 
 (async () => {
     getUsername();
@@ -410,6 +437,7 @@ function sortOpenings(openingsTab) {
     sortByGameType(RAPID);
     initTimeInterval();
     setTimeTinterval(YEAR);
+
     /*
     console.log(allGames);
     getNombrePartiesTotal();
@@ -432,5 +460,12 @@ function sortOpenings(openingsTab) {
     console.log(WinrateByColor(0));
     getElo();
     const openingsTab = getOpenings();
+
     sortOpenings(openingsTab);
+
+    /*
+    console.log("Les openings les plus gagnants sont : ", getMostWinningOpenings(openingsTab));
+    console.log("Les openings les plus perdants sont : ", getMostLoosingOpenings(openingsTab));
+    console.log("Les openings les plus joués sont : ", getMostPlayedOpenings(openingsTab));
+    */
 })(); 
