@@ -301,7 +301,7 @@ function getElo() {
 /*
 * return un tableau contenant les openings joués par le joueur dans la période donnée
 * format :
-* { timestamp: 1703440514, opening: "Sicilian Defense", color: 1, result: 1 }
+* { opening: "A00", total: 1, wins: 1, losses: 0, draws: 0, games: [1703440514], WinAsBlack: 0, WinAsWhite: 1, LooseAsWhite: 0, LooseAsBlack: 0, DrawAsWhite: 0, DrawAsBlack: 0 }
 * rappel : color = 1 -> blanc, color = 0 -> noir / result = 1 -> win, result = 0 -> lose
 */
 
@@ -382,25 +382,93 @@ function getOpenings() {
   }
 
   console.log(openingsTab);
+  let tab = sortOpenings(openingsTab);
+  console.log(tab);
+  tab = CleanOpening(tab);
+  return tab;
+}
+
+function CleanOpening(openingsTab) {
+  // AJout des liens chess.com pour chaque ouverture
+  const baseUrl = "https://www.chess.com/openings/";
+
+  for (const opening of openingsTab) {
+    for (const variante of opening.variantes) {
+      const formattedOpening = variante.opening.replace(/\s+/g, '-');
+      variante.link = `${baseUrl}${formattedOpening}`;
+    }
+    const formattedOpening = opening.nom.split(/[-.]/).slice(0, 3).join(' ');
+    if (!isNaN(formattedOpening.charAt(formattedOpening.length - 1))) {
+      opening.nom = formattedOpening.slice(0, -1);
+    } else {
+      opening.nom = formattedOpening;
+    }
+  }
+  
+  
+  
+  console.log(openingsTab);
   return openingsTab;
 }
 
 
-// Ne marche pas encore c'est normal
+
 function sortOpenings(openingsTab) {
-  // Tri par ordre alphabétique (openings)
-  openingsTab.sort((a, b) => {
-    if (a.opening < b.opening) {
-      return -1;
+  // Trier les ouvertures par nom
+  openingsTab.sort((a, b) => a.opening.localeCompare(b.opening));
+
+  const result = [];
+
+  for (const opening of openingsTab) {
+    if (!result.length) {
+      result.push({
+        nom: opening.opening,
+        variantes: [opening],
+        stats: {
+          DrawAsBlack: opening.DrawAsBlack || 0,
+          DrawAsWhite: opening.DrawAsWhite || 0,
+          LooseAsBlack: opening.LooseAsBlack || 0,
+          LooseAsWhite: opening.LooseAsWhite || 0,
+          WinAsBlack: opening.WinAsBlack || 0,
+          WinAsWhite: opening.WinAsWhite || 0,
+        },
+      });
+      continue;
     }
-    if (a.opening > b.opening) {
-      return 1;
+
+    const last = result[result.length - 1];
+    const lastPrefix = last.nom.split(/[-.]/).slice(0, 2).join('-');
+    const currentPrefix = opening.opening.split(/[-.]/).slice(0, 2).join('-');
+
+    if (lastPrefix === currentPrefix) {
+      last.variantes.push(opening);
+      // Mettre à jour les statistiques
+      last.stats.DrawAsBlack += opening.DrawAsBlack || 0;
+      last.stats.DrawAsWhite += opening.DrawAsWhite || 0;
+      last.stats.LooseAsBlack += opening.LooseAsBlack || 0;
+      last.stats.LooseAsWhite += opening.LooseAsWhite || 0;
+      last.stats.WinAsBlack += opening.WinAsBlack || 0;
+      last.stats.WinAsWhite += opening.WinAsWhite || 0;
+    } else {
+      result.push({
+        nom: opening.opening,
+        variantes: [opening],
+        stats: {
+          DrawAsBlack: opening.DrawAsBlack || 0,
+          DrawAsWhite: opening.DrawAsWhite || 0,
+          LooseAsBlack: opening.LooseAsBlack || 0,
+          LooseAsWhite: opening.LooseAsWhite || 0,
+          WinAsBlack: opening.WinAsBlack || 0,
+          WinAsWhite: opening.WinAsWhite || 0,
+        },
+      });
     }
-    return 0;
-  });
-  let grouped = {};
-  
+  }
+
+  return result;
 }
+
+
 
 
 (async () => {
@@ -432,5 +500,4 @@ function sortOpenings(openingsTab) {
     console.log(WinrateByColor(0));
     getElo();
     const openingsTab = getOpenings();
-    sortOpenings(openingsTab);
 })(); 
