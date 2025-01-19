@@ -66,7 +66,7 @@ async function getAllGamesONLINE() {
       allGamesAllTypes.push(...data.games);
     }
     
-    console.log(allGamesAllTypes);
+    //console.log(allGamesAllTypes);
   } catch (error) {
     console.error("Erreur :", error);
   }
@@ -171,7 +171,7 @@ function sortByGameType(type) {
     default:
       console.error("Erreur type de partie");
   }
-  console.log("All games :", allGames);
+  //console.log("All games :", allGames);
 }
 
 /*
@@ -236,7 +236,7 @@ function GetAccuracy() {
  */
 function getAccuracyList() {
   let accuracyList = [];
-  console.log("Récupération des accuracies");
+  //console.log("Récupération des accuracies");
 
   for (const game of allGames) {
     const match = game.pgn.match(RegExpDate);
@@ -261,7 +261,7 @@ function getAccuracyList() {
       }
     }
   }
-  console.log(accuracyList);
+  //console.log(accuracyList);
   return accuracyList;
 }
 
@@ -294,7 +294,7 @@ function getElo() {
     }
   }
 
-  console.log(eloList);
+  //console.log(eloList);
   return eloList;
 }
 
@@ -381,10 +381,14 @@ function getOpenings() {
     }
   }
 
-  console.log(openingsTab);
+  //console.log(openingsTab);
   let tab = sortOpenings(openingsTab);
-  console.log(tab);
+  
   tab = CleanOpening(tab);
+
+  console.log("tableau des ouvertures");
+  console.log(tab);
+  
   return tab;
 }
 
@@ -407,7 +411,7 @@ function CleanOpening(openingsTab) {
   
   
   
-  console.log(openingsTab);
+  //console.log(openingsTab);
   return openingsTab;
 }
 
@@ -415,6 +419,7 @@ function CleanOpening(openingsTab) {
 
 function sortOpenings(openingsTab) {
   // Trier les ouvertures par nom
+  
   openingsTab.sort((a, b) => a.opening.localeCompare(b.opening));
 
   const result = [];
@@ -528,15 +533,11 @@ function getMostLoosingOpenings(openingsTab) {
     console.log(WinrateByColor(0));
     getElo();
     const openingsTab = getOpenings();
-<<<<<<< HEAD
-=======
 
-    sortOpenings(openingsTab);
-
-    /*
+    /* A FIX
     console.log("Les openings les plus gagnants sont : ", getMostWinningOpenings(openingsTab));
     console.log("Les openings les plus perdants sont : ", getMostLoosingOpenings(openingsTab));
     console.log("Les openings les plus joués sont : ", getMostPlayedOpenings(openingsTab));
     */
->>>>>>> 16645992e76d6d18ccdf354d762d1a7cf4c8c5c2
+
 })(); 
