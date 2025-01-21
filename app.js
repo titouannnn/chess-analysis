@@ -1,4 +1,6 @@
 import * as sc from "./script.js";
+import * as li from "./litchess.js";
+
 
 const app = document.getElementById("app");
 
