@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { LitchessApiService } from './litchess-api.service';
 
 @Component({
   selector: 'app-root',
@@ -8,5 +9,16 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'WEB';
+  title = 'WEb';
+  constructor(private LitchessApiService: LitchessApiService) {}
+
+  async ngOnInit() {
+    console.log('Hello, world!');
+    await this.LitchessApiService.getIDLichessGames('TITOUAN', 10);
+    console.log(this.LitchessApiService.gamesID);
+    await this.LitchessApiService.getInfoLichessGames();
+    console.log(this.LitchessApiService.allGames);
+    await this.LitchessApiService.sortJson();
+    console.log(this.LitchessApiService.allGamesJson);
+  }
 }
