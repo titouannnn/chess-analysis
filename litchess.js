@@ -40,6 +40,6 @@ async function getLichessGamesOnline(username, max = 200) {
 
 
 (async () => {
-     console.log("Récupération des 10 dernieres parties litchess...");
-     getLichessGamesOnline('titouan41', 10);
+     //console.log("Récupération des 10 dernieres parties litchess...");
+     //getLichessGamesOnline('titouan41', 10);
 })(); 

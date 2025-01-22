@@ -501,6 +501,85 @@ function getMostLoosingOpenings(openingsTab) {
   return dict;
 }
 
+function getEndpointsWin(){
+  let tab = [];
+  let whiteWin = 'whiteWin', whiteLoose = 'whiteLoose', whiteDraw = 'whiteDraw';
+  let blackWin = 'blackWin', blackLoose = 'blackLoose', blackDraw = 'blackDraw';
+  tab[whiteWin] = [];
+  tab[whiteLoose] = [];
+  tab[whiteDraw] = [];
+  tab[blackWin] = [];
+  tab[blackLoose] = [];
+  tab[blackDraw] = [];
+  for (const game of allGames) {
+    const match = game.pgn.match(RegExpDate);
+    if (match) {
+      const gameDate = new Date(match[1]);
+      if (gameDate >= dateDebut && gameDate <= dateFin) {
+        let playerColor = -1;
+        if (game.white.username == username) {
+          playerColor = WHITE;
+          if(game.white.result == "win"){
+            if(tab[whiteWin][game.black.result]){
+              tab[whiteWin][game.black.result] += 1;
+            }
+            else{
+              tab[whiteWin][game.black.result] = 1;
+            }
+          }
+          if(game.black.result == "win"){
+            if(tab[whiteLoose][game.white.result]){
+              tab[whiteLoose][game.white.result] += 1;
+            }
+            else{
+              tab[whiteLoose][game.white.result] = 1;
+            }
+          }
+          if(game.white.result != "win" && game.black.result != "win"){
+            if(tab[whiteDraw][game.white.result]){
+              tab[whiteDraw][game.white.result] += 1;
+            }
+            else{
+              tab[whiteDraw][game.white.result] = 1;
+            }
+          }
+          
+        } else if (game.black.username == username) {
+          playerColor = BLACK;
+          if(game.black.result == "win"){
+            if(tab[blackWin][game.white.result]){
+              tab[blackWin][game.white.result] += 1;
+            }
+            else{
+              tab[blackWin][game.white.result] = 1;
+            }
+          }
+          if(game.white.result == "win"){
+            if(tab[blackLoose][game.black.result]){
+              tab[blackLoose][game.black.result] += 1;
+            }
+            else{
+              tab[blackLoose][game.black.result] = 1;
+            }
+          }
+          if(game.white.result != "win" && game.black.result != "win"){
+            if(tab[blackDraw][game.black.result]){
+              tab[blackDraw][game.black.result] += 1;
+            }
+            else{
+              tab[blackDraw][game.black.result] = 1;
+            }
+          }
+        } else {
+          console.error("Erreur couleur joueur");
+        }
+      }
+    }
+  }
+  console.log(tab);
+  return tab;
+  
+}
 
 
 (async () => {
@@ -530,9 +609,7 @@ function getMostLoosingOpenings(openingsTab) {
     console.log(GetAccuracy());
 
     */
-    console.log(WinrateByColor(0));
-    getElo();
-    const openingsTab = getOpenings();
+    getEndpointsWin();
 
     /* A FIX
     console.log("Les openings les plus gagnants sont : ", getMostWinningOpenings(openingsTab));
