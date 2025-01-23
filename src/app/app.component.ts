@@ -12,16 +12,17 @@ export class AppComponent implements OnInit {
   constructor(private api: Api) {} // Injection du service
 
   ngOnInit(): void {
-    console.log("Initialisation de l'application");
-    this.message = this.api.getUsername(""); // Appel de la fonction getUsername
-    this.initializeSettings();
+    //console.log("Initialisation de l'application");
+    //this.message = this.api.getUsername(""); // Appel de la fonction getUsername
+    //this.initializeSettings();
   }
   
 
   async initializeSettings(): Promise<void> {
-    console.log("Récupération des parties en ligne");
-    console.log("user : " + this.api.username);
-    this.api.getAllGamesOFFLINE();
+    //console.log("Récupération des parties en ligne");
+    //console.log("user : " + this.api.username);
+    //this.api.getAllGamesOFFLINE();
+
     /*
     this.api.sortByGameType(this.api.RAPID);
     this.api.initTimeInterval();
