@@ -12,7 +12,7 @@ import * as localData from '../../assets/games.json';
 export class Api {
 
 allGames: any[] = []; /* Constante contenant toutes les parties d'un type (ou tous les types), Utiliser APRES avoir appelé sortbytype*/
- allGamesAllTypes: any[] = []; /* Réponse de l'api, ne pas utiliser directement, prendre "allGames" */
+allGamesAllTypes: any[] = []; /* Réponse de l'api, ne pas utiliser directement, prendre "allGames" */
 
 /* Utiliser après avoir appelé setTimeTinterval */
 
@@ -90,15 +90,26 @@ async getAllGamesONLINE() {
 getAllGamesOFFLINE() {
   console.log("Tentative de récupération des parties hors ligne");
   try {
-    const data = localData;
+    // Vérifie que localData est un tableau et qu'il contient des objets avec la clé "games".
+    const data = (localData as any).default || localData; // Gère les différences d'importation
+    if (!Array.isArray(data)) {
+      throw new Error("Le format des données JSON est invalide.");
+    }
+
     for (const item of data) {
-      this.allGamesAllTypes.push(...item.games);
+      if (item.games && Array.isArray(item.games)) {
+        this.allGamesAllTypes.push(...item.games);
+      } else {
+        console.warn("L'élément ne contient pas de propriété 'games' valide :", item);
+      }
     }
   } catch (error) {
     console.error("Erreur lors de la récupération des parties hors ligne", error);
   }
-  console.log("Les données on étées récupérées");
+  //console.log("Les données ont été récupérées :", this.allGamesAllTypes);
+  console.log("Les données ont été récupérées ");
 }
+
 
 /* return le nombre de parties jouées par l'utilisateur dans la période donnée */
  getNombrePartiesTotal() {
@@ -193,7 +204,7 @@ getAllGamesOFFLINE() {
   par défaut si aucun argement donné -> all time
 */
 
- setTimeTinterval(type : number, debut : Date, fin : Date) {
+setTimeTinterval(type : number, debut : Date, fin : Date) {
   switch (type) {
     case this.CUSTOM:
       this.dateDebut = new Date(debut);
@@ -215,7 +226,16 @@ getAllGamesOFFLINE() {
       this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
       console.error("type de temps non défnini, all time par défaut");
   }
+  this.applyTimeInterval();
 }
+
+/* Applique les changements de date */
+  applyTimeInterval() {
+    this.allGames = this.allGames.filter((game: any) => {
+      const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
+      return gameDate >= this.dateDebut && gameDate <= this.dateFin;
+    });
+  }
 
 /* return accuracy sous forme de float  */
  GetAccuracy() {
@@ -512,7 +532,7 @@ getAllGamesOFFLINE() {
   return dict;
 }
 
- getEndpointsWin() {
+getEndgames() {
   let tab: { [key: string]: { [key: string]: number } } = {};
   let whiteWin = 'whiteWin', whiteLoose = 'whiteLoose', whiteDraw = 'whiteDraw';
   let blackWin = 'blackWin', blackLoose = 'blackLoose', blackDraw = 'blackDraw';
