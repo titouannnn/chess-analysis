@@ -1,5 +1,42 @@
 import { Injectable } from '@angular/core';
 
+interface Game {
+  url: string;
+  pgn: string;
+  time_control: string;
+  end_time: number;
+  rated: boolean;
+  white: Player;
+  black: Player;
+  eco?: string;
+}
+
+interface Player {
+  rating: number;
+  result: string;
+  username: string;
+  uuid: string;
+}
+
+interface InputJson {
+  id: string;
+  rated: boolean;
+  moves: string;
+  pgn: string;
+  clock: { initial: number; increment: number; totalTime: number };
+  players: { white: PlayerData; black: PlayerData };
+  status: string;
+  winner: string;
+  createdAt: number;
+  lastMoveAt: number;
+  opening: { eco: string; name: string; ply: number };
+}
+
+interface PlayerData {
+  user: { name: string; id: string };
+  rating: number;
+  provisional: boolean;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -42,7 +79,7 @@ export class LitchessApiService {
       this.gamesID = games.map(game => game.id)
 
       // Exemple d'accès à une propriété spécifique
-      // console.log(games[1].clock);
+      //console.log(games[1].clock);
 
     } catch (error) {
       console.error('Erreur en récupérant les parties:', error);
@@ -61,8 +98,9 @@ export class LitchessApiService {
     for (let i = 0; i < this.gamesID.length; i++) {
       try {
         const url = `${baseUrl}${this.gamesID[i]}?pgnInJson=true`;
-        console.log(url);
+        //console.log(url);
         const response = await fetch(url, {
+          
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -82,28 +120,31 @@ export class LitchessApiService {
       }
     }
   }
-
-  // Fonction qui trie le JSON de Litchess afin qui soit utilisable avec les fonctions de chess
-  async sortJson() {
-    this.allGamesJson = this.allGames.map(games => {
-      let gameJson = {
-
-        "white": {
-          "username": games.players.white.user.name,
-          "rating": games.players.white.rating,
-          "result": games.winner === 'black' ? 'checkmated' : 'win'
+  
+  async sortJson(inputs: InputJson[]): Promise<Game[]> {
+    return inputs.map((input) => {
+      const { players, pgn, clock, lastMoveAt, rated, opening, id, winner } = input;
+  
+      return {
+        url: `https://lichess.org/${id}`,
+        pgn: pgn,
+        time_control: `${clock.initial}`,
+        end_time: Math.floor(lastMoveAt / 1000), // Conversion du timestamp en secondes
+        rated: rated,
+        white: {
+          rating: players.white.rating,
+          result: winner === 'white' ? 'win' : 'lose',
+          username: players.white.user.name,
+          uuid: players.white.user.id,
         },
-          "black": {
-            "username": games.players.black.user.name,
-            "rating": games.players.black.rating,
-            "result": games.status === 'resign' ? 'resigned' :
-                      games.status === 'mate' ? 'checkmated' : 'win',
+        black: {
+          rating: players.black.rating,
+          result: winner === 'black' ? 'win' : 'lose',
+          username: players.black.user.name,
+          uuid: players.black.user.id,
         },
-        "pgn": games.pgn,
-        "eco": games.opening.eco,
-        "time_class": games.speed,
-
-      }
+        eco: opening?.eco ? `https://lichess.org/openings/${opening.eco.replace(/\s/g, '-')}` : undefined,
+      };
     });
   }
 }

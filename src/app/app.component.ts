@@ -18,7 +18,6 @@ export class AppComponent {
     console.log(this.LitchessApiService.gamesID);
     await this.LitchessApiService.getInfoLichessGames();
     console.log(this.LitchessApiService.allGames);
-    await this.LitchessApiService.sortJson();
-    console.log(this.LitchessApiService.allGamesJson);
+    await this.LitchessApiService.sortJson(this.LitchessApiService.allGames);
   }
 }
