@@ -1,5 +1,5 @@
 import { RouterOutlet } from '@angular/router';
-import { LitchessApiService } from '../api/litchess-api.service';
+import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 
@@ -27,12 +27,14 @@ export class AppComponent {
 export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
-  constructor(private api: Api) {} // Injection du service
+  constructor(private api: Api, private LitchessApi: LitchessApi) {} // Injection du service
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
     this.message = this.api.getUsername(""); // Appel de la fonction getUsername
-    this.initializeSettings();
+    //this.initializeSettings();
+    console.log("Tests lichess");
+    this.lichessTests();
   }
   
 
@@ -95,4 +97,11 @@ export class AppComponent implements OnInit {
     console.log("===== Fin des tests =====");
   }
 
+  async lichessTests(): Promise<void> {
+    await this.LitchessApi.getIDLichessGames('TITOUAN', 10);
+    console.log(this.LitchessApi.gamesID);
+    await this.LitchessApi.getInfoLichessGames();
+    console.log(this.LitchessApi.allGames);
+    
+  }
 }

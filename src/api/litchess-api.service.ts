@@ -1,46 +1,9 @@
 import { Injectable } from '@angular/core';
 
-interface Game {
-  url: string;
-  pgn: string;
-  time_control: string;
-  end_time: number;
-  rated: boolean;
-  white: Player;
-  black: Player;
-  eco?: string;
-}
-
-interface Player {
-  rating: number;
-  result: string;
-  username: string;
-  uuid: string;
-}
-
-interface InputJson {
-  id: string;
-  rated: boolean;
-  moves: string;
-  pgn: string;
-  clock: { initial: number; increment: number; totalTime: number };
-  players: { white: PlayerData; black: PlayerData };
-  status: string;
-  winner: string;
-  createdAt: number;
-  lastMoveAt: number;
-  opening: { eco: string; name: string; ply: number };
-}
-
-interface PlayerData {
-  user: { name: string; id: string };
-  rating: number;
-  provisional: boolean;
-}
 @Injectable({
   providedIn: 'root'
 })
-export class LitchessApiService {
+export class LitchessApi {
 
   public gamesID: any[] = [];
   public allGames: any[] = [];
@@ -121,32 +84,6 @@ export class LitchessApiService {
     }
   }
   
-  async sortJson(inputs: InputJson[]): Promise<Game[]> {
-    return inputs.map((input) => {
-      const { players, pgn, clock, lastMoveAt, rated, opening, id, winner } = input;
-  
-      return {
-        url: `https://lichess.org/${id}`,
-        pgn: pgn,
-        time_control: `${clock.initial}`,
-        end_time: Math.floor(lastMoveAt / 1000), // Conversion du timestamp en secondes
-        rated: rated,
-        white: {
-          rating: players.white.rating,
-          result: winner === 'white' ? 'win' : 'lose',
-          username: players.white.user.name,
-          uuid: players.white.user.id,
-        },
-        black: {
-          rating: players.black.rating,
-          result: winner === 'black' ? 'win' : 'lose',
-          username: players.black.user.name,
-          uuid: players.black.user.id,
-        },
-        eco: opening?.eco ? `https://lichess.org/openings/${opening.eco.replace(/\s/g, '-')}` : undefined,
-      };
-    });
-  }
 }
 
 
