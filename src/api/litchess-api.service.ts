@@ -84,6 +84,28 @@ export class LitchessApi {
     }
   }
   
+  dataFormatage() {
+    this.allGamesJson = this.allGames.map(game => {
+      return {
+        url: `https://lichess.org/${game.id}`,
+        pgn: game.pgn,
+        end_time: game.lastMoveAt,
+        time_class: game.speed,
+        eco: game.opening?.name,
+        white: {
+          rating: game.players.white.rating,
+          result: game.winner === 'white' ? 'win' : game.status,
+          username: game.players.white.user?.name,
+        },
+        black: {
+          rating: game.players.black.rating,
+          result: game.winner === 'black' ? 'win' : game.status,
+          username: game.players.black.user?.name,
+        }
+      };
+    });
+  }
+
 }
 
 

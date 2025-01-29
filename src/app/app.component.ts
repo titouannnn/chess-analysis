@@ -2,6 +2,8 @@ import { RouterOutlet } from '@angular/router';
 import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
+import { ChesscomApi} from '../api/chesscomapi.service';
+// import test from 'node:test';
 
 @Component({
   selector: 'app-root',
@@ -27,44 +29,62 @@ export class AppComponent {
 export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
-  constructor(private api: Api, private LitchessApi: LitchessApi) {} // Injection du service
+  constructor(private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi) {} // Injection du service
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
-    this.message = this.api.getUsername(""); // Appel de la fonction getUsername
-    //this.initializeSettings();
-    console.log("Tests lichess");
+    //this.chess_comTests();
     this.lichessTests();
   }
   
 
-  async initializeSettings(): Promise<void> {
-    console.log("===== Démarrage des tests =====");
+  async chess_comTests(): Promise<void> {
 
-    // Initialisation de l'username
-    const username = this.api.getUsername("titouannnnnn");
-    console.log("Utilisateur : " + username);
+    console.log("======== Chess.com API =========");
 
     // Chargement des parties hors ligne
-    this.api.getAllGamesOFFLINE();
-    console.log("Parties chargées (OFFLINE) :", this.api.allGamesAllTypes.length);
+    this.ChesscomApi.getAllGamesOFFLINE();
+    console.log("Parties chargées (OFFLINE) :", this.ChesscomApi.allGamesAllTypes.length);
+  
+    this.testApi(this.ChesscomApi.allGamesAllTypes, "titouannnnnn");
+  
+  }
 
-    // Tri par type de jeu (RAPID)
-    this.api.sortByGameType(this.api.RAPID);
-    console.log("Parties triées (RAPID) :", this.api.allGames.length);
+  async lichessTests(): Promise<void> {
+    await this.LitchessApi.getIDLichessGames('titouannn', 10);
+    await this.LitchessApi.getInfoLichessGames();
+    console.log(this.LitchessApi.allGames);
+    this.LitchessApi.dataFormatage();
+    console.log(this.LitchessApi.allGamesJson);
+    
+    console.log("======== Lichess API =========");
+
+    this.api.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
+    
+    this.testApi(this.api.allGames, 'titouannn');
+    
+  }
+
+  testApi(tab: any[][], username: string) {
+
+    console.log("===== Démarrage des tests =====");
+    this.api.username = username;
+    console.log("Parties passées en parametre à la fonction test :", tab.slice(0, 10));
+    this.api.allGamesAllTypes = tab;
+    console.log("Parties chargées :", this.api.allGamesAllTypes.slice(0, 10));
+    // Tri par type de jeu (ALL GENRES)
+    this.api.sortByGameType(this.api.ALL_GENRES);
+    console.log("Parties triées (ALL GENRES) :", this.api.allGames.slice(0, 10));
 
     // Initialisation de l'intervalle de temps
     this.api.initTimeInterval();
     console.log("Date de début :", this.api.dateDebut);
     console.log("Date de fin :", this.api.dateFin);
 
-    // Modification de l'intervalle (1 an)
-    this.api.setTimeTinterval(this.api.YEAR, this.api.DATENULL, this.api.DATENULL);
-    console.log("Nouvelle date de début :", this.api.dateDebut);
 
     // Nombre de parties total
-    this.api.getNombrePartiesTotal();
-    console.log("Nombre total de parties dans l'intervalle :", this.api.nombrePartiesTotal);
+
+    console.log("Nombre total de parties dans l'intervalle :", this.api.allGames.length);
 
     // Winrate par couleur (WHITE)
     const winrateWhite = this.api.WinrateByColor(this.api.WHITE);
@@ -94,14 +114,9 @@ export class AppComponent implements OnInit {
     const endgames = this.api.getEndgames();
     console.log("Liste des fins de parties :", endgames);
 
-    console.log("===== Fin des tests =====");
-  }
-
-  async lichessTests(): Promise<void> {
-    await this.LitchessApi.getIDLichessGames('TITOUAN', 10);
-    console.log(this.LitchessApi.gamesID);
-    await this.LitchessApi.getInfoLichessGames();
-    console.log(this.LitchessApi.allGames);
+    // Tableau des 10 dernières parties
+    console.log("Tableau des parties :", this.api.allGames.slice(0, 10));
     
+    console.log("===== Fin des tests =====");
   }
 }

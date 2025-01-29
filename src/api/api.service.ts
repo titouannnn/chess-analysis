@@ -44,80 +44,6 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 
 
 
-// pas utile, fonction de test, à modifier par ceux qui font le front end pour avoir l'username rentré dans la page
-getUsername(name: string) {
-  this.username = name;
-  // vaut "titouannnnnn" pour test 
-  this.username = "titouannnnnn";
-  console.log("username :", this.username);
-  return this.username;
-}
-
-/* Récupère dans allGamesAllTypes toutes les parties de l'utilisateur */
-
-async getAllGamesONLINE() {
-  try {
-    const archiveResponse = await fetch(
-      `https://api.chess.com/pub/player/${this.username}/games/archives`
-    );
-    if (!archiveResponse.ok) {
-      throw new Error(
-        `Erreur lors de la récupération des archives: ${archiveResponse.status}`
-      );
-    }
-
-    const archiveData = await archiveResponse.json();
-
-    for (const archiveUrl of archiveData.archives) {
-      const response = await fetch(archiveUrl);
-      if (!response.ok) {
-        throw new Error(
-          `Erreur lors de la récupération des parties: ${response.status}`
-        );
-      }
-      const data = await response.json();
-      // Itère les valeurs dans AllGamesAllTypes
-      this.allGamesAllTypes.push(...data.games);
-    }
-    console.log("ouaisss")
-    console.log(this.allGamesAllTypes);
-  } catch (error) {
-    console.error("Erreur :", error);
-  }
-}
-
-/* A utiliser en phase de test - Récupère dans allGamesAllTypes toutes les parties de l'utilisateur via le fichier chargé */
-getAllGamesOFFLINE() {
-  console.log("Tentative de récupération des parties hors ligne");
-  try {
-    // Vérifie que localData est un tableau et qu'il contient des objets avec la clé "games".
-    const data = (localData as any).default || localData; // Gère les différences d'importation
-    if (!Array.isArray(data)) {
-      throw new Error("Le format des données JSON est invalide.");
-    }
-
-    for (const item of data) {
-      if (item.games && Array.isArray(item.games)) {
-        this.allGamesAllTypes.push(...item.games);
-      } else {
-        console.warn("L'élément ne contient pas de propriété 'games' valide :", item);
-      }
-    }
-  } catch (error) {
-    console.error("Erreur lors de la récupération des parties hors ligne", error);
-  }
-  //console.log("Les données ont été récupérées :", this.allGamesAllTypes);
-  console.log("Les données ont été récupérées ");
-}
-
-
-/* return le nombre de parties jouées par l'utilisateur dans la période donnée */
- getNombrePartiesTotal() {
-  this.nombrePartiesTotal = this.allGames.filter((game: any) => {
-    const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
-    return gameDate >= this.dateDebut && gameDate <= this.dateFin;
-  }).length;
-}
 
 /* Initialisation des dates de début et de fin */
  initTimeInterval() {
@@ -136,12 +62,13 @@ getAllGamesOFFLINE() {
       const result = game.pgn.match(/\[Result\s+"([^"]+)"\]/)[1];
       let playerColor = -1;
       // On détermine la couleur du joueur
-      if (game.white.username == this.username) {
+      if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
         playerColor = this.WHITE;
-      } else if (game.black.username == this.username) {
+      } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
         playerColor = this.BLACK;
       } else {
         console.error("Erreur couleur joueur");
+        console.log(game.white.username, game.black.username, this.username);
       }
       if (playerColor === color) {
         if (
@@ -185,7 +112,7 @@ getAllGamesOFFLINE() {
       ));
     case this.CLASSIC:
       return (this.allGames = this.allGamesAllTypes.filter(
-        (game: any) => game.time_class === "classic"
+        (game: any) => game.time_class === "classic" || game.time_class === "classical"
       ));
     case this.ALL_GENRES:
       return (this.allGames = this.allGamesAllTypes);
@@ -245,9 +172,9 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
   for (const game of this.allGames) {
     const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
     if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
-      if (game.white.username == this.username) {
+      if (game.white.username.toLowerCase() == this.username.toLowerCase()) {
         playerColor = this.WHITE;
-      } else if (game.black.username == this.username) {
+      } else if (game.black.username.toLowerCase() == this.username.toLowerCase()) {
         playerColor = this.BLACK;
       } else {
         console.error("Erreur couleur joueur");
@@ -275,9 +202,9 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       const gameDate = new Date(match[1]);
       if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
         let playerColor = -1;
-        if (game.white.username == this.username) {
+        if (game.white.username.toLowerCase() == this.username.toLowerCase()) {
           playerColor = this.WHITE;
-        } else if (game.black.username == this.username) {
+        } else if (game.black.username.toLowerCase() == this.username.toLowerCase()) {
           playerColor = this.BLACK;
         } else {
           console.error("Erreur couleur joueur");
@@ -348,7 +275,7 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
     const gameDate = new Date(match[1]);
     if (gameDate < this.dateDebut || gameDate > this.dateFin) continue;
 
-    if (game.white.username === this.username) {
+    if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
       playerColor = this.WHITE;
       if (game.white.result === "win") {
         whiteWin++;
@@ -357,7 +284,7 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       } else {
         whiteLose++;
       }
-    } else if (game.black.username === this.username) {
+    } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
       playerColor = this.BLACK;
       if (game.black.result === "win") {
         blackWin++;
@@ -549,7 +476,7 @@ getEndgames() {
       const gameDate = new Date(match[1]);
       if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
         let playerColor = -1;
-        if (game.white.username === this.username) {
+        if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
           playerColor = this.WHITE;
           if (game.white.result === "win") {
             tab[whiteWin][game.black.result] = (tab[whiteWin][game.black.result] || 0) + 1;
@@ -560,7 +487,7 @@ getEndgames() {
           if (game.white.result !== "win" && game.black.result !== "win") {
             tab[whiteDraw][game.white.result] = (tab[whiteDraw][game.white.result] || 0) + 1;
           }
-        } else if (game.black.username === this.username) {
+        } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
           playerColor = this.BLACK;
           if (game.black.result === "win") {
             tab[blackWin][game.white.result] = (tab[blackWin][game.white.result] || 0) + 1;
