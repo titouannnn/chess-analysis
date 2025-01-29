@@ -1,5 +1,5 @@
 import { RouterOutlet } from '@angular/router';
-import { LitchessApiService } from './litchess-api.service';
+import { LitchessApiService } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 
