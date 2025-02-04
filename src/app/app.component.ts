@@ -3,6 +3,7 @@ import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
+import { PuzzleScraper } from '../analyse/puzzle'
 // import test from 'node:test';
 
 @Component({
@@ -29,12 +30,13 @@ export class AppComponent {
 export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
-  constructor(private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi) {} // Injection du service
+  constructor(private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper) {} // Injection du service
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
-    this.lichessTests();
+    //this.lichessTests();
     //this.chess_comTests();
+    this.testPuzzle();
   }
   
 
@@ -119,5 +121,17 @@ export class AppComponent implements OnInit {
     console.log("Tableau des parties :", this.api.allGames.slice(0, 10));
     
     console.log("===== Fin des tests =====");
+  }
+
+  async testPuzzle() {
+    console.log("======== Puzzles Recommended =========");
+    this.PuzzleScraper.collectPuzzlesByOpening("Kings Dresden");
+    console.log("URL des puzzles conseillés : ");
+    for(let url of this.PuzzleScraper.puzzlesUrl) {
+      console.log(url);
+    }
+    console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesUrl.length);
+    
+
   }
 }
