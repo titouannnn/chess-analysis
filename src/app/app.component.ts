@@ -33,8 +33,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
-    //this.chess_comTests();
     this.lichessTests();
+    //this.chess_comTests();
   }
   
 
@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
   }
 
   async lichessTests(): Promise<void> {
-    await this.LitchessApi.getIDLichessGames('titouannn', 10);
+    await this.LitchessApi.getIDLichessGames('titouannn', 100);
     await this.LitchessApi.getInfoLichessGames();
     console.log(this.LitchessApi.allGames);
     this.LitchessApi.dataFormatage();
@@ -78,10 +78,10 @@ export class AppComponent implements OnInit {
 
     // Initialisation de l'intervalle de temps
     this.api.initTimeInterval();
+    this.api.setTimeTinterval(this.api.ALL_TIME,this.api.DATENULL, this.api.DATENULL);
+    
     console.log("Date de début :", this.api.dateDebut);
     console.log("Date de fin :", this.api.dateFin);
-
-
     // Nombre de parties total
 
     console.log("Nombre total de parties dans l'intervalle :", this.api.allGames.length);
@@ -94,6 +94,7 @@ export class AppComponent implements OnInit {
     const winrateBlack = this.api.WinrateByColor(this.api.BLACK);
     console.log("Statistiques pour les noirs :", winrateBlack);
 
+    
     // Liste des accuracies
     const accuracyList = this.api.getAccuracyList();
     console.log("Liste des accuracies :", accuracyList);
