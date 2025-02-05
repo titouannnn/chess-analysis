@@ -1,0 +1,12 @@
+body {
+    background-color: #332B26;
+    color: #E0C7B3;
+    font-family: Arial, sans-serif;
+  }
+  
+  .logo {
+    width: 150px;
+    display: block;
+    margin: 20px auto;
+  }
+  
