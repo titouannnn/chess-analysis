@@ -3,12 +3,13 @@ import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
+import { StatsEloComponent } from './stats-elo/stats-elo.component';
 // import test from 'node:test';
 
 @Component({
   selector: 'app-root',
   template: '<div>{{ message }}</div>',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, StatsEloComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -80,7 +81,6 @@ export class AppComponent implements OnInit {
     this.api.initTimeInterval();
     console.log("Date de début :", this.api.dateDebut);
     console.log("Date de fin :", this.api.dateFin);
-
 
     // Nombre de parties total
 

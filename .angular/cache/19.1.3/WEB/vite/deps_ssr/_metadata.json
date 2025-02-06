@@ -1,53 +1,62 @@
 {
-  "hash": "86a65719",
-  "configHash": "a41d266f",
-  "lockfileHash": "940b3a49",
-  "browserHash": "05c5b5fa",
+  "hash": "bc558e9a",
+  "configHash": "51e653a6",
+  "lockfileHash": "d88a74cd",
+  "browserHash": "305c2a64",
   "optimized": {
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "aae5f90c",
+      "fileHash": "84a008c8",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "8c41bdb3",
+      "fileHash": "4b919a35",
       "needsInterop": false
     },
     "@angular/platform-server": {
       "src": "../../../../../../node_modules/@angular/platform-server/fesm2022/platform-server.mjs",
       "file": "@angular_platform-server.js",
-      "fileHash": "effcea7d",
+      "fileHash": "22889aca",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "6c7650a6",
+      "fileHash": "c694fb42",
       "needsInterop": false
     },
     "@angular/ssr": {
       "src": "../../../../../../node_modules/@angular/ssr/fesm2022/ssr.mjs",
       "file": "@angular_ssr.js",
-      "fileHash": "a6c6f6a7",
+      "fileHash": "4f24ab04",
       "needsInterop": false
     },
     "@angular/ssr/node": {
       "src": "../../../../../../node_modules/@angular/ssr/fesm2022/node.mjs",
       "file": "@angular_ssr_node.js",
-      "fileHash": "1c29ddf1",
+      "fileHash": "2d7bd298",
       "needsInterop": false
     },
     "express": {
       "src": "../../../../../../node_modules/express/index.js",
       "file": "express.js",
-      "fileHash": "f7333ebf",
+      "fileHash": "f9b3cb2e",
       "needsInterop": true
+    },
+    "apexcharts": {
+      "src": "../../../../../../node_modules/apexcharts/dist/apexcharts.esm.js",
+      "file": "apexcharts.js",
+      "fileHash": "d565ea89",
+      "needsInterop": false
     }
   },
   "chunks": {
+    "xhr2-TXIMV6CV": {
+      "file": "xhr2-TXIMV6CV.js"
+    },
     "chunk-VO2M5AWL": {
       "file": "chunk-VO2M5AWL.js"
     },
@@ -62,9 +71,6 @@
     },
     "chunk-MCT5M4AA": {
       "file": "chunk-MCT5M4AA.js"
-    },
-    "xhr2-TXIMV6CV": {
-      "file": "xhr2-TXIMV6CV.js"
     },
     "chunk-YHCV7DAQ": {
       "file": "chunk-YHCV7DAQ.js"

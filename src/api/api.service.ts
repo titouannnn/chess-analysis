@@ -6,7 +6,6 @@ import * as localData from '../../assets/games.json';
 })
 
 
-
 /***************/
 
 export class Api {
