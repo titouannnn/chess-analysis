@@ -3,6 +3,7 @@ import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
+import { PuzzleScraper } from '../analyse/puzzle'
 import { StatsEloComponent } from './stats-elo/stats-elo.component';
 // import test from 'node:test';
 
@@ -30,12 +31,13 @@ export class AppComponent {
 export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
-  constructor(private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi) {} // Injection du service
+  constructor(private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper) {} // Injection du service
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
-    this.chess_comTests();
     //this.lichessTests();
+    //this.chess_comTests();
+    this.testPuzzle();
   }
   
 
@@ -52,7 +54,7 @@ export class AppComponent implements OnInit {
   }
 
   async lichessTests(): Promise<void> {
-    await this.LitchessApi.getIDLichessGames('titouannn', 10);
+    await this.LitchessApi.getIDLichessGames('titouannn', 100);
     await this.LitchessApi.getInfoLichessGames();
     console.log(this.LitchessApi.allGames);
     this.LitchessApi.dataFormatage();
@@ -76,9 +78,10 @@ export class AppComponent implements OnInit {
     // Tri par type de jeu (ALL GENparse
     // Initialisation de l'intervalle de temps
     this.api.initTimeInterval();
+    this.api.setTimeTinterval(this.api.ALL_TIME,this.api.DATENULL, this.api.DATENULL);
+    
     console.log("Date de début :", this.api.dateDebut);
     console.log("Date de fin :", this.api.dateFin);
-
     // Nombre de parties total
 
     console.log("Nombre total de parties dans l'intervalle :", this.api.allGames.length);
@@ -91,6 +94,7 @@ export class AppComponent implements OnInit {
     const winrateBlack = this.api.WinrateByColor(this.api.BLACK);
     console.log("Statistiques pour les noirs :", winrateBlack);
 
+    
     // Liste des accuracies
     const accuracyList = this.api.getAccuracyList();
     console.log("Liste des accuracies :", accuracyList);
@@ -115,5 +119,17 @@ export class AppComponent implements OnInit {
     console.log("Tableau des parties :", this.api.allGames.slice(0, 10));
     
     console.log("===== Fin des tests =====");
+  }
+
+  async testPuzzle() {
+    console.log("======== Puzzles Recommended =========");
+    this.PuzzleScraper.collectPuzzlesByOpening("Kings Dresden");
+    console.log("URL des puzzles conseillés : ");
+    for(let url of this.PuzzleScraper.puzzlesUrl) {
+      console.log(url);
+    }
+    console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesUrl.length);
+    
+
   }
 }

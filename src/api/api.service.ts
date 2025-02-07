@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as localData from '../../assets/games.json';
+import { get } from 'node:http';
 
 @Injectable({
   providedIn: 'root'
@@ -45,22 +46,37 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 
 
 /* Initialisation des dates de début et de fin */
+
+getDateDebut(): Date {
+  if(this.allGames[0].pgn.match(this.RegExpDate)[1] <=  new Date(this.allGames[1].pgn.match(this.RegExpDate)[1])){
+    return new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
+  }
+  else{
+    return new Date(this.allGames[this.allGames.length - 1].pgn.match(this.RegExpDate)[1]);
+  }
+}
+
  initTimeInterval() {
-  this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
-  this.dateFin = new Date(this.allGames[this.allGames.length - 1].pgn.match(this.RegExpDate)[1]);
+  this.dateDebut = this.getDateDebut();
+
+  this.dateFin = new Date();
+  console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
 }
 
 /* return le tableau : [winrate, nombre de victoires, nombre de défaites, nombre de matchs nuls] */
  WinrateByColor(color : number) {
+  
   let win = 0;
   let lose = 0;
   let draw = 0;
+  console.log("All games :", this.allGames);
   for (const game of this.allGames) {
     const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
     if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
+        
       const result = game.pgn.match(/\[Result\s+"([^"]+)"\]/)[1];
       let playerColor = -1;
-      // On détermine la couleur du joueur
+      
       if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
         playerColor = this.WHITE;
       } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
@@ -70,18 +86,28 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
         console.log(game.white.username, game.black.username, this.username);
       }
       if (playerColor === color) {
-        if (
-          (result === "1-0" && color === 1) ||
-          (result === "0-1" && color === 0)
-        ) {
-          win++;
-        } else if (
-          (result === "0-1" && color === 1) ||
-          (result === "1-0" && color === 0)
-        ) {
-          lose++;
-        } else {
-          draw++;
+        if (color == this.WHITE) {
+          if (game.white.result == "win") {
+        win++;
+        console.log("White win counted");
+          } else if (game.black.result == "win") {
+        lose++;
+        console.log("White lose counted");
+          } else {
+        draw++;
+        console.log("White draw counted");
+          }
+        } else if (color == this.BLACK) {
+          if (game.black.result == "win") {
+        win++;
+        console.log("Black win counted");
+          } else if (game.white.result == "win") {
+        lose++;
+        console.log("Black lose counted");
+          } else {
+        draw++;
+        console.log("Black draw counted");
+          }
         }
       }
     }
@@ -146,7 +172,11 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       this.dateDebut = new Date(this.dateFin.getTime() - 365 * 24 * 60 * 60 * 1000);
       break;
     case this.ALL_TIME:
-      this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
+      console.log("all time");
+      this.dateDebut = this.getDateDebut();
+      this.dateFin = new Date();
+      console.log("date fin : ", this.dateFin);
+      
       break;
     default:
       this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
