@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import * as localData from '../../assets/games.json';
 import { get } from 'node:http';
+import { ChesscomApi } from './chesscomapi.service';
+import { LitchessApi } from './litchess-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
-
-
 /***************/
 
 export class Api {
@@ -21,6 +21,11 @@ public dateFin: Date = new Date();
 
 public nombrePartiesTotal = 0; /* Utiliser après avoir appelé getNombrePartiesTotal */
 public username = ""; /* Utiliser après avoir appelé getUsername */
+
+constructor( private ChesscomApi : ChesscomApi, private LitchessApi : LitchessApi  ){
+  this.initializeChesCom();
+}
+
 
 /* Constantes */
 
@@ -43,7 +48,48 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
  DATENULL = new Date(0);
 
 
+/**
+ * Initialisation de l'API Chess.com. 
+ * On utilise une méthode intermédiaire qui est 
+ * capable d'initialiser toutes les différentes API
+ */
+async initializeChesCom(){
+  
+  console.log(" ============= Chess.com API Initialisation ============ ");
+  this.ChesscomApi.getAllGamesOFFLINE();
+  
+  this.initialize( this.ChesscomApi.allGamesAllTypes, 'titouannnnnn' );
+}
 
+/**
+* Initialisation de l'API Chess.com. 
+* On utilise une méthode intermédiaire qui est 
+* capable d'initialiser toutes les différentes API
+*/
+async initializeLichess(){
+  console.log(" ========= Lichess.org API Initialisation ========== ");
+  await this.LitchessApi.getIDLichessGames('titouannn', 100);
+  await this.LitchessApi.getInfoLichessGames();
+
+  this.LitchessApi.dataFormatage();
+  this.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
+  
+  this.initialize( this.allGames, 'titouannn' );
+}
+
+/**
+ * Méthode intermédiaire permettant d'initialiser tout type d'API
+ * 
+ * @param tab Données a traiter (allGames)
+ * @param username Utilisateur passé en paramètre
+ */
+initialize( tab: any[][], username: string ){
+  this.username = username;
+  this.allGamesAllTypes = tab;
+
+  this.initTimeInterval();
+  this.setTimeTinterval(this.ALL_TIME,this.DATENULL, this.DATENULL);
+}
 
 /* Initialisation des dates de début et de fin */
 
@@ -56,6 +102,10 @@ getDateDebut(): Date {
 
 initTimeInterval() {
   // On initialise la dateDebut à la date de la partie la plus ancienne (dernière partie jouée dans l'ordre chronologique)
+  if( !this.allGames[0] ){
+    console.log( "Attention : Variable allGames initialisé par défault (ALL_GENRES)" );
+    this.sortByGameType(this.ALL_GENRES);
+  }
   this.dateDebut = this.getDateDebut();
   // La dateFin est la date d'aujourd'hui
   this.dateFin = new Date();
@@ -244,8 +294,6 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
   //console.log(accuracyList);
   return accuracyList;
 }
-
-
 
 
 /* return tableau contenant les elos du joueur dans la période donnée 
