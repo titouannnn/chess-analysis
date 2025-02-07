@@ -1,34 +1,43 @@
 {
-  "hash": "750116ea",
-  "configHash": "4e0bd429",
-  "lockfileHash": "940b3a49",
-  "browserHash": "d60b988b",
+  "hash": "ce723ddd",
+  "configHash": "1bbeebe9",
+  "lockfileHash": "b3e07f5e",
+  "browserHash": "dc6da753",
   "optimized": {
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "0fc301ad",
+      "fileHash": "18b4ae5b",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "d3cb6efe",
+      "fileHash": "ce9fb5be",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "82bffea1",
+      "fileHash": "a74a2a58",
+      "needsInterop": false
+    },
+    "chess.js": {
+      "src": "../../../../../../node_modules/chess.js/dist/esm/chess.js",
+      "file": "chess__js.js",
+      "fileHash": "4180ac89",
       "needsInterop": false
     }
   },
   "chunks": {
-    "chunk-XUG2OY5P": {
-      "file": "chunk-XUG2OY5P.js"
+    "chunk-ALSLDEKR": {
+      "file": "chunk-ALSLDEKR.js"
     },
-    "chunk-6CJ6BJGL": {
-      "file": "chunk-6CJ6BJGL.js"
+    "chunk-BPKOHGT6": {
+      "file": "chunk-BPKOHGT6.js"
+    },
+    "chunk-WDMUDEB6": {
+      "file": "chunk-WDMUDEB6.js"
     }
   }
 }

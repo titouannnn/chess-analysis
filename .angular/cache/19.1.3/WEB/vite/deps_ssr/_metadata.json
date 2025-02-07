@@ -1,53 +1,62 @@
 {
-  "hash": "727642ee",
-  "configHash": "7a91401f",
-  "lockfileHash": "940b3a49",
-  "browserHash": "e55a9815",
+  "hash": "d219f472",
+  "configHash": "c04762b0",
+  "lockfileHash": "b3e07f5e",
+  "browserHash": "99a0e2b2",
   "optimized": {
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "b759b138",
+      "fileHash": "b000558b",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "6fa63a78",
+      "fileHash": "da67bb86",
       "needsInterop": false
     },
     "@angular/platform-server": {
       "src": "../../../../../../node_modules/@angular/platform-server/fesm2022/platform-server.mjs",
       "file": "@angular_platform-server.js",
-      "fileHash": "b7284676",
+      "fileHash": "7266b573",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "d62a6dca",
+      "fileHash": "3f6a9386",
       "needsInterop": false
     },
     "@angular/ssr": {
       "src": "../../../../../../node_modules/@angular/ssr/fesm2022/ssr.mjs",
       "file": "@angular_ssr.js",
-      "fileHash": "e8f6c81b",
+      "fileHash": "373bcf18",
       "needsInterop": false
     },
     "@angular/ssr/node": {
       "src": "../../../../../../node_modules/@angular/ssr/fesm2022/node.mjs",
       "file": "@angular_ssr_node.js",
-      "fileHash": "98d62c30",
+      "fileHash": "ff6d16ff",
+      "needsInterop": false
+    },
+    "chess.js": {
+      "src": "../../../../../../node_modules/chess.js/dist/esm/chess.js",
+      "file": "chess__js.js",
+      "fileHash": "b9ad0796",
       "needsInterop": false
     },
     "express": {
       "src": "../../../../../../node_modules/express/index.js",
       "file": "express.js",
-      "fileHash": "b5b45d54",
+      "fileHash": "6c9075db",
       "needsInterop": true
     }
   },
   "chunks": {
+    "xhr2-TXIMV6CV": {
+      "file": "xhr2-TXIMV6CV.js"
+    },
     "chunk-VO2M5AWL": {
       "file": "chunk-VO2M5AWL.js"
     },
@@ -62,9 +71,6 @@
     },
     "chunk-MCT5M4AA": {
       "file": "chunk-MCT5M4AA.js"
-    },
-    "xhr2-TXIMV6CV": {
-      "file": "xhr2-TXIMV6CV.js"
     },
     "chunk-YHCV7DAQ": {
       "file": "chunk-YHCV7DAQ.js"
