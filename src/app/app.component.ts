@@ -34,8 +34,8 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
-    //this.chess_comTests();
-    this.lichessTests();
+    this.chess_comTests();
+    //this.lichessTests();
   }
   
 
