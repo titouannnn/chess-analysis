@@ -3,6 +3,7 @@ cache/
 node_modules//dist
 /tmp
 /out-tsc
+old_code/
 
 # dependencies
 /node_modules

@@ -73,10 +73,7 @@ export class AppComponent implements OnInit {
     console.log("Parties passées en parametre à la fonction test :", tab.slice(0, 10));
     this.api.allGamesAllTypes = tab;
     console.log("Parties chargées :", this.api.allGamesAllTypes.slice(0, 10));
-    // Tri par type de jeu (ALL GENRES)
-    this.api.sortByGameType(this.api.ALL_GENRES);
-    console.log("Parties triées (ALL GENRES) :", this.api.allGames.slice(0, 10));
-
+    // Tri par type de jeu (ALL GENparse
     // Initialisation de l'intervalle de temps
     this.api.initTimeInterval();
     console.log("Date de début :", this.api.dateDebut);
