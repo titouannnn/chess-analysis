@@ -1,6 +1,22 @@
-# WEB
+# Chess Analysis
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.3.
+
+**Chess Analysis** est une plateforme web interactive qui fournit des analyses détaillées et des statistiques sur vos parties d'échecs, que ce soit sur **Chess.com** ou **Lichess.com**. Ce projet vous permet de visualiser vos performances sous forme de graphiques, de probabilités et d'autres visualisations de données.
+
+Ce projet a été développé dans le cadre de notre formation en **Licence Informatique**, plus précisément dans le module **Interface Homme-Machine (IHM)**.
+
+## Fonctionnalités
+
+- Analyse des parties d'échecs en ligne
+- Visualisation des statistiques sous forme de diagrammes et de probabilités
+- Support pour **Chess.com** et **Lichess.com**
+
+## Installation
+
+1. Clonez le repository :
+   ```bash
+   git clone https://github.com/votre-repository/chess-analysis.git
 
 ## Development server
 
