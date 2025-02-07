@@ -48,6 +48,9 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 /* Initialisation des dates de début et de fin */
 
 getDateDebut(): Date {
+
+  console.log( "getDateDebut : " + this.allGames );
+
   if(this.allGames[0].pgn.match(this.RegExpDate)[1] <=  new Date(this.allGames[1].pgn.match(this.RegExpDate)[1])){
     return new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
   }
@@ -57,6 +60,10 @@ getDateDebut(): Date {
 }
 
  initTimeInterval() {
+  if( !this.allGames[0] ) {
+    console.log("Attention allGames initialisé par default (ALL_GENRES)");
+    this.sortByGameType( this.ALL_GENRES );
+  }
   this.dateDebut = this.getDateDebut();
 
   this.dateFin = new Date();

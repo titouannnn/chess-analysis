@@ -36,11 +36,10 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     console.log("Initialisation de l'application");
     //this.lichessTests();
-    //this.chess_comTests();
-    this.testPuzzle();
+    this.chess_comTests();
+    //this.testPuzzle();
   }
   
-
   async chess_comTests(): Promise<void> {
 
     console.log("======== Chess.com API =========");
@@ -77,9 +76,11 @@ export class AppComponent implements OnInit {
     console.log("Parties chargées :", this.api.allGamesAllTypes.slice(0, 10));
     // Tri par type de jeu (ALL GENparse
     // Initialisation de l'intervalle de temps
+
     this.api.initTimeInterval();
-    this.api.setTimeTinterval(this.api.ALL_TIME,this.api.DATENULL, this.api.DATENULL);
     
+    this.api.setTimeTinterval(this.api.ALL_TIME,this.api.DATENULL, this.api.DATENULL);
+    console.log("Nombre total de parties dans l'intervalle :", this.api.allGames.length);
     console.log("Date de début :", this.api.dateDebut);
     console.log("Date de fin :", this.api.dateFin);
     // Nombre de parties total
