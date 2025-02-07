@@ -48,24 +48,16 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 /* Initialisation des dates de début et de fin */
 
 getDateDebut(): Date {
-
-  console.log( "getDateDebut : " + this.allGames );
-
-  if(this.allGames[0].pgn.match(this.RegExpDate)[1] <=  new Date(this.allGames[1].pgn.match(this.RegExpDate)[1])){
-    return new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
-  }
-  else{
-    return new Date(this.allGames[this.allGames.length - 1].pgn.match(this.RegExpDate)[1]);
-  }
+  const firstGameDate = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
+  const lastGameDate = new Date(this.allGames[this.allGames.length - 1].pgn.match(this.RegExpDate)[1]);
+  // Choisir la date la plus ancienne, que ce soit le premier ou le dernier élément
+  return firstGameDate < lastGameDate ? firstGameDate : lastGameDate;
 }
 
- initTimeInterval() {
-  if( !this.allGames[0] ) {
-    console.log("Attention allGames initialisé par default (ALL_GENRES)");
-    this.sortByGameType( this.ALL_GENRES );
-  }
+initTimeInterval() {
+  // On initialise la dateDebut à la date de la partie la plus ancienne (dernière partie jouée dans l'ordre chronologique)
   this.dateDebut = this.getDateDebut();
-
+  // La dateFin est la date d'aujourd'hui
   this.dateFin = new Date();
   console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
 }
@@ -96,24 +88,18 @@ getDateDebut(): Date {
         if (color == this.WHITE) {
           if (game.white.result == "win") {
         win++;
-        console.log("White win counted");
           } else if (game.black.result == "win") {
         lose++;
-        console.log("White lose counted");
           } else {
         draw++;
-        console.log("White draw counted");
           }
         } else if (color == this.BLACK) {
           if (game.black.result == "win") {
         win++;
-        console.log("Black win counted");
           } else if (game.white.result == "win") {
         lose++;
-        console.log("Black lose counted");
           } else {
         draw++;
-        console.log("Black draw counted");
           }
         }
       }
