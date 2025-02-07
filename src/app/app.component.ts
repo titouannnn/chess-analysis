@@ -126,12 +126,21 @@ export class AppComponent implements OnInit {
 
   async testPuzzle() {
     console.log("======== Puzzles Recommended =========");
-    this.PuzzleScraper.collectPuzzlesByOpening("Kings Dresden");
+    this.PuzzleScraper.collectPuzzlesByOpening("Italian-Game-Rousseau-Gambit");
     console.log("URL des puzzles conseillés : ");
+    console.log(this.PuzzleScraper.puzzlesUrl[0]);
+    /*
     for(let url of this.PuzzleScraper.puzzlesUrl) {
       console.log(url);
     }
+      */
+      
     console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesUrl.length);
+
+    /*
+    console.log("Objet json du fichier trié : ");
+    console.log(this.PuzzleScraper.sortJsonKeepOpenings());
+    */
     
 
   }
