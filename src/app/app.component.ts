@@ -1,11 +1,12 @@
 import { LitchessApi } from '../api/litchess-api.service';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { afterRender, AfterRenderPhase, AfterViewInit, Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { PuzzleScraper } from '../analyse/puzzle'
 import { StatsEloComponent } from './stats-elo/stats-elo.component';
 import { AnalysisApi } from '../api/analysisApi.service';
 import { Chess } from 'chess.js';
+
 // import test from 'node:test';
 
 @Component({
@@ -14,9 +15,7 @@ import { Chess } from 'chess.js';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-
-
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
   constructor(private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper, private AnalysisApi: AnalysisApi, private statsComponent : StatsEloComponent) {} // Injection du service
@@ -30,14 +29,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     //this.testPuzzle();
     //this.analysisApiTests();
     //this.statsComponent.showEloStat();
+  }
 
-  }
-  ngAfterViewInit(){
-    this.statsComponent.showEloStat();
-  }
-  
   async analysisApiTests(): Promise<void> {
-
     console.log("======== Analysis API =========");
 
     console.log("======== Tests fen diviser =========");
@@ -124,6 +118,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     console.log("Tableau des parties :", this.api.allGames.slice(0, 10));
     
     console.log("===== Fin des tests =====");
+  
   }
 
   async testPuzzle() {
@@ -136,9 +131,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       console.log(url);
     }
       */
-      
     console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesUrl.length);
-    
     /*
     console.log("Objet json du fichier trié : ");
     console.log(this.PuzzleScraper.sortJsonKeepOpenings());
@@ -146,3 +139,4 @@ export class AppComponent implements OnInit, AfterViewInit {
     
   }
 }
+

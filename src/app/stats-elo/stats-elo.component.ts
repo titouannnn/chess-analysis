@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Injectable, viewChild, ViewChild } from '@angular/core';
+import { afterNextRender, AfterRenderPhase, Component, ElementRef, Injectable, viewChild, ViewChild } from '@angular/core';
 import { Api } from '../../api/api.service';
 import * as Plot from "@observablehq/plot";
 
@@ -10,35 +10,29 @@ import * as Plot from "@observablehq/plot";
 })
 @Injectable({  providedIn: 'root'})
 export class StatsEloComponent {  
+  @ViewChild('eloStats') eloStats !: ElementRef
 
-  
-  userInfoElement = viewChild<ElementRef<HTMLElement>>('myplot');
-  constructor(private api: Api ){
-    
-  }
+  constructor(private api: Api ){ 
+    afterNextRender(()=>{
+      const eloList = this.api.getElo();
+      
+      let plot = Plot.plot({
+        marks: [
+          Plot.ruleY([0]),
+          Plot.rectY(eloList, Plot.binX({y: "sum"}, {x: "rating", thresholds: 15}))
+        ]
+      })
+      this.eloStats.nativeElement.append( plot );
+    })
+   }
 
-  
   testConstructor(){
     console.log("Username initialised : ", this.api.username, "All games : ", this.api.allGames)
-  }
-
-  testPlot(){
-
-    const plot = Plot.rectY({length: 10000}, Plot.binX({y: "count"}, {x: Math.random})).plot();
-    const elementRef = this.userInfoElement();
-    const div = elementRef?.nativeElement;
-    if(div){
-      div.append(plot);
-    }
-    
-
   }
 
   showEloStat(){
     const eloList = this.api.getElo();
     console.log("Stats -> Liste des ELOs :", eloList);
-    this.testPlot();
-
   }
 }
 
