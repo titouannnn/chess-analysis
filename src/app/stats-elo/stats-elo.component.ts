@@ -1,6 +1,9 @@
 import { afterNextRender, AfterRenderPhase, Component, ElementRef, Injectable, viewChild, ViewChild } from '@angular/core';
-import { Api } from '../../api/api.service';
+import { Api, Constantes } from '../../api/api.service';
 import * as Plot from "@observablehq/plot";
+import { time } from 'console';
+import { LitchessApi } from '../../api/litchess-api.service';
+import { ChesscomApi } from '../../api/chesscomapi.service';
 
 @Component({
   selector: 'app-stats-elo',
@@ -12,27 +15,32 @@ import * as Plot from "@observablehq/plot";
 export class StatsEloComponent {  
   @ViewChild('eloStats') eloStats !: ElementRef
 
-  constructor(private api: Api ){ 
+  private api: Api;
+  constructor(chessApi : ChesscomApi, lichessApi : LitchessApi ){ 
+    this.api = chessApi;
     afterNextRender(()=>{
-      const eloList = this.api.getElo();
-      
-      let plot = Plot.plot({
-        marks: [
-          Plot.ruleY([0]),
-          Plot.rectY(eloList, Plot.binX({y: "sum"}, {x: "rating", thresholds: 15}))
-        ]
-      })
-      this.eloStats.nativeElement.append( plot );
+      this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
     })
    }
 
-  testConstructor(){
-    console.log("Username initialised : ", this.api.username, "All games : ", this.api.allGames)
-  }
+  /**
+   * 
+   * Méthode à utiliser uniquement avec afterNextRender, ou afterRender
+   * Elle "append" un graphe generée grace à Plot de Observable. 
+   * 
+   * Ce graphe va correspondre au différents niveau d'Elo de Chess.com
+   */
+  showEloStat( time_class ?: Constantes.TypeJeuChessCom ){
+    const eloList = this.api.getElo(time_class);
+    
+    let plot = Plot.plot({
+      marks: [
+        Plot.lineY(eloList, {y: "rating", x: "timestamp"})
+      ]
+    })
+    this.eloStats.nativeElement.append( plot );
+    console.log("Plot append correctement, elo : ", eloList);
 
-  showEloStat(){
-    const eloList = this.api.getElo();
-    console.log("Stats -> Liste des ELOs :", eloList);
   }
 }
 

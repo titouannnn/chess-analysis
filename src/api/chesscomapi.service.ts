@@ -1,22 +1,18 @@
 import { Injectable } from '@angular/core';
 import * as localData from '../../assets/games.json';
+import { Api, Constantes } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
-
-
-
 /***************/
 
-export class ChesscomApi {
+export class ChesscomApi extends Api {
 
-allGames: any[] = []; /* Constante contenant toutes les parties d'un type (ou tous les types), Utiliser APRES avoir appelé sortbytype*/
-allGamesAllTypes: any[] = []; /* Réponse de l'api, ne pas utiliser directement, prendre "allGames" */
-
-
-public username = ""; /* Utiliser après avoir appelé getUsername */
-
+  constructor(){
+    super();
+    this.initialize();
+  }
 
 // pas utile, fonction de test, à modifier par ceux qui font le front end pour avoir l'username rentré dans la page
 getUsername(name: string) {
@@ -84,6 +80,37 @@ getAllGamesOFFLINE() {
   console.log("Les données ont été récupérées ");
 }
 
+/**
+ * Initialisation de l'API Chess.com. 
+ * On utilise une méthode intermédiaire qui est 
+ * capable d'initialiser toutes les différentes API
+ */
+  override async initialize(){
+    
+    console.log(" ============= Chess.com API Initialisation ============ ");
+    this.getAllGamesOFFLINE();
+    
+    super.initialize( this.allGamesAllTypes, 'titouannnnnn' );
+  }
 
+  override getElo( time_class ?: Constantes.TypeJeuChessCom ) {
+    let eloList = [];
+    for (const game of this.allGames) {
+      const match = game.pgn.match(this.RegExpDate);
+      if(!match) continue;
+      const gameDate = new Date(match[1]);
+      if( !(gameDate >= this.dateDebut) || !(gameDate <= this.dateFin)) continue;
+
+      if (game.white.username == this.username && game.white.rating && (!game.time_class || game.time_class == time_class)) {
+        eloList.push({ timestamp: game.end_time, rating: game.white.rating });
+      } else if (game.black.username == this.username && game.black.rating && (!game.time_class || game.time_class == time_class)) {
+        eloList.push({ timestamp: game.end_time, rating: game.black.rating });
+      } else {
+        console.error("Erreur couleur joueur");
+      }  
+    
+    }
+    return eloList;
+  }
 
 }
