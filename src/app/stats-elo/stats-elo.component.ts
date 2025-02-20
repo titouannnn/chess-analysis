@@ -1,4 +1,4 @@
-import { afterNextRender, AfterRenderPhase, Component, ElementRef, Injectable, viewChild, ViewChild } from '@angular/core';
+import { afterNextRender, Component, ElementRef, Injectable, ViewChild } from '@angular/core';
 import { Api, Constantes } from '../../api/api.service';
 import * as Plot from "@observablehq/plot";
 import { time } from 'console';
@@ -6,7 +6,7 @@ import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
 
 @Component({
-  selector: 'app-stats-elo',
+  selector: 'app-stats-elo:not(p)',
   imports: [],
   templateUrl: './stats-elo.component.html',
   styleUrl: './stats-elo.component.css'
@@ -15,13 +15,16 @@ import { ChesscomApi } from '../../api/chesscomapi.service';
 export class StatsEloComponent {  
   @ViewChild('eloStats') eloStats !: ElementRef
 
+  // Variable utilisé pour le HTML
+  typeJeu = Constantes.TypeJeuChessCom;
+
   private api: Api;
   constructor(chessApi : ChesscomApi, lichessApi : LitchessApi ){ 
     this.api = chessApi;
     afterNextRender(()=>{
       this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
     })
-   }
+  }
 
   /**
    * 
@@ -38,7 +41,7 @@ export class StatsEloComponent {
         Plot.lineY(eloList, {y: "rating", x: "timestamp"})
       ]
     })
-    this.eloStats.nativeElement.append( plot );
+    this.eloStats.nativeElement.replaceChildren( plot );
     console.log("Plot append correctement, elo : ", eloList);
 
   }

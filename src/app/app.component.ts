@@ -1,5 +1,5 @@
 import { LitchessApi } from '../api/litchess-api.service';
-import { afterRender, AfterRenderPhase, AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Api, Constantes } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { PuzzleScraper } from '../analyse/puzzle'
@@ -10,7 +10,7 @@ import { Chess } from 'chess.js';
 
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-root:not(p)',
   imports: [StatsEloComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',

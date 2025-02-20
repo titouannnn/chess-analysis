@@ -13,10 +13,11 @@ export namespace Constantes
     }
 
     export enum TypeJeuChessCom {
-      BULLET = 0,
-      BLITZ = 1,
-      RAPID = 2,
-      CLASSIC = 3,
+      BULLET = "bullet",
+      BLITZ = "blitz",
+      RAPID = "rapid",
+      CLASSIC = "classic",
+      DAILY = "daily",
       ALL_GENRES = 4
     }
 
@@ -109,7 +110,7 @@ initTimeInterval() {
   // On initialise la dateDebut à la date de la partie la plus ancienne (dernière partie jouée dans l'ordre chronologique)
   if( !this.allGames[0] ){
     console.log( "Attention : Variable allGames initialisé par défault (ALL_GENRES)" );
-    this.sortByGameType( Constantes.TypeJeuChessCom.ALL_GENRES);
+    this.sortByGameType(  );
   }
   this.dateDebut = this.getDateDebut();
   // La dateFin est la date d'aujourd'hui
@@ -169,8 +170,8 @@ initTimeInterval() {
 }
 
 
-/* Init le tableau allGames avec les parties du type donné : bullet/blitz/rapide/classic */
- sortByGameType(type : number) {
+/* Init le tableau allGames avec les parties du type donné : bullet/blitz/rapide/classic(daily ?) */
+ sortByGameType(type ?: string) {
   switch (type) {
     case Constantes.TypeJeuChessCom.BULLET:
       return (this.allGames = this.allGamesAllTypes.filter(
@@ -184,15 +185,16 @@ initTimeInterval() {
       return (this.allGames = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "rapid"
       ));
+    case Constantes.TypeJeuChessCom.DAILY:
+      return (this.allGames = this.allGamesAllTypes.filter(
+        (game: any) => game.time_class === "daily"
+      ));
     case Constantes.TypeJeuChessCom.CLASSIC:
       return (this.allGames = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "classic" || game.time_class === "classical"
       ));
-    case Constantes.TypeJeuChessCom.ALL_GENRES:
-      return (this.allGames = this.allGamesAllTypes);
     default:
-      console.error("Erreur type de partie");
-      return -1;
+      return (this.allGames = this.allGamesAllTypes);
   }
 }
 
@@ -203,7 +205,6 @@ initTimeInterval() {
 
   par défaut si aucun argement donné -> all time
 */
-
 setTimeTinterval(type : number, debut : Date, fin : Date) {
   switch (type) {
     case Constantes.Time.CUSTOM:

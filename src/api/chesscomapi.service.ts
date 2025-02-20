@@ -82,7 +82,8 @@ getAllGamesOFFLINE() {
 
 /**
  * Initialisation de l'API Chess.com. 
- * On utilise une méthode intermédiaire qui est 
+ * Une fois l'initialisation spécifique  Chess.com est réalisé
+ * On utilise la méthode abstraite de @see Api intermédiaire qui est 
  * capable d'initialiser toutes les différentes API
  */
   override async initialize(){
@@ -101,14 +102,11 @@ getAllGamesOFFLINE() {
       const gameDate = new Date(match[1]);
       if( !(gameDate >= this.dateDebut) || !(gameDate <= this.dateFin)) continue;
 
-      if (game.white.username == this.username && game.white.rating && (!game.time_class || game.time_class == time_class)) {
+      if (game.white.username == this.username && game.white.rating && (!time_class || game.time_class == time_class)) {
         eloList.push({ timestamp: game.end_time, rating: game.white.rating });
-      } else if (game.black.username == this.username && game.black.rating && (!game.time_class || game.time_class == time_class)) {
+      } else if (game.black.username == this.username && game.black.rating && (!time_class || game.time_class == time_class)) {
         eloList.push({ timestamp: game.end_time, rating: game.black.rating });
-      } else {
-        console.error("Erreur couleur joueur");
-      }  
-    
+      } 
     }
     return eloList;
   }
