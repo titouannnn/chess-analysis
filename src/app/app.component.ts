@@ -8,7 +8,6 @@ import { HomeComponent } from './home/home.component';
   templateUrl: './app.component.html',
   styleUrl: "./app.component.css"
 })
-
 export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
@@ -28,7 +27,7 @@ export class AppComponent implements OnInit {
 
     /*
     this.api.sortByGameType(this.api.RAPID);
-    this.api.initTimeInterval();
+      this.api.initTimeInterval();
     this.api.setTimeTinterval(this.api.YEAR,this.api.DATENULL,this.api.DATENULL);
     console.log(this.api.allGames);
     */
