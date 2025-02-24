@@ -439,8 +439,6 @@ abstract getElo( time_class ?: Constantes.TypeJeuChessCom): { timestamp: any; ra
   return openingsTab;
 }
 
-
-
  sortOpenings(openingsTab : any[]) {
   // Trier les ouvertures par nom
   
@@ -506,9 +504,8 @@ abstract getElo( time_class ?: Constantes.TypeJeuChessCom): { timestamp: any; ra
 }
 
 // Fonction pour récupérer les openings les plus gagnants
- getMostWinningOpenings(openingsTab : any[]) {
+getMostWinningOpenings(openingsTab : any[]) {
   
-
   // On ne prend que les openings joués plus de 3 fois car forcement quand l'ouverture est jouée une seule fois et elle gagne, elle est gagnante a 100%
   let mostWinning = openingsTab.filter(a => a.total > 3).sort((a, b) => (b.wins / b.total) - (a.wins / a.total)).slice(0, 5);
   // renvoie un dictio avec les openings les plus gagnants, la clé opening contient le nom de l'ouverture et la clé winrate contient le winrate de l'ouverture
