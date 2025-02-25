@@ -205,7 +205,7 @@ initTimeInterval() {
 
   par défaut si aucun argement donné -> all time
 */
-setTimeTinterval(type : number, debut : Date, fin : Date) {
+setTimeTinterval(type : Constantes.Time, debut : Date, fin : Date) {
   switch (type) {
     case Constantes.Time.CUSTOM:
       this.dateDebut = new Date(debut);
@@ -225,7 +225,6 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       this.dateDebut = this.getDateDebut();
       this.dateFin = new Date();
       console.log("date fin : ", this.dateFin);
-      
       break;
     default:
       this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
