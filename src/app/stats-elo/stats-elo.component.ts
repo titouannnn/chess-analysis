@@ -120,10 +120,12 @@ export class StatsEloComponent {
   }
 
   frequencyRightArrowClick(){
-    this.annee--;
+    if(this.annee < new Date().getFullYear()) this.annee++;
+    this.showPlayFrequency();
   }
   frequencyLeftArrowClick(){
-    if(this.annee < new Date().getFullYear()) this.annee++;
+    this.annee--;
+    this.showPlayFrequency();
   }
 
 }

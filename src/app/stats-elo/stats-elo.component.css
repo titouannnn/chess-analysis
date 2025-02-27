@@ -1,0 +1,15 @@
+.yearBar{
+    max-height: 60px;
+    max-width: 300px;
+}
+.yearBar > button > img {
+    height: 10px;
+    width: 10px;
+    opacity: 0.5;
+}
+div:not(:has(parent div)){
+    background-color: aquamarine;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as localData from '../../assets/games.json';
 import { get } from 'node:http';
-import { ChesscomApi } from './chesscomapi.service';
 import { LitchessApi } from './litchess-api.service';
+import { ChesscomApi } from './chesscomapi.service';
 
 export namespace Constantes
 {
@@ -92,7 +92,6 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 protected initialize( tab: any[][], username: string ){
   this.username = username;
   this.allGamesAllTypes = tab;
-
   this.initTimeInterval();
   this.setTimeTinterval( Constantes.Time.ALL_TIME ,this.DATENULL, this.DATENULL);
 }
