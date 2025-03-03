@@ -72,7 +72,7 @@ export class StatsEloComponent {
    * @param year Année à analyser la fréquence de jeu
    * @returns Frequence de jeu en fonction du mois d'une année spécifié
    */
-  getPlayFrequency(year : number) : Array<{ "occurences" : number, "mois": string  }>{
+  getPlayFrequency(year : number) : Array<{ "occurences" : number, "mois": string  }> {
     const months = [
       "Janvier", 
       "Fevrier", 
@@ -102,8 +102,9 @@ export class StatsEloComponent {
   /**
    * Méthode d'affichage de la fréquence de jeu de l'utilisateur dans une année spécifique
    * à analyser.
+   * 
    */
-  showPlayFrequency(){
+  showPlayFrequency( ){
     let data = this.getPlayFrequency(this.annee);
 
     const plot = Plot.plot(
@@ -112,7 +113,7 @@ export class StatsEloComponent {
         grid: true,
         marks : [
           Plot.ruleY([0]),
-          Plot.barY(data, {y:"occurences", x:"mois", fill: "green"})          
+          Plot.barY(data, {y:"occurences", x:"mois", fill: "green"})
         ],
       }
     );

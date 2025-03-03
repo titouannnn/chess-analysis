@@ -6,6 +6,12 @@
 
 <div #playFrequencyStats ></div>
 <div class="yearBar" >
-    <button (click)="frequencyLeftArrowClick()" ><img [src]="'/assets/images/left.png'" alt="leftButton"></button> {{ annee }} <button (click)="frequencyRightArrowClick()" ><img [src]="'/assets/images/right.png'" alt="rightButton"></button>
+    <button (click)="frequencyLeftArrowClick()" >
+        <img [src]="'/assets/images/left.png'" alt="leftButton">
+    </button> 
+    {{ annee }}
+    <button (click)="frequencyRightArrowClick()" >
+        <img [src]="'/assets/images/right.png'" alt="rightButton">
+    </button>
 </div>
 
