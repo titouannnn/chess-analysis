@@ -405,7 +405,10 @@ async function writeResponseToNodeResponse(source, destination) {
                 destination.end();
                 break;
             }
-            destination.write(value);
+            const canContinue = destination.write(value);
+            if (!canContinue) {
+                await new Promise((resolve) => destination.once('drain', resolve));
+            }
         }
     }
     catch {

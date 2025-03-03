@@ -6,9 +6,8 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 import { Builder } from '@angular-devkit/architect';
-import { json } from '@angular-devkit/core';
 import { execute } from './builder';
 import type { Schema as NgPackagrBuilderOptions } from './schema';
 export { type NgPackagrBuilderOptions, execute };
-declare const builder: Builder<NgPackagrBuilderOptions & json.JsonObject>;
+declare const builder: Builder<NgPackagrBuilderOptions>;
 export default builder;

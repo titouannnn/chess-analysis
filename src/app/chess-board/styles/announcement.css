@@ -1,0 +1,57 @@
+#announcement {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    margin-bottom: 15px;
+    padding: 5px;
+    width: 100vw;
+    background-color: var(--secondary-color);
+    position: relative;
+}
+
+#kofi {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#kofi-a,
+#discord-a {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: var(--primary-color);
+    gap: 5px;
+    text-align: center;
+}
+
+#discord-a {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.wise-words {
+    margin-left: 10px;
+    color: white;
+}
+
+.wise-buttons {
+    display: flex;
+}
+
+#discord {
+    font-size: 20px;
+}
+
+@media (max-width: 1105px) {
+    .ad-text {
+        display: none;
+    }
+}

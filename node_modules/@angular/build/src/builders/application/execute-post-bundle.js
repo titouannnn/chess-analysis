@@ -38,7 +38,7 @@ async function executePostBundleSteps(metafile, options, outputFiles, assetFiles
     const allErrors = [];
     const allWarnings = [];
     const prerenderedRoutes = {};
-    const { baseHref = '/', serviceWorker, i18nOptions, indexHtmlOptions, optimizationOptions, sourcemapOptions, outputMode, serverEntryPoint, prerenderOptions, appShellOptions, publicPath, workspaceRoot, partialSSRBuild, } = options;
+    const { baseHref = '/', serviceWorker, ssrOptions, indexHtmlOptions, optimizationOptions, sourcemapOptions, outputMode, serverEntryPoint, prerenderOptions, appShellOptions, publicPath, workspaceRoot, partialSSRBuild, } = options;
     // Index HTML content without CSS inlining to be used for server rendering (AppShell, SSG and SSR).
     // NOTE: Critical CSS inlining is deliberately omitted here, as it will be handled during server rendering.
     // Additionally, when using prerendering or AppShell, the index HTML file may be regenerated.
@@ -57,7 +57,7 @@ async function executePostBundleSteps(metafile, options, outputFiles, assetFiles
     }
     // Create server manifest
     const initialFilesPaths = new Set(initialFiles.keys());
-    if (serverEntryPoint) {
+    if (serverEntryPoint && (outputMode || prerenderOptions || appShellOptions || ssrOptions)) {
         const { manifestContent, serverAssetsChunks } = (0, manifest_1.generateAngularServerAppManifest)(additionalHtmlOutputFiles, outputFiles, optimizationOptions.styles.inlineCritical ?? false, undefined, locale, baseHref, initialFilesPaths, metafile, publicPath);
         additionalOutputFiles.push(...serverAssetsChunks, (0, utils_1.createOutputFile)(manifest_1.SERVER_APP_MANIFEST_FILENAME, manifestContent, bundler_context_1.BuildOutputFileType.ServerApplication));
     }

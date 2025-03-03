@@ -196,7 +196,11 @@ export declare function normalizeOptions(context: BuilderContext, projectName: s
     partialSSRBuild: boolean;
     externalRuntimeStyles: boolean | undefined;
     instrumentForCoverage: ((filename: string) => boolean) | undefined;
-    security: import("./schema").Security | undefined;
+    security: {
+        autoCsp: {
+            unsafeEval: boolean;
+        } | undefined;
+    };
     templateUpdates: boolean;
     incrementalResults: boolean;
 }>;

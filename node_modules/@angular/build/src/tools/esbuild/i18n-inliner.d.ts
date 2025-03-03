@@ -13,6 +13,7 @@ export interface I18nInlinerOptions {
     missingTranslation: 'error' | 'warning' | 'ignore';
     outputFiles: BuildOutputFile[];
     shouldOptimize?: boolean;
+    persistentCachePath?: string;
 }
 /**
  * A class that performs i18n translation inlining of JavaScript code.
@@ -22,6 +23,7 @@ export interface I18nInlinerOptions {
  */
 export declare class I18nInliner {
     #private;
+    private readonly options;
     constructor(options: I18nInlinerOptions, maxThreads?: number);
     /**
      * Performs inlining of translations for the provided locale and translations. The files that
@@ -41,4 +43,11 @@ export declare class I18nInliner {
      * @returns A void promise that resolves when closing is complete.
      */
     close(): Promise<void>;
+    /**
+     * Initializes the cache for storing translated bundles.
+     * If the cache is already initialized, it does nothing.
+     *
+     * @returns A promise that resolves once the cache initialization process is complete.
+     */
+    private initCache;
 }

@@ -44,4 +44,5 @@ export declare function normalizeOptions(context: BuilderContext, projectName: s
         host?: string;
         port?: number;
     };
+    allowedHosts: true | string[];
 }>;

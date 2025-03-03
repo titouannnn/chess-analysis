@@ -1,0 +1,198 @@
+body {
+    margin: 0;
+    background-color: rgba(49, 51, 56, 255);
+    width: 100vw;
+}
+
+@media only screen and (max-width: 1536px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    #board {
+        width: 511.2px !important;
+        height: 511.2px !important;
+    }
+
+    #board-outer-container {
+        height: 625px !important;
+    }
+
+    #evaluation-bar {
+        transform: scale(0.7);
+    }
+
+    #review-panel {
+        height: 610px !important;
+    }
+
+    #classification-message-container {
+        margin-top: 40px !important;
+    }
+
+    #engine-suggestions {
+        flex-direction: row !important;
+        margin-top: 18px !important;
+    }
+
+    #engine-suggestions-title {
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+
+    #board-outer-container {
+        gap: 0 !important;
+    }
+}
+
+@media only screen and (max-width: 1030px) {
+    #board {
+        width: 531.2px !important;
+        height: 531.2px !important;
+    }
+
+    #evaluation-bar {
+        transform: scale(0.73);
+    }
+
+    #review-panel {
+        height: 627px !important;
+    }
+
+    #pgn {
+        margin-top: 5px !important;
+    }
+
+    #chess-site-username {
+        margin-top: 5px !important;
+    }
+
+    #fetch-account-games-button {
+        margin-top: 5px !important;
+    }
+
+    #load-type-dropdown {
+        margin-top: -8px !important;
+    }
+}
+
+@media only screen and (max-width: 960px) {
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    #board-outer-container {
+        height: 590px !important;
+    }
+
+    #review-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #board {
+        width: 479px !important;
+        height: 479px !important;
+    }
+
+    #evaluation-bar {
+        transform: scale(0.66);
+    }
+
+    #review-panel {
+        width: 46.1rem !important;
+        margin-top: 10px;
+        margin-left: 0 !important;
+    }
+
+    #review-panel-toolbar {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #fff;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+        width: 100%;
+        z-index: 9999;
+    }
+
+    #engine-suggestion {
+        margin-top: 5px;
+    }
+
+    #classification-message-container {
+        margin-top: 40px;
+    }
+}
+
+@media only screen and (max-width: 750px) {
+    #board {
+        width: 335px !important;
+        height: 335px !important;
+    }
+
+    #board-outer-container {
+        height: 430px !important;
+    }
+
+    #evaluation-bar {
+        transform: scale(0.46);
+    }
+
+    #review-panel {
+        width: 24.1rem !important;
+    }
+
+    #engine-suggestions {
+        margin-top: 40px !important;
+        font-size: 15px !important;
+    }
+}
+
+@media only screen and (max-width: 380px) {
+    #board {
+        width: 272px !important;
+        height: 272px !important;
+    }
+
+    #board-outer-container {
+        height: 380px !important;
+    }
+
+    #evaluation-bar {
+        transform: scale(0.37);
+    }
+
+    #review-panel {
+        width: 19.6rem !important;
+    }
+
+    #review-panel-toolbar-buttons i {
+        font-size: 22px !important;
+    }
+
+    .accuracies {
+        font-size: 12px !important;
+    }
+
+    #engine-suggestions {
+        font-size: 9px !important;
+    }
+}
+
+.white {
+    color: white;
+}
+
+.footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.footer a {
+    color: white;
+}

@@ -29,7 +29,7 @@ export declare function createI18nOptions(projectMetadata: {
     i18n?: unknown;
 }, inline?: boolean | string[], logger?: {
     warn(message: string): void;
-}): I18nOptions;
+}, ssrEnabled?: boolean): I18nOptions;
 export declare function loadTranslations(locale: string, desc: LocaleDescription, workspaceRoot: string, loader: TranslationLoader, logger: {
     warn: (message: string) => void;
     error: (message: string) => void;

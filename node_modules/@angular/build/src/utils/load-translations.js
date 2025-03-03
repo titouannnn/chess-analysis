@@ -41,8 +41,8 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTranslationLoader = createTranslationLoader;
-const crypto_1 = require("crypto");
-const fs = __importStar(require("fs"));
+const node_crypto_1 = require("node:crypto");
+const fs = __importStar(require("node:fs"));
 const load_esm_1 = require("./load-esm");
 async function createTranslationLoader() {
     const { parsers, diagnostics } = await importParsers();
@@ -55,7 +55,7 @@ async function createTranslationLoader() {
                 // Types don't overlap here so we need to use any.
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const { locale, translations } = parser.parse(path, content, analysis.hint);
-                const integrity = 'sha256-' + (0, crypto_1.createHash)('sha256').update(content).digest('base64');
+                const integrity = 'sha256-' + (0, node_crypto_1.createHash)('sha256').update(content).digest('base64');
                 return { format, locale, translations, diagnostics, integrity };
             }
             else {

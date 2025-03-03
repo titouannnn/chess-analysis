@@ -32,7 +32,7 @@ class IndexHtmlGenerator {
         this.plugins = [augmentIndexHtmlPlugin(this), ...extraCommonPlugins, postTransformPlugin(this)];
         // CSR plugins
         if (options?.optimization?.styles?.inlineCritical) {
-            this.csrPlugins.push(inlineCriticalCssPlugin(this));
+            this.csrPlugins.push(inlineCriticalCssPlugin(this, !!options.autoCsp));
         }
         this.csrPlugins.push(addNoncePlugin());
         // SSR plugins
@@ -127,11 +127,12 @@ function inlineFontsPlugin({ options }) {
     });
     return async (html) => inlineFontsProcessor.process(html);
 }
-function inlineCriticalCssPlugin(generator) {
+function inlineCriticalCssPlugin(generator, autoCsp) {
     const inlineCriticalCssProcessor = new inline_critical_css_1.InlineCriticalCssProcessor({
         minify: generator.options.optimization?.styles.minify,
         deployUrl: generator.options.deployUrl,
         readAsset: (filePath) => generator.readAsset(filePath),
+        autoCsp,
     });
     return async (html, options) => inlineCriticalCssProcessor.process(html, { outputPath: options.outputPath });
 }

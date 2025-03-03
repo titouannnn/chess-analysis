@@ -73,7 +73,7 @@ async function normalizeOptions(context, projectName, options) {
         }
     }
     // Initial options to keep
-    const { host, port, poll, open, verbose, watch, liveReload, hmr, headers, proxyConfig, servePath, ssl, sslCert, sslKey, prebundle, } = options;
+    const { host, port, poll, open, verbose, watch, liveReload, hmr, headers, proxyConfig, servePath, ssl, sslCert, sslKey, prebundle, allowedHosts, } = options;
     // Return all the normalized options
     return {
         buildTarget,
@@ -97,5 +97,6 @@ async function normalizeOptions(context, projectName, options) {
         // Prebundling defaults to true but requires caching to function
         prebundle: cacheOptions.enabled && !optimization.scripts && prebundle,
         inspect,
+        allowedHosts: allowedHosts ? allowedHosts : [],
     };
 }

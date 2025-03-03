@@ -17,7 +17,6 @@ const node_assert_1 = __importDefault(require("node:assert"));
 const node_crypto_1 = require("node:crypto");
 const node_path_1 = require("node:path");
 const node_url_1 = require("node:url");
-const url_1 = require("url");
 const javascript_transformer_1 = require("../../../tools/esbuild/javascript-transformer");
 /**
  * @note For some unknown reason, setting `globalThis.ngServerMode = true` does not work when using ESM loader hooks.
@@ -110,7 +109,7 @@ async function load(url, context, nextLoad) {
     // Only module files potentially require transformation. Angular libraries that would
     // need linking are ESM only.
     if (format === 'module' && isFileProtocol(url)) {
-        const filePath = (0, url_1.fileURLToPath)(url);
+        const filePath = (0, node_url_1.fileURLToPath)(url);
         let source = await javascriptTransformer.transformFile(filePath);
         if (filePath.includes('@angular/')) {
             // Prepend 'var ngServerMode=true;' to the source.

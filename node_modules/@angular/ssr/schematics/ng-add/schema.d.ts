@@ -4,7 +4,7 @@
  * improved SEO. This schematic modifies your project to enable SSR, sets up the necessary
  * configurations, and installs the required dependencies.
  */
-export interface Schema {
+export type Schema = {
     /**
      * The name of the project you want to enable SSR for. If not specified, the CLI will
      * determine the project from the current directory.
@@ -20,4 +20,4 @@ export interface Schema {
      * dependencies later.
      */
     skipInstall?: boolean;
-}
+};

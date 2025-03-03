@@ -1,0 +1,555 @@
+/*border:
+    ENTIRE REVIEW PANEL
+*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#review-panel {
+    display: grid;
+    grid-template-columns: 100%;
+    background-color: var(--secondary-color);
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1% 0px 0px 0px;
+    height: 90vh;
+    width: 450px;
+    margin-left: 30px;
+}
+
+@media (min-width: 1264px) {
+    #review-panel {
+        grid-template-rows: 88% 12%;
+    }
+}
+
+@media (max-width: 1264px) and (min-width: 1000px) {
+    #review-panel {
+        grid-template-rows: 88% 12%;
+    }
+}
+
+@media (max-width: 999px) {
+    #review-panel {
+        grid-template-rows: 82% 18%;
+    }
+}
+
+@media (max-height: 860px) {
+    #review-panel {
+        grid-template-rows: 82% 18%;
+    }
+}
+
+/*
+    REVIEW PANEL NON-TOOLBAR SECTION
+*/
+#review-panel-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background-color: var(--secondary-color);
+}
+
+#review-panel-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    height: calc(100% - 69px);
+}
+
+/*
+    REVIEW PANEL HEADING
+*/
+#review-panel-title {
+    margin: 0px !important;
+    text-align: center;
+    user-select: none;
+    width: 90%;
+    border-radius: 10px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #4caf50;
+}
+
+.usernameVerifyBtn {
+    font-size: 20px;
+    background-color: var(--secondary-color);
+    border: none;
+    cursor: pointer;
+}
+
+.usernameVerifyBtn {
+    background-color: var(--primary-color);
+    border-radius: 10px;
+}
+
+#fetch-account-games-button {
+    display: none;
+    transform: translateY(-2px);
+    position: absolute;
+    top: 8px;
+    right: 27%;
+    margin-top: 4px;
+    height: 40px;
+    width: 10%;
+}
+
+@media (max-width: 1264px) {
+    #review-panel-title {
+        font-size: 27px;
+    }
+}
+
+/*
+    GAME LOAD TYPE DROPDOWN
+*/
+#load-type-dropdown-container {
+    position: absolute;
+    top: 60px;
+    right: 0px;
+    width: 20%;
+    height: 50px;
+    z-index: 5;
+    margin-right: 5%;
+}
+
+@media (max-width: 1264px) and (min-width: 1031px) {
+    #load-type-dropdown-container {
+        position: absolute;
+        top: 55px;
+        right: 0px;
+        width: 20%;
+        height: 50px;
+        z-index: 5;
+        margin-right: 5%;
+    }
+}
+
+#load-type-dropdown {
+    border-radius: 10px;
+    background-color: var(--border-color);
+    color: white;
+    font-weight: 100;
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    margin-top: -3px;
+    border-left: 5px solid var(--secondary-color);
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    font-size: 16px;
+}
+
+.gameInputContainer,
+.gameInputContainer2 {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    height: 49.5px;
+}
+
+#gameInputContainer2 {
+    display: none;
+    width: 100%;
+}
+
+/*
+    PGN INPUT TEXTAREA
+*/
+
+#pgn {
+    width: 80% !important;
+    margin-left: 5%;
+    height: 100%;
+    border: none;
+    font-size: 16px;
+    outline: none;
+    padding: 15px;
+    margin-top: 5px;
+    resize: none;
+    border-radius: 10px;
+    background-color: var(--border-color);
+}
+
+/*
+    CHESS.COM / LICHES USERNAME INPUT TEXTAREA
+*/
+#gameInputContainer2 {
+    position: relative;
+}
+
+#chess-site-username {
+    font-size: 16px;
+    width: 80%;
+    height: 100%;
+    padding: 15px;
+    outline: none;
+    margin-left: 5%;
+    border: none;
+    border-radius: 10px;
+    margin-top: 5px;
+    background-color: var(--border-color);
+    resize: none;
+    overflow: hidden;
+}
+
+.knight {
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/*
+    ANALYSE GREEN BUTTON
+*/
+#review-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 10px 50px;
+    border-radius: 10px;
+    font-size: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    text-shadow: 0px 1px 2px var(--border-color);
+    width: 90%;
+    border: 2px solid #4caf50;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    box-shadow: 0px 5px 0px rgb(76, 175, 80, 0.6);
+}
+
+.review-button-disabled {
+    border: 2px solid gray !important;
+    box-shadow: 0px 5px 0px rgb(128, 128, 128, 0.6) !important;
+}
+
+#review-button:active {
+    box-shadow: 0px 0px 0px;
+    transform: translateY(5px);
+}
+
+.big-depth-container {
+    width: 90%;
+    padding: 10px;
+    color: white;
+    display: flex;
+    bottom: 0px;
+    border-radius: 10px;
+    position: relative;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    background-color: var(--primary-color);
+}
+
+/*
+    SEARCH DEPTH SLIDER
+*/
+.toggle {
+    --width: 40px;
+    --height: 20px;
+    --border-radius: 5px;
+
+    display: inline-block;
+    cursor: pointer;
+}
+
+#suggestion-arrows-setting {
+    display: none;
+}
+
+.toggle__fill {
+    position: relative;
+    width: var(--width);
+    height: var(--height);
+    border-radius: var(--border-radius);
+    background: var(--secondary-color);
+    transition: background 0.2s;
+}
+
+#suggestion-arrows-setting:checked ~ .toggle__fill {
+    background: #4caf50;
+}
+
+.toggle__fill::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: var(--height);
+    width: calc(var(--width) / 2);
+    background: #ffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    border-radius: var(--border-radius);
+    transition: transform 0.2s;
+}
+
+#suggestion-arrows-setting:checked ~ .toggle__fill::after {
+    transform: translateX(var(--height));
+}
+
+#depth-slider-container {
+    display: flex;
+    margin-top: 7px;
+    justify-content: flex-start;
+    width: 100%;
+    background-color: var(--primary-color);
+    position: relative;
+}
+
+.depthTitle {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.depthTitle p {
+    margin-left: 4px;
+}
+
+.badboystiff {
+    display: flex;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+#depth-slider {
+    width: 80%;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    height: 20px;
+    border-radius: 5px;
+    background: linear-gradient(
+        to right,
+        #4caf50 0%,
+        #4caf50 35%,
+        var(--secondary-color) 30%,
+        var(--secondary-color) 100%
+    );
+}
+
+#depth-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    /* Standardized property for modern browsers */
+    background: rgb(255, 255, 255);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.6);
+}
+
+#depth-slider::-webkit-slider-thumb::before {
+    /* Optional: You can add a pseudo-element for extra customization */
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    background: none;
+    border-radius: 50%;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Firefox specific styling */
+#depth-slider::-moz-range-thumb {
+    background: rgb(255, 255, 255);
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+}
+
+#depth-slider::-moz-range-thumb::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    background: none;
+    border-radius: 50%;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* IE specific styling */
+#depth-slider::-ms-thumb {
+    background: rgb(255, 255, 255);
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1);
+}
+
+#depth-slider::-ms-thumb::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    background: none;
+    border-radius: 50%;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#depth-counter {
+    width: 20%;
+    background-color: var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*
+    ANALYSIS PROGRESS BAR
+*/
+#evaluation-progress-bar {
+    display: none !important;
+    appearance: none;
+    margin-top: 10px;
+    height: 20px;
+    width: 90%;
+}
+
+.fa-circle-info {
+    margin-right: 5px;
+}
+
+#evaluation-progress-bar::-webkit-progress-bar {
+    border-radius: 5px;
+    background-color: var(--primary-color);
+}
+
+#evaluation-progress-bar::-webkit-progress-value {
+    border-radius: 5px;
+    background-color: #4caf50;
+}
+
+/*
+    ANALYSIS STATUS MESSAGE (INFO/ERROR)
+*/
+#status-message {
+    display: none;
+    text-align: center;
+    background-color: var(--primary-color);
+    color: white !important;
+    border-radius: 10px;
+    width: 90%;
+    margin-top: 10px;
+}
+
+/*
+    RECAPTCHA COMPONENT
+*/
+.g-recaptcha {
+    display: none;
+    margin-top: 0px;
+    transform: scale(0.9);
+    transition-duration: 0.3s;
+}
+
+/*
+    ANALYSIS SECONDARY MESSAGE
+*/
+#secondary-message {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 5px;
+    padding: 0px 5px 0px 5px;
+}
+
+/*
+    REVIEW PANEL BOTTOM TOOLBAR
+*/
+#review-panel-toolbar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+    --dot-bg: var(--secondary-color);
+    --dot-color: var(--primary-color);
+    --dot-size: 2px;
+    --dot-space: 10px;
+    background: linear-gradient(
+                90deg,
+                var(--dot-bg) calc(var(--dot-space) - var(--dot-size)),
+                transparent 1%
+            )
+            center / var(--dot-space) var(--dot-space),
+        linear-gradient(
+                var(--dot-bg) calc(var(--dot-space) - var(--dot-size)),
+                transparent 1%
+            )
+            center / var(--dot-space) var(--dot-space),
+        var(--dot-color);
+    border-radius: 10px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+#review-panel-toolbar {
+    grid-row: 2 / 3;
+
+    border-top: 2px solid var(--border-color);
+}
+
+#review-panel-toolbar-buttons {
+    margin: 0px 0px 0px 0px;
+    flex-wrap: wrap;
+    gap: 0px;
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+    background-color: var(--primary-color);
+    border-radius: 10px;
+}
+
+#review-panel-toolbar-buttons i {
+    border-radius: 5px;
+    font-size: 25px;
+    padding: 10px 5% 10px 5%;
+    cursor: pointer;
+}
+
+#review-panel-toolbar-buttons i:hover {
+    color: #4caf50 !important;
+}
+
+.privacyPolicyThingy {
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.privacyPolicyThingy a:hover {
+    color: #4caf50;
+}

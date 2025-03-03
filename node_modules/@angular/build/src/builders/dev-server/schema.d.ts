@@ -1,7 +1,13 @@
 /**
  * Dev Server target options for Build Facade.
  */
-export interface Schema {
+export type Schema = {
+    /**
+     * The hosts that the development server will respond to. This option sets the Vite option
+     * of the same name. For further details:
+     * https://vite.dev/config/server-options.html#server-allowedhosts
+     */
+    allowedHosts?: AllowedHosts;
     /**
      * A build builder target to serve in the format of `project:target[:configuration]`. You
      * can also pass in more than one configuration name as a comma-separated list. Example:
@@ -78,7 +84,13 @@ export interface Schema {
      * Rebuild on change.
      */
     watch?: boolean;
-}
+};
+/**
+ * The hosts that the development server will respond to. This option sets the Vite option
+ * of the same name. For further details:
+ * https://vite.dev/config/server-options.html#server-allowedhosts
+ */
+export type AllowedHosts = string[] | boolean;
 /**
  * Activate debugging inspector. This option only has an effect when 'SSR' or 'SSG' are
  * enabled.
@@ -89,10 +101,10 @@ export type Inspect = boolean | string;
  * enable prebundling, the Angular CLI cache must also be enabled.
  */
 export type PrebundleUnion = boolean | PrebundleClass;
-export interface PrebundleClass {
+export type PrebundleClass = {
     /**
      * List of package imports that should not be prebundled by the development server. The
      * packages will be bundled into the application code itself.
      */
     exclude: string[];
-}
+};

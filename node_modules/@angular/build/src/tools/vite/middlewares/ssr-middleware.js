@@ -22,6 +22,10 @@ function createAngularSsrInternalMiddleware(server, indexHtmlTransformer) {
             // which must be processed by the runtime linker, even if they are not used.
             await (0, load_esm_1.loadEsmModule)('@angular/compiler');
             const { writeResponseToNodeResponse, createWebRequestFromNodeRequest } = await (0, load_esm_1.loadEsmModule)('@angular/ssr/node');
+            // The following is necessary because accessing the module after invalidation may result in an empty module,
+            // which can trigger a `TypeError: ɵgetOrCreateAngularServerApp is not a function` error.
+            // TODO: look into why.
+            await server.ssrLoadModule('/main.server.mjs');
             const { ɵgetOrCreateAngularServerApp } = (await server.ssrLoadModule('/main.server.mjs'));
             const angularServerApp = ɵgetOrCreateAngularServerApp({
                 allowStaticRouteRender: true,

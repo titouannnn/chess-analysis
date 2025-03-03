@@ -6,9 +6,8 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 import { Builder } from '@angular-devkit/architect';
-import { json } from '@angular-devkit/core';
 import { execute } from './builder';
 import type { Schema as ExtractI18nBuilderOptions } from './schema';
 export { ExtractI18nBuilderOptions, execute };
-declare const builder: Builder<ExtractI18nBuilderOptions & json.JsonObject>;
+declare const builder: Builder<ExtractI18nBuilderOptions>;
 export default builder;

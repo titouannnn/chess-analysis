@@ -6,7 +6,6 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 import { Builder, BuilderContext, BuilderOutput } from '@angular-devkit/architect';
-import { json } from '@angular-devkit/core';
 import { ApplicationBuilderExtensions, ApplicationBuilderInternalOptions } from './options';
 import { Result } from './results';
 import { Schema as ApplicationBuilderOptions } from './schema';
@@ -29,5 +28,5 @@ export declare function buildApplicationInternal(options: ApplicationBuilderInte
  * @returns The build output results of the build.
  */
 export declare function buildApplication(options: ApplicationBuilderOptions, context: BuilderContext, extensions?: ApplicationBuilderExtensions): AsyncIterable<BuilderOutput>;
-declare const builder: Builder<ApplicationBuilderOptions & json.JsonObject>;
+declare const builder: Builder<ApplicationBuilderOptions>;
 export default builder;

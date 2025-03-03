@@ -20,7 +20,8 @@ function angularHtmlFallbackMiddleware(req, _res, next) {
     }
     if (req.url) {
         const mimeType = (0, utils_1.lookupMimeTypeFromRequest)(req.url);
-        if (mimeType === 'text/html' || mimeType === 'application/xhtml+xml') {
+        if ((mimeType === 'text/html' || mimeType === 'application/xhtml+xml') &&
+            !/^\/index\.(?:csr\.)?html/.test(req.url)) {
             // eslint-disable-next-line no-console
             console.warn(`Request for HTML file "${req.url}" was received but no asset found. Asset may be missing from build.`);
         }

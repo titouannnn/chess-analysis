@@ -11,6 +11,7 @@ exports.SERVER_APP_ENGINE_MANIFEST_FILENAME = exports.SERVER_APP_MANIFEST_FILENA
 exports.generateAngularServerAppEngineManifest = generateAngularServerAppEngineManifest;
 exports.generateAngularServerAppManifest = generateAngularServerAppManifest;
 const node_path_1 = require("node:path");
+const node_vm_1 = require("node:vm");
 const bundler_context_1 = require("../../tools/esbuild/bundler-context");
 const utils_1 = require("../../tools/esbuild/utils");
 const environment_options_1 = require("../environment-options");
@@ -115,9 +116,13 @@ function generateAngularServerAppManifest(additionalHtmlOutputFiles, outputFiles
         const extension = (0, node_path_1.extname)(file.path);
         if (extension === '.html' || (inlineCriticalCss && extension === '.css')) {
             const jsChunkFilePath = `assets-chunks/${file.path.replace(/[./]/g, '_')}.mjs`;
-            serverAssetsChunks.push((0, utils_1.createOutputFile)(jsChunkFilePath, `export default \`${escapeUnsafeChars(file.text)}\`;`, bundler_context_1.BuildOutputFileType.ServerApplication));
+            const escapedContent = escapeUnsafeChars(file.text);
+            serverAssetsChunks.push((0, utils_1.createOutputFile)(jsChunkFilePath, `export default \`${escapedContent}\`;`, bundler_context_1.BuildOutputFileType.ServerApplication));
+            // This is needed because JavaScript engines script parser convert `\r\n` to `\n` in template literals,
+            // which can result in an incorrect byte length.
+            const size = (0, node_vm_1.runInThisContext)(`new TextEncoder().encode(\`${escapedContent}\`).byteLength`);
             serverAssets[file.path] =
-                `{size: ${file.size}, hash: '${file.hash}', text: () => import('./${jsChunkFilePath}').then(m => m.default)}`;
+                `{size: ${size}, hash: '${file.hash}', text: () => import('./${jsChunkFilePath}').then(m => m.default)}`;
         }
     }
     // When routes have been extracted, mappings are no longer needed, as preloads will be included in the metadata.

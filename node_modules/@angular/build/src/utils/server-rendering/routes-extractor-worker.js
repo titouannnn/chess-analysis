@@ -7,7 +7,7 @@
  * found in the LICENSE file at https://angular.dev/license
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const worker_threads_1 = require("worker_threads");
+const node_worker_threads_1 = require("node:worker_threads");
 const schema_1 = require("../../builders/application/schema");
 const fetch_patch_1 = require("./fetch-patch");
 const launch_server_1 = require("./launch-server");
@@ -15,7 +15,7 @@ const load_esm_from_memory_1 = require("./load-esm-from-memory");
 /**
  * This is passed as workerData when setting up the worker via the `piscina` package.
  */
-const { outputMode, hasSsrEntry } = worker_threads_1.workerData;
+const { outputMode, hasSsrEntry } = node_worker_threads_1.workerData;
 /** Renders an application based on a provided options. */
 async function extractRoutes() {
     const serverURL = outputMode !== undefined && hasSsrEntry ? await (0, launch_server_1.launchServer)() : launch_server_1.DEFAULT_URL;

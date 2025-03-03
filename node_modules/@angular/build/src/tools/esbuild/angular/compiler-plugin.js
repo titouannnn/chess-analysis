@@ -402,7 +402,7 @@ function createCompilerPlugin(pluginOptions, compilationOrFactory, stylesheetBun
                     const replacement = pluginOptions.fileReplacements?.[path.normalize(args.path)];
                     if (replacement) {
                         return {
-                            contents: await Promise.resolve().then(() => __importStar(require('fs/promises'))).then(({ readFile }) => readFile(path.normalize(replacement))),
+                            contents: await Promise.resolve().then(() => __importStar(require('node:fs/promises'))).then(({ readFile }) => readFile(path.normalize(replacement))),
                             loader: 'json',
                             watchFiles: [replacement],
                         };

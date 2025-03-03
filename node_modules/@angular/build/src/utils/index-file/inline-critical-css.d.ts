@@ -12,6 +12,7 @@ export interface InlineCriticalCssProcessorOptions {
     minify?: boolean;
     deployUrl?: string;
     readAsset?: (path: string) => Promise<string>;
+    autoCsp?: boolean;
 }
 export declare class InlineCriticalCssProcessor {
     protected readonly options: InlineCriticalCssProcessorOptions;

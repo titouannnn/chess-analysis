@@ -112,7 +112,7 @@ async function autoCsp(html, unsafeEval = false) {
         rewriter.emitRaw(`<script>${loaderScript}</script>`);
         scriptContent = [];
     }
-    rewriter.on('startTag', (tag, html) => {
+    rewriter.on('startTag', (tag) => {
         if (tag.tagName === 'script') {
             openedScriptTag = tag;
             const src = getScriptAttributeValue(tag, 'src');

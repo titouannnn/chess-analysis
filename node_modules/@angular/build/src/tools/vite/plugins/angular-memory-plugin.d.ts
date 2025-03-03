@@ -12,7 +12,7 @@ interface AngularMemoryPluginOptions {
     outputFiles: AngularMemoryOutputFiles;
     templateUpdates?: ReadonlyMap<string, string>;
     external?: string[];
-    skipViteClient?: boolean;
+    disableViteTransport?: boolean;
 }
 export declare function createAngularMemoryPlugin(options: AngularMemoryPluginOptions): Promise<Plugin>;
 export {};

@@ -35,6 +35,9 @@ const manifest_1 = require("../../utils/server-rendering/manifest");
 const stats_table_1 = require("../../utils/stats-table");
 const bundler_context_1 = require("./bundler-context");
 function logBuildStats(metafile, outputFiles, initial, budgetFailures, colors, changedFiles, estimatedTransferSizes, ssrOutputEnabled, verbose) {
+    // Remove the i18n subpath in case the build is using i18n.
+    // en-US/main.js -> main.js
+    const normalizedChangedFiles = new Set([...(changedFiles ?? [])].map((f) => (0, node_path_1.basename)(f)));
     const browserStats = [];
     const serverStats = [];
     let unchangedCount = 0;
@@ -45,7 +48,7 @@ function logBuildStats(metafile, outputFiles, initial, budgetFailures, colors, c
             continue;
         }
         // Show only changed files if a changed list is provided
-        if (changedFiles && !changedFiles.has(file)) {
+        if (normalizedChangedFiles.size && !normalizedChangedFiles.has(file)) {
             ++unchangedCount;
             continue;
         }
