@@ -9,14 +9,13 @@ import { LocalAnalysis } from '../analyse/localAnalysis.service';
 // import test from 'node:test';
 
 @Component({
-  selector: 'app-root',
-  template: '<div>{{ message }}</div>',
+  selector: 'unique-app-root',
+  standalone: true, // Ajoutez cette ligne
   imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  templateUrl: './app.component.html', // Gardez seulement templateUrl, supprimez template
+  styleUrl: './app.component.css',
+  host: { 'id': 'main-app-component' } // Ajoutez un identifiant unique
 })
-
-
 export class AppComponent implements OnInit {
   message: string = ''; // Variable pour afficher le résultat
 
@@ -29,28 +28,16 @@ export class AppComponent implements OnInit {
     //this.lichessTests();
     //this.chess_comTests();
     //this.testPuzzle();
-    //this.analysisApiTests();
     this.localAnalysisTests();
   }
 
-
-  
-  async analysisApiTests(): Promise<void> {
-
-    console.log("======== Analysis API =========");
-
-
-    console.log("======== Tests fen diviser =========");
-    this.AnalysisApi.gameAnalysis(this.pgnEx);
-    
-  }
 
   async localAnalysisTests(): Promise<void> {
     
     console.log("======== Local Analysis =========");
 
     console.log("======== Tests Stockfish =========");
-    this.LocalAnalysis.testStockfishAnalysis();
+    this.LocalAnalysis.analyzeGame(this.pgnEx, 18);
     
   }
 

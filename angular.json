@@ -34,11 +34,7 @@
             "scripts": [
               "/src/assets/analysis/stockfish.js"
             ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "ssr": false
           },
           "configurations": {
             "production": {
@@ -66,15 +62,13 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": {
-              "buildTarget": "WEB:build:production"
-            },
-            "development": {
-              "buildTarget": "WEB:build:development"
+          "options": {
+            "buildTarget": "WEB:build:development",
+            "headers": {
+              "Cross-Origin-Opener-Policy": "same-origin",
+              "Cross-Origin-Embedder-Policy": "require-corp"
             }
-          },
-          "defaultConfiguration": "development"
+          }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n"
@@ -90,11 +84,10 @@
             "assets": [
               {
                 "glob": "**/*",
-                "input": "public"
-              }
-            ],
-            "styles": [
-              "src/styles.css"
+                "input": "src/assets",
+                "output": "assets"
+              },
+              "src/favicon.ico"
             ],
             "scripts": []
           }
