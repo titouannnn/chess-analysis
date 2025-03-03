@@ -19,8 +19,9 @@
     </div>
   
     <div class="search-bar">
-      <input type="text" placeholder="Entrez votre pseudo" class="search-input" />
-      <button class="search-btn">🔍</button>
+      <input type="text" [(ngModel)]="pseudo" placeholder="Entrez votre pseudo" class="search-input" (keyup.enter)="searchStats()"/>
+
+      <button class="search-btn"(click)="searchStats()">🔍</button>
     </div>
 </div>
   

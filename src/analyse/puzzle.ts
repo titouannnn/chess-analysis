@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as localData from '../../assets/lichess_db_puzzle_reduit.json';
+import * as localData from '../assets/lichess_db_puzzle_reduit.json';
 
 @Injectable({
   providedIn: 'root'

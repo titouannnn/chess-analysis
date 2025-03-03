@@ -1,9 +1,11 @@
-import { afterNextRender, Component, ElementRef, Injectable, ViewChild } from '@angular/core';
+import { afterNextRender,OnInit, Component, ElementRef, Injectable, ViewChild } from '@angular/core';
 import { Api, Constantes } from '../../api/api.service';
 import * as Plot from "@observablehq/plot";
 import { time } from 'console';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
+import { ActivatedRoute , Params } from '@angular/router'; 
+
 
 @Component({
   selector: 'app-stats-elo:not(p)',
@@ -12,20 +14,27 @@ import { ChesscomApi } from '../../api/chesscomapi.service';
   styleUrl: './stats-elo.component.css'
 })
 @Injectable({  providedIn: 'root'})
-export class StatsEloComponent {  
+export class StatsEloComponent implements OnInit {  
   @ViewChild('eloStats') eloStats !: ElementRef
-
+  pseudo: string = ''; // Récupération du pseudo de la route
   // Variable utilisé pour le HTML
   typeJeu = Constantes.TypeJeuChessCom;
 
   private api: Api;
-  constructor(chessApi : ChesscomApi, lichessApi : LitchessApi ){ 
+  constructor(private route: ActivatedRoute,chessApi : ChesscomApi, lichessApi : LitchessApi ){ 
     this.api = chessApi;
     afterNextRender(()=>{
       this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
     })
   }
 
+  ngOnInit(): void {
+    // Récupérer le pseudo depuis les paramètres de la route
+    this.route.queryParams.subscribe((params: Params) => {
+      this.pseudo = params['pseudo'];
+    });
+    this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+  }
   /**
    * 
    * Méthode à utiliser uniquement avec afterNextRender, ou afterRender

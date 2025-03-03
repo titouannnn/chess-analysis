@@ -9,10 +9,9 @@ import { Api, Constantes } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { AnalysisApi } from '../api/analysisApi.service';
 
-
 @Component({
   selector: 'app-root:not(p)',
-  imports: [StatsEloComponent , HomeComponent],
+  imports: [HomeComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
