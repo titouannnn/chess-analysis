@@ -1,3 +1,4 @@
+//// filepath: /info/etu/l3info/s2202364/Documents/web/src/api/analysisApi.service.ts
 import { Injectable } from '@angular/core';
 import { Chess } from 'chess.js';
 
@@ -12,29 +13,33 @@ export class AnalysisApi {
 
     async postChessApi(data: object): Promise<any> {
         const startTime = performance.now();
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            const endTime = performance.now();
+            console.log(`API response time: ${endTime - startTime} ms`);
 
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        const endTime = performance.now();
-        console.log(`API response time: ${endTime - startTime} ms`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok) {
+                console.error(`HTTP error! status: ${response.status}`);
+                return undefined;
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('Fetch error:', error);
+            return undefined;
         }
-
-        return response.json();
     }
 
     async requestConstructor(Userfen: string): Promise<any> {
         const data = {
             fen: Userfen,
-            depth: 18
+            depth: 12
         };
 
         try {

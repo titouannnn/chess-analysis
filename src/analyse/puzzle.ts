@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
+
 import { Chess, Square } from "chess.js";
 import * as puzzlesData from '../../assets/lichess_db_puzzle_reduit.json';
 import * as gamesData from '../../assets/games_small.json';
+
 
 @Injectable({
   providedIn: 'root'
