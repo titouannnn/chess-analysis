@@ -29,7 +29,10 @@
               "src/favicon.ico"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "node_modules/chessground/assets/chessground.base.css",
+              "node_modules/chessground/assets/chessground.brown.css",
+              "node_modules/chessground/assets/chessground.cburnett.css"
             ],
             "scripts": [
               "/src/assets/analysis/stockfish.js"
