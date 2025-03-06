@@ -127,15 +127,25 @@ export class AppComponent implements OnInit {
   async testPuzzle() {
     console.log("======== Puzzles Recommended =========");
     this.PuzzleScraper.collectPuzzlesByOpening("Italian-Game-Rousseau-Gambit");
-    console.log("URL des puzzles conseillés : ");
-    console.log(this.PuzzleScraper.puzzlesUrl[0]);
+    //this.PuzzleScraper.collectPuzzleByFen("r3kb1r/ppq2ppp/4pn2/2Ppn3/1P4bP/2P2N2/P3BPP1/RNBQ1RK1 b kq - 2 10")
+    this.PuzzleScraper.sortPuzzlesByRating(500);
+    console.log("Puzzles conseillés par openings : ");
+    console.log(this.PuzzleScraper.puzzlesRecommendedByOpening);
+    console.log("Themes d'un PGN : ");
+    console.log(this.PuzzleScraper.detectThemesFromPGN(`
+        [Event \"Live Chess\"]\n[Site \"Chess.com\"]\n[Date \"2021.02.06\"]\n[Round \"-\"]\n[White \"titouannnnnn\"]\n[Black \"g8614\"]\n[Result \"0-1\"]\n[CurrentPosition \"6k1/4ppbp/1p4p1/6P1/5P2/2rq3P/1r6/3KR3 w - -\"]\n[Timezone \"UTC\"]\n[ECO \"B07\"]\n[ECOUrl \"https://www.chess.com/openings/Pirc-Defense-Lions-Jaw-Variation-3...g6\"]\n[UTCDate \"2021.02.06\"]\n[UTCTime \"13:41:56\"]\n[WhiteElo \"519\"]\n[BlackElo \"576\"]\n[TimeControl \"600\"]\n[Termination \"g8614 won by checkmate\"]\n[StartTime \"13:41:56\"]\n[EndDate \"2021.02.06\"]\n[EndTime \"13:53:22\"]\n[Link \"https://www.chess.com/game/live/6469243047\"]\n\n1. e4 {[%clk 0:09:57.1]} 1... Nf6 {[%clk 0:09:57.5]} 2. f3 {[%clk 0:09:44.7]} 2... g6 {[%clk 0:09:47.4]} 3. d4 {[%clk 0:09:42.5]} 3... d6 {[%clk 0:09:42.6]} 4. Ne2 {[%clk 0:09:36.9]} 4... Bg7 {[%clk 0:09:40]} 5. Nec3 {[%clk 0:09:34.3]} 5... Nbd7 {[%clk 0:09:32.9]} 6. Be2 {[%clk 0:09:28.1]} 6... b6 {[%clk 0:09:20.7]} 7. O-O {[%clk 0:09:25.7]} 7... Bb7 {[%clk 0:09:13.7]} 8. b4 {[%clk 0:09:24.1]} 8... O-O {[%clk 0:09:10.8]} 9. h3 {[%clk 0:09:20.5]} 9... a5 {[%clk 0:09:00.1]} 10. a3 {[%clk 0:09:16.1]} 10... axb4 {[%clk 0:08:53]} 11. axb4 {[%clk 0:09:09.1]} 11... Rxa1 {[%clk 0:08:47.8]} 12. Ba3 {[%clk 0:08:55.3]} 12... c6 {[%clk 0:08:16.7]} 13. Bb2 {[%clk 0:08:38.5]} 13... Ra7 {[%clk 0:07:51.2]} 14. b5 {[%clk 0:08:27.9]} 14... cxb5 {[%clk 0:07:44.9]} 15. Nxb5 {[%clk 0:08:26]} 15... Ra4 {[%clk 0:07:27.5]} 16. N1c3 {[%clk 0:08:16]} 16... Ra5 {[%clk 0:06:59.3]} 17. g4 {[%clk 0:08:04.4]} 17... Bc6 {[%clk 0:06:47.9]} 18. e5 {[%clk 0:07:54.2]} 18... dxe5 {[%clk 0:06:32.6]} 19. dxe5 {[%clk 0:07:51.8]} 19... Bxb5 {[%clk 0:06:19]} 20. Nxb5 {[%clk 0:07:48.4]} 20... Ra2 {[%clk 0:06:01.8]} 21. Qc1 {[%clk 0:07:41.1]} 21... Nxe5 {[%clk 0:05:52.9]} 22. Rd1 {[%clk 0:07:37.1]} 22... Qa8 {[%clk 0:05:36.6]} 23. f4 {[%clk 0:07:19.6]} 23... Nc6 {[%clk 0:05:01.9]} 24. g5 {[%clk 0:07:09.3]} 24... Ne4 {[%clk 0:04:50.7]} 25. Bd3 {[%clk 0:06:58.3]} 25... Ng3 {[%clk 0:04:35.2]} 26. Re1 {[%clk 0:06:49.4]} 26... Rd8 {[%clk 0:04:23.1]} 27. Be2 {[%clk 0:06:35.3]} 27... Nd4 {[%clk 0:04:01.7]} 28. c3 {[%clk 0:06:30.3]} 28... Ndxe2+ {[%clk 0:03:57.9]} 29. Kf2 {[%clk 0:06:20.7]} 29... Nxc1 {[%clk 0:03:48.7]} 30. Rxc1 {[%clk 0:06:11.6]} 30... Rxb2+ {[%clk 0:03:42.4]} 31. Kxg3 {[%clk 0:06:08.6]} 31... Rxb5 {[%clk 0:03:41]} 32. Rf1 {[%clk 0:06:00.6]} 32... Rd3+ {[%clk 0:03:37.6]} 33. Kf2 {[%clk 0:05:54.1]} 33... Rxc3 {[%clk 0:03:33.9]} 34. Ke2 {[%clk 0:05:51.1]} 34... Rb2+ {[%clk 0:03:30.1]} 35. Kd1 {[%clk 0:05:47.3]} 35... Qe4 {[%clk 0:03:19.6]} 36. Re1 {[%clk 0:05:41.4]} 36... Qd3# {[%clk 0:03:11.2]} 0-1\n
+
+      `));
     /*
     for(let url of this.PuzzleScraper.puzzlesUrl) {
       console.log(url);
     }
       */
       
-    console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesUrl.length);
+    console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesRecommendedByOpening.length);
+    await this.PuzzleScraper.detectMostFrequentThemes();
+    console.log("Themes les plus fréquents : ");
+    console.log(this.PuzzleScraper.losesPlayerData);
 
     /*
     console.log("Objet json du fichier trié : ");
