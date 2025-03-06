@@ -15,8 +15,10 @@ interface MoveAnalysis {
     formattedScore: string;
   };
   bestMove: string;
+  bestMoveForPlayer?: string; // Meilleur coup que le joueur aurait dû jouer
   depth: number;
   delta?: number; // Ajout de la propriété delta optionnelle
+  evaluationData?: [any, any, number, number]; // Données d'évaluation pour l'analyse des erreurs
 }
 
 interface PositionAnalysisRequest {
@@ -310,75 +312,131 @@ export class LocalAnalysis {
     }
 
 
+        
         /**
          * Calcule la différence de score entre chaque coup et le précédent
+         * pour identifier les erreurs et les classer par ordre d'importance.
+         * Compare le coup joué avec le meilleur coup possible pour le même joueur.
          */
         public ErrorAnalysis(moves: MoveAnalysis[]): MoveAnalysis[] {
-                if (!moves || moves.length <= 1) {
-                        return moves;
-                }
+            if (!moves || moves.length <= 1) {
+                return moves;
+            }
 
-                // Calculate deltas by comparing current move with the next move,
-                // with a lower weight if the player is already losing badly
-                for (let i = 0; i < moves.length - 1; i++) {
-                        const currentMove = moves[i];
-                        const nextMove = moves[i + 1];
+            // Créer une copie des mouvements pour préserver l'original
+            const analyzedMoves = [...moves];
+
+            // On commence à 1 car le coup 0 est la position initiale
+            for (let i = 1; i < analyzedMoves.length - 1; i++) {
+                const previousMove = analyzedMoves[i - 1];
+                const currentMove = analyzedMoves[i];
+                const nextMove = analyzedMoves[i + 1]; // Le coup suivant contient le meilleur coup pour le joueur actuel
+
+                // Conversion des évaluations en scores numériques pour comparaison
+                const previousScore = this.getNumericScore(previousMove.evaluation);
+                const currentScore = this.getNumericScore(currentMove.evaluation);
+                const rawDifference = currentScore - previousScore;
+
+                // Déterminer qui a joué le coup actuel
+                const isWhiteTurn = currentMove.playerColor === 'white';
+
+                let delta = 0;
+
+                // Si un score est extrême et l'autre proche de 0, delta = 0
+                if (
+                    (Math.abs(previousScore) >= 50 && Math.abs(currentScore) < 5) ||
+                    (Math.abs(currentScore) >= 50 && Math.abs(previousScore) < 5)
+                ) {
+                    delta = 0;
+                    console.log("Score extrême détecté, delta mis à 0");
+                } else {
+                    const weight = this.getDeltaWeight(previousScore, currentScore);
+                    const rawDiff = currentScore - previousScore;
+                    // Pour les blancs, une diminution du score est une erreur, pour les noirs c'est une augmentation
+                    const isError = (isWhiteTurn && rawDiff < 0) || (!isWhiteTurn && rawDiff > 0);
+
+                    // Attribuer le delta uniquement si c'est une erreur
+                    if (isError) {
+                        delta = weight; // On utilise ici le poids calculé
                         
-                        // Convert evaluation to numeric scores for comparison
-                        const currentScore = this.getNumericScore(currentMove.evaluation);
-                        const nextScore = this.getNumericScore(nextMove.evaluation);
-                        
-                        // Si un score est extrême et l'autre proche de 0, delta = 0
-                        if ((Math.abs(currentScore) >= 50 && Math.abs(nextScore) < 5) || 
-                                (Math.abs(nextScore) >= 50 && Math.abs(currentScore) < 5)) {
-                                moves[i].delta = 0;
-                                console.log("Score extrême détecté, delta mis à 0");
-                        } else {
-                                // Determine a weighting factor based on how badly the player is losing
-                                const weight = this.getDeltaWeight(currentScore);
-                                
-                                // Calculate weighted delta and add it to the current move
-                                moves[i].delta = weight * Math.abs(nextScore - currentScore);
-                        }
-                        
-                        console.log("currentScore : " + currentScore + " nextScore : " + nextScore +  " delta : " + moves[i].delta);
+                        // Attribution du meilleur coup que le joueur AURAIT DÛ jouer
+                        // C'est le bestMove de previousMove (position AVANT que le joueur ne joue)
+                        currentMove.bestMoveForPlayer = previousMove.bestMove;
+                    } else {
+                        delta = 0; // Ce n'est pas une erreur mais une amélioration
+                    }
                 }
                 
-                // The last move has no next move to compare with
-                moves[moves.length - 1].delta = 0;
+                // Attribution du delta calculé au coup actuel
+                currentMove.delta = delta;
+                
+                // Stocker les données d'évaluation pour l'interface
+                currentMove.evaluationData = [
+                    previousMove.evaluation,  // évaluation avant le coup
+                    currentMove.evaluation,   // évaluation après le coup
+                    rawDifference,            // différence brute
+                    delta                     // différence pondérée
+                ];
+                
+                console.log(`Coup: ${currentMove.moveNumber}${currentMove.playerColor === 'white' ? '.' : '...'} ${currentMove.movePlayed}, Score précédent: ${previousScore}, Score actuel: ${currentScore}, Delta: ${delta}`);
+                
+                // Si c'est une erreur, afficher le coup joué et le meilleur coup
+                if (delta > 0) {
+                    console.log(`Erreur! ${currentMove.playerColor === 'white' ? 'Blanc' : 'Noir'} a joué ${currentMove.movePlayed}, mais aurait dû jouer ${currentMove.bestMoveForPlayer || previousMove.bestMove}`);
+                }
+            }
 
-                return moves.sort((a, b) => (b.delta || 0) - (a.delta || 0));
+            // Le premier coup n'a pas de coup précédent à comparer
+            analyzedMoves[0].delta = 0;
+            analyzedMoves[0].evaluationData = [null, analyzedMoves[0].evaluation, 0, 0];
+
+            // Le dernier coup n'est pas évalué correctement car pas de coup suivant
+            analyzedMoves[analyzedMoves.length - 1].delta = 0;
+            analyzedMoves[analyzedMoves.length - 1].evaluationData = [
+                analyzedMoves[analyzedMoves.length - 2].evaluation,
+                analyzedMoves[analyzedMoves.length - 1].evaluation,
+                this.getNumericScore(analyzedMoves[analyzedMoves.length - 1].evaluation) -
+                this.getNumericScore(analyzedMoves[analyzedMoves.length - 2].evaluation),
+                0
+            ];
+
+            // Trier les coups par delta décroissant (les erreurs les plus importantes en premier)
+            return analyzedMoves.sort((a, b) => (b.delta || 0) - (a.delta || 0));
         }
-
+        
         // Helper method to convert any evaluation type to a numeric score
         private getNumericScore(evaluation: any): number {
-                if (!evaluation) return 0;
-                
-                if (evaluation.type === 'cp') {
-                        return evaluation.score || 0;
-                } else if (evaluation.type === 'mate') {
-                        // Convert mate scores to high/low values
-                        const mateScore = evaluation.score || 0;
-                        return mateScore > 0 ? 100 : mateScore < 0 ? -100 : 0;
-                }
-                
-                return 0;
+            if (!evaluation) return 0;
+        
+            if (evaluation.type === 'cp') {
+            return evaluation.score || 0;
+            } else if (evaluation.type === 'mate') {
+            // Convertir les scores de mat en valeurs élevées/faibles
+            const mateScore = evaluation.score || 0;
+            return mateScore > 0 ? 100 : mateScore < 0 ? -100 : 0;
+            }
+        
+            return 0;
         }
-
-        // Helper method to determine a weighting factor for delta calculation
-        // Uses a smooth curve where the weight decreases as position becomes worse
-        // Minimum weight is 0.3 for very bad positions
-        private getDeltaWeight(score: number): number {
-                // If position is equal or better, weight is 1
-                if (score >= 0) {
-                        return 1;
-                }
-                
-                // For negative scores, apply an exponential decay with minimum of 0.3
-                const MIN_WEIGHT = 0.3;
-                const DECAY_FACTOR = 0.15
-                
-                return MIN_WEIGHT + (1 - MIN_WEIGHT) * Math.exp(DECAY_FACTOR * score);
+        
+        private getDeltaWeight(previousScore: number, currentScore: number): number {
+            const alpha = 0.5;
+            const scoreDifference = Math.abs(previousScore - currentScore);
+            const avgAbsScore = (Math.abs(previousScore) + Math.abs(currentScore)) / 2;
+            
+            return scoreDifference / (1 + alpha * avgAbsScore);
+        }
+        
+        /**
+         * Calcule le delta pondéré selon la formule :
+         * Δ′(s1,s2)=|s1-s2| * (1 - tanh(β * max(|s1|,|s2|)))
+         * Ceci réduit l'importance des erreurs lorsque les scores sont extrêmes.
+         */
+        private calculateDeltaPrime(s1: number, s2: number): number {
+            const beta = 0.2;
+            const scoreDifference = Math.abs(s1 - s2);
+            const maxAbsScore = Math.max(Math.abs(s1), Math.abs(s2));
+            return scoreDifference * (1 - Math.tanh(beta * maxAbsScore));
         }
 
     // Nettoyage quand le service est détruit
