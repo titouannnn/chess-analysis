@@ -1,0 +1,544 @@
+/* Variables globales pour le thème échecs */
+:host {
+  --chess-light-brown: #f0e6d2; /* Fond principal marron clair */
+  --chess-medium-brown: #d9c396; /* Marron intermédiaire pour bordures */
+  --chess-dark-brown: #b58863; /* Marron foncé pour accents */
+  --chess-highlight: #cd9b4a; /* Couleur de surbrillance dorée */
+  --chess-highlight-bg: rgba(205, 155, 74, 0.2); /* Version semi-transparente */
+  --chess-text-dark: #5d4c3c; /* Texte foncé */
+  --chess-text-light: #8a7866; /* Texte plus clair */
+  --chess-variation-color: rgba(93, 76, 60, 0.08); /* Pour les variantes */
+  
+  /* Nouvelles variables pour différenciation */
+  --chess-white-move-bg: #ffffff; /* Fond pour les coups blancs */
+  --chess-black-move-bg: #f7f2e9; /* Fond légèrement teinté pour les coups noirs */
+  --chess-row-alt-bg: #f5eee1; /* Fond alterné pour les lignes */
+  --chess-container-bg: #e8decb; /* Fond du conteneur principal, plus foncé */
+  --chess-selected: #ffcc5c; /* Sélection plus visible */
+  --chess-move-text: #3a2e20; /* Texte des coups plus foncé pour contraste */
+  
+  --chess-border-radius: 6px;
+  --chess-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Base layout - Deux colonnes côte à côte avec dimensions fixes */
+.chess-main-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Colonne de l'échiquier - taille fixe */
+.chess-board-column {
+  flex: 0 0 700px;
+  width: 700px;
+  max-width: 700px;
+}
+
+/* Colonne des coups - largeur fixe */
+.moves-column {
+  flex: 0 0 350px;
+  width: 350px;
+  min-width: 350px;
+  max-width: 350px;
+}
+
+/* Conteneur de l'échiquier - dimension fixe */
+.chessboard-container {
+  width: 700px;
+  height: 700px;
+  margin-bottom: 15px;
+}
+
+/* Échiquier avec taille fixe */
+.chessboard {
+  width: 700px;
+  height: 700px;
+  position: relative;
+}
+
+/* Container des coups - thème échecs */
+.moves-container {
+  border: 1px solid var(--chess-medium-brown);
+  border-radius: var(--chess-border-radius);
+  padding: 12px;
+  height: 500px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: var(--chess-container-bg);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Message quand l'historique est vide */
+.empty-history-message {
+  border: 1px solid var(--chess-medium-brown);
+  border-radius: var(--chess-border-radius);
+  padding: 15px;
+  text-align: center;
+  color: var(--chess-text-light);
+  font-style: italic;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: var(--chess-container-bg);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Responsive layout - seulement pour mobile */
+@media (max-width: 1100px) {
+  .chess-main-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .chess-board-column,
+  .moves-column {
+    width: 100%;
+    max-width: 700px;
+  }
+  
+  .chessboard-container,
+  .chessboard {
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    aspect-ratio: 1/1;
+  }
+  
+  .moves-column {
+    margin-top: 20px;
+    max-width: 700px;
+    width: 100%;
+  }
+  
+  .moves-container,
+  .empty-history-message {
+    height: 300px;
+  }
+}
+
+/* Titre de la section des coups */
+.moves-column h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--chess-text-dark);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--chess-dark-brown);
+  text-align: center;
+  background-color: var(--chess-light-brown);
+  border-radius: var(--chess-border-radius) var(--chess-border-radius) 0 0;
+  margin-top: 0;
+  padding-top: 8px;
+}
+
+/* Liste des coups avec plus d'espace */
+.moves-list {
+  font-family: 'Noto Sans', 'Roboto', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Lignes de coups plus structurées avec alternance */
+.move-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--chess-medium-brown);
+  transition: background-color 0.2s ease;
+  background-color: var(--chess-light-brown);
+  margin: 2px 0;
+  border-radius: 3px;
+}
+
+.move-row:nth-child(even) {
+  background-color: var(--chess-row-alt-bg);
+}
+
+.move-row:hover {
+  background-color: var(--chess-highlight-bg);
+}
+
+/* Numéro de coup plus visible */
+.move-number {
+  color: var(--chess-text-light);
+  margin-right: 6px;
+  font-weight: 600;
+  min-width: 32px;
+  font-size: 0.9em;
+  text-align: right;
+  padding: 3px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 3px;
+}
+
+/* Coups blancs */
+.move-white {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  font-weight: 500;
+  color: var(--chess-move-text);
+  transition: all 0.15s ease;
+  background-color: var(--chess-white-move-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Coups noirs */
+.move-black {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  font-weight: 500;
+  color: var(--chess-move-text);
+  transition: all 0.15s ease;
+  background-color: var(--chess-black-move-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Effets au survol */
+.move-white:hover, .move-black:hover {
+  background-color: var(--chess-highlight-bg);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Coup actif/sélectionné */
+.move-white.active, .move-black.active {
+  background-color: var(--chess-selected);
+  color: var(--chess-move-text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--chess-highlight);
+}
+
+/* Styles pour les variantes */
+.variation {
+  position: relative;
+  padding-left: 24px;
+  margin: 2px 0;
+  color: var(--chess-text-dark);
+  background-color: rgba(181, 136, 99, 0.08);
+  border-radius: 4px;
+}
+
+.variation::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background-color: var(--chess-medium-brown);
+  border-radius: 1px;
+}
+
+/* Variante active */
+.active-variation {
+  background-color: var(--chess-highlight-bg);
+}
+
+.active-variation::before {
+  background-color: var(--chess-highlight);
+  width: 3px;
+}
+
+/* Indicateurs de variante plus élégants */
+.variation-indicator {
+  color: var(--chess-text-light);
+  font-weight: 600;
+  margin: 0 2px;
+  font-size: 1em;
+  background-color: rgba(255, 255, 255, 0.5);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* Styles pour les différents niveaux d'imbrication des variantes */
+[style*="padding-left: 25px"] { 
+  background-color: rgba(181, 136, 99, 0.04);
+  border-left: 3px solid rgba(181, 136, 99, 0.2);
+}
+
+[style*="padding-left: 45px"] { 
+  background-color: rgba(181, 136, 99, 0.08);
+  border-left: 3px solid rgba(181, 136, 99, 0.3);
+}
+
+[style*="padding-left: 65px"] { 
+  background-color: rgba(181, 136, 99, 0.12);
+  border-left: 3px solid rgba(181, 136, 99, 0.4);
+}
+
+/* Navigation controls */
+.navigation-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.navigation-controls button {
+  font-size: 1.5rem;
+  padding: 5px 15px;
+  background-color: var(--chess-light-brown);
+  border: 1px solid var(--chess-medium-brown);
+  color: var(--chess-text-dark);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navigation-controls button:hover {
+  background-color: var(--chess-highlight-bg);
+}
+
+.navigation-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Zone d'importation PGN */
+.pgn-input {
+  margin-top: 20px;
+}
+
+.pgn-input textarea {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  border: 1px solid var(--chess-medium-brown);
+  border-radius: 4px;
+  font-family: monospace;
+  resize: vertical;
+  box-sizing: border-box;
+  background-color: var(--chess-light-brown);
+  color: var(--chess-text-dark);
+}
+
+.pgn-input button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  margin-right: 5px;
+  background-color: var(--chess-dark-brown);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pgn-input button:hover {
+  background-color: var(--chess-highlight);
+}
+
+/* Scrollbar personnalisée pour la liste des coups */
+.moves-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.moves-container::-webkit-scrollbar-track {
+  background: var(--chess-medium-brown);
+  border-radius: 4px;
+}
+
+.moves-container::-webkit-scrollbar-thumb {
+  background: var(--chess-dark-brown);
+  border-radius: 4px;
+}
+
+.moves-container::-webkit-scrollbar-thumb:hover {
+  background: var(--chess-highlight);
+}
+
+/* Styles améliorés pour les variantes */
+.variation {
+  position: relative;
+  margin: 2px 0;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background-color: rgba(181, 136, 99, 0.08);
+  border-radius: 4px;
+  border-left: 3px solid var(--chess-medium-brown);
+}
+
+/* Indicateur de début de variante */
+.variation-start {
+  border-top: 1px solid var(--chess-medium-brown);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.variation-start-marker {
+  color: var(--chess-dark-brown);
+  font-weight: bold;
+  margin-right: 5px;
+  font-size: 1.2em;
+}
+
+/* Indicateur de fin de variante */
+.variation-end {
+  border-bottom: 1px solid var(--chess-medium-brown);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+/* Style selon la profondeur de la variante */
+[data-depth="1"] {
+  background-color: rgba(181, 136, 99, 0.08);
+  border-left-color: var(--chess-medium-brown);
+}
+
+[data-depth="2"] {
+  background-color: rgba(181, 136, 99, 0.12);
+  border-left-color: var(--chess-dark-brown);
+}
+
+[data-depth="3"] {
+  background-color: rgba(181, 136, 99, 0.16);
+  border-left-color: var(--chess-highlight);
+}
+
+/* Améliorer la lisibilité des numéros de coup dans les variantes */
+.variation .move-number {
+  background-color: rgba(255, 255, 255, 0.4);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  min-width: 32px;
+}
+
+/* Variante active (celle qui est actuellement affichée) */
+.active-variation {
+  background-color: var(--chess-highlight-bg);
+  border-left-color: var(--chess-highlight);
+  border-left-width: 4px;
+}
+
+/* Style des coups dans les variantes */
+.variation .move-white,
+.variation .move-black {
+  padding: 2px 5px;
+  transition: all 0.2s ease;
+}
+
+/* Styles améliorés pour les variantes */
+
+.variation {
+  position: relative;
+  border-left: 3px solid var(--chess-medium-brown);
+  margin: 2px 0;
+  background-color: rgba(181, 136, 99, 0.08);
+  border-radius: 4px;
+}
+
+.variation-start {
+  margin-top: 6px;
+  border-top: 1px dashed var(--chess-medium-brown);
+  padding-top: 6px;
+}
+
+.variation-end {
+  margin-bottom: 6px;
+  border-bottom: 1px dashed var(--chess-medium-brown);
+  padding-bottom: 6px;
+}
+
+.variation-indicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--chess-dark-brown);
+  margin-right: 6px;
+  font-style: italic;
+}
+
+.variation-marker {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 4px;
+}
+
+.variation-text {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Différentes couleurs selon la profondeur */
+[data-depth="1"] {
+  border-left-color: #cd9b4a;
+  background-color: rgba(205, 155, 74, 0.08);
+}
+
+[data-depth="2"] {
+  border-left-color: #7d9b4a;
+  background-color: rgba(125, 155, 74, 0.08);
+}
+
+[data-depth="3"] {
+  border-left-color: #4a9b9b;
+  background-color: rgba(74, 155, 155, 0.08);
+}
+
+/* Style pour la ligne active */
+.active-variation {
+  background-color: rgba(205, 155, 74, 0.2);
+  border-left-width: 4px;
+}
+
+/* Variantes de coups */
+.variation {
+  position: relative;
+  margin: 2px 0;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background-color: rgba(181, 136, 99, 0.08);
+  border-radius: 4px;
+  border-left: 3px solid var(--chess-medium-brown);
+}
+
+.variation-start {
+  margin-top: 6px;
+  border-top: 1px dashed var(--chess-medium-brown);
+  padding-top: 6px;
+}
+
+.variation-end {
+  margin-bottom: 6px;
+  border-bottom: 1px dashed var(--chess-medium-brown);
+  padding-bottom: 6px;
+}
+
+.variation-indicator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--chess-dark-brown);
+  margin-right: 6px;
+  font-style: italic;
+}
+
+.variation-marker {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 4px;
+}
+
+.variation-text {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Couleurs différentes selon la profondeur */
+[data-depth="1"] { background-color: rgba(205, 155, 74, 0.08); border-left-color: #cd9b4a; }
+[data-depth="2"] { background-color: rgba(125, 155, 74, 0.08); border-left-color: #7d9b4a; }
+[data-depth="3"] { background-color: rgba(74, 155, 155, 0.08); border-left-color: #4a9b9b; }

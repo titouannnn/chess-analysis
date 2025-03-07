@@ -1,49 +1,94 @@
-import { RouterOutlet } from '@angular/router';
-import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { NgIf, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; // Ajoutez cette importation
+import { LitchessApi } from '../api/litchess-api.service';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { PuzzleScraper } from '../analyse/puzzle.service'
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
-// import test from 'node:test';
+import { ChessboardComponent } from './chessboard/chessboard.component';
 
 @Component({
   selector: 'unique-app-root',
-  standalone: true, // Ajoutez cette ligne
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html', // Gardez seulement templateUrl, supprimez template
+  standalone: true,
+  imports: [
+    RouterOutlet, 
+    ChessboardComponent, 
+    NgIf, 
+    CommonModule, 
+    FormsModule // Ajoutez FormsModule ici
+  ],
+  templateUrl: './app.component.html',
   styleUrl: './app.component.css',
-  host: { 'id': 'main-app-component' } // Ajoutez un identifiant unique
+  host: { 'id': 'main-app-component' }
 })
 export class AppComponent implements OnInit {
-  message: string = ''; // Variable pour afficher le résultat
+  message: string = '';
+  showChessboard: boolean = false; // Propriété pour contrôler l'affichage
+  currentFen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Position initiale par défaut
 
-  constructor(private LocalAnalysis : LocalAnalysis, private api: Api, private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper, private AnalysisApi: AnalysisApi) {} // Injection du service
+  constructor(private LocalAnalysis : LocalAnalysis, private api: Api, private LitchessApi: LitchessApi, 
+              private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper, 
+              private AnalysisApi: AnalysisApi) {}
+
+  // Ajouter une propriété pour stocker l'historique des coups
+  moveHistory: any[] = [];
+
+  // Méthode pour afficher l'échiquier
+  displayChessboard() {
+    this.showChessboard = true;
+  }
+
+  // Méthode pour masquer l'échiquier
+  hideChessboard() {
+    this.showChessboard = false;
+  }
+
+  // Méthode pour basculer l'affichage de l'échiquier
+  toggleChessboard() {
+    this.showChessboard = !this.showChessboard;
+  }
+
+  updatePosition() {
+    // La position est déjà mise à jour par ngModel, 
+    // mais nous pouvons effectuer des actions supplémentaires ici
+    console.log('Mise à jour de la position FEN:', this.currentFen);
+    
+    // Afficher l'échiquier s'il n'est pas déjà visible
+    if (!this.showChessboard) {
+      this.showChessboard = true;
+    }
+  }
 
   pgnEx = `1. e3 d5 2. Ne2 Nc6 3. Ng3 e5 4. Be2 Nf6 5. O-O Bd6 6. Bd3 e4 7. Bb5 Bd7 8. Nh5
-O-O 9. Nxf6+ Qxf6 10. Nc3 Qh6 11. g3 Bh3 12. Re1 Qg5 13. Ne2 h5 14. Nf4 Bxf4 15.
-exf4 Qg6 16. Bxc6 bxc6 17. d4 h4 18. Be3 hxg3 19. fxg3 Bg4 20. Qd2 Bf3 21. b4 f5
-22. c3 Kf7 23. a4 Rh8 24. Kf1 Rh6 25. Bg1 Rah8 26. c4 e3 27. Rxe3 Be4 28. cxd5
-cxd5 29. b5 Qf6 30. Qc3 Rc8 31. a5 Qe6 32. b6 axb6 33. axb6 c6 34. b7 Rb8 35.
-Ra7 Qd7 36. Qb4 Rhh8 37. Rb3 g5 38. fxg5 f4 39. Ra8 Qh3+ 40. Kf2 Qg2+ 41. Ke1
-Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
+                                                                                              O-O 9. Nxf6+ Qxf6 10. Nc3 Qh6 11. g3 Bh3 12. Re1 Qg5 13. Ne2 h5 14. Nf4 Bxf4 15.
+                                                                                              exf4 Qg6 16. Bxc6 bxc6 17. d4 h4 18. Be3 hxg3 19. fxg3 Bg4 20. Qd2 Bf3 21. b4 f5
+                                                                                              22. c3 Kf7 23. a4 Rh8 24. Kf1 Rh6 25. Bg1 Rah8 26. c4 e3 27. Rxe3 Be4 28. cxd5
+                                                                                              cxd5 29. b5 Qf6 30. Qc3 Rc8 31. a5 Qe6 32. b6 axb6 33. axb6 c6 34. b7 Rb8 35.
+                                                                                              Ra7 Qd7 36. Qb4 Rhh8 37. Rb3 g5 38. fxg5 f4 39. Ra8 Qh3+ 40. Kf2 Qg2+ 41. Ke1
+                                                                                              Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
 
   ngOnInit(): void {
     console.log("Initialisation de l'application");
     //this.lichessTests();
     //this.chess_comTests();
     //this.testPuzzle();
+
     //this.localAnalysisTests();
+    this.localAnalysisTests();
+    this.displayChessboard();
   }
 
+  
 
   async localAnalysisTests(): Promise<void> {
     
     console.log("======== Local Analysis =========");
 
     console.log("======== Tests Stockfish =========");
-    this.LocalAnalysis.analyzeGame(this.pgnEx, 18);
+    this.LocalAnalysis.analyzeGame(this.pgnEx, 2);
     
   }
 
@@ -159,5 +204,17 @@ Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
     */
     
 
+  }
+
+  // Méthode appelée quand la position de l'échiquier change
+  onPositionChanged(fenPosition: string) {
+    console.log('Position FEN mise à jour:', fenPosition);
+    this.currentFen = fenPosition;
+  }
+  
+  // Méthode appelée quand l'historique des coups change
+  onMoveHistoryChanged(moves: any[]) {
+    console.log('Historique des coups mis à jour:', moves);
+    this.moveHistory = moves;
   }
 }

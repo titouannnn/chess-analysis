@@ -1,0 +1,73 @@
+<div class="chess-main-container">
+    <!-- Colonne gauche: échiquier -->
+    <div class="chess-board-column">
+      <div class="chessboard-container">
+        <div #board class="chessboard"></div>
+      </div>
+      
+      <div class="navigation-controls">
+        <button (click)="goToStart()" [disabled]="isAtStart()">⏮</button>
+        <button (click)="goToPreviousMove()" [disabled]="isAtStart()">⏪</button>
+        <button (click)="goToNextMove()" [disabled]="isAtEnd()">⏩</button>
+        <button (click)="goToEnd()" [disabled]="isAtEnd()">⏭</button>
+      </div>
+      
+      <div class="pgn-input">
+        <h3>Importer une partie (format PGN)</h3>
+        <textarea #pgnInput placeholder="Collez votre PGN ici..."></textarea>
+        <div class="button-row">
+          <button (click)="loadPgn(pgnInput.value)">Importer PGN</button>
+          <button (click)="resetBoard()">Réinitialiser</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Colonne droite: coups -->
+    <div class="moves-column">
+      <h3>Historique des coups</h3>
+      
+      <!-- Message d'attente -->
+      <div class="empty-history-message" *ngIf="!formattedMoves || formattedMoves.length === 0">
+        L'historique des coups s'affichera ici après que des coups soient joués ou qu'un PGN soit importé.
+      </div>
+      
+      <!-- Liste des coups -->
+      <!-- Remplacer la partie listant les coups -->
+
+      <div class="moves-container" *ngIf="formattedMoves && formattedMoves.length > 0"> 
+        <div class="moves-list"> 
+          <ng-container *ngFor="let move of formattedMoves; let i=index"> 
+            <div class="move-row"
+              [class.variation]="move.isVariation"
+              [class.variation-start]="move.isVariationStart"
+              [class.variation-end]="move.isVariationEnd"
+              [attr.data-depth]="move.depth || 0"
+              [style.padding-left.px]="(move.depth || 0) * 20 + 5">
+              
+              <!-- Indicateur de variante -->
+              <span *ngIf="move.isVariationStart" class="variation-indicator">
+                <span class="variation-marker">⤷</span>
+                <span class="variation-text">Variante :</span>
+              </span>
+      
+              <!-- Numéro de coup -->
+              <span class="move-number" *ngIf="showMoveNumber(move, i)">
+                {{ move.moveNumber }}{{ move.isBlackContinuation ? '...' : '.' }}
+              </span>
+      
+              <!-- Coup Blanc -->
+              <span *ngIf="move.white" class="move-white" (click)="goToPosition(move.path, 'white')">
+                {{ move.white }}
+              </span>
+      
+              <!-- Coup Noir -->
+              <span *ngIf="move.black" class="move-black" (click)="goToPosition(move.path, 'black')">
+                {{ move.black }}
+              </span>
+              
+            </div>
+          </ng-container> 
+        </div> 
+      </div>
+    </div>
+  </div>
