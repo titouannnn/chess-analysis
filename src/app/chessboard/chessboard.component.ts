@@ -14,6 +14,32 @@ interface MoveNode {
   isMainline: boolean; // Si ce coup fait partie de la ligne principale
 }
 
+interface FormattedMove {
+  white: string;
+  black: string;
+  path?: number[];
+  isVariation?: boolean;
+  isActiveVariation?: boolean;
+  depth?: number;
+  moveNumber?: number;
+  isBlackContinuation?: boolean;
+  isVariationStart?: boolean;
+  isVariationEnd?: boolean;
+  parentPath?: number[];
+}
+
+interface DisplayMove {
+  white: string;
+  black: string;
+  moveNumber: number;
+  whiteNodePath?: number[];
+  blackNodePath?: number[];
+  isMainline: boolean;
+  depth: number;
+  variations: DisplayMove[][]; // Les variantes associées à ce coup
+  isBlackContinuation?: boolean;
+}
+
 interface MoveTree {
   nodes: MoveNode[]; // Liste des coups dans cette variante
   parentNode: MoveNode | null; // Nœud à partir duquel cette variante démarre
@@ -46,13 +72,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   currentMoveIndex: number = -1;
   isReviewing: boolean = false;
 
-  formattedMoves: { 
-    white: string, 
-    black: string, 
-    path?: number[], 
-    isVariation?: boolean,
-    isActiveVariation?: boolean 
-  }[] = [];
+  formattedMoves: FormattedMove[] = [];
   
   // Nouvelles propriétés pour les variantes
   currentVariation: MoveTree;
@@ -531,74 +551,95 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
 
 
   // Formater les coups d'une variante avec ses sous-variantes
-  formatMovesForVariationRecursive(variation: MoveTree, path: number[]): { white: string, black: string, path?: number[], isVariation?: boolean }[] {
-  const formattedMoves = [];
-  let currentPair = { white: '', black: '', path: [...path], isVariation: variation !== this.mainline };
-  
-  for (let i = 0; i < variation.nodes.length; i++) {
-    const node = variation.nodes[i];
-    const move = node.move;
-    const currentPath = [...path, i];
+  formatMovesForVariationRecursive(variation: MoveTree, path: number[]): { 
+    white: string, 
+    black: string, 
+    path?: number[], 
+    isVariation?: boolean,
+    moveNumber?: number
+  }[] {
     
-    if (move.color === 'w') {
-      // Nouveau coup blanc
-      if (currentPair.black) {
+    // Ajout du type explicite FormattedMove[] ici
+  const formattedMoves: FormattedMove[] = [];
+  
+  let currentPair: FormattedMove = { 
+    white: '', 
+    black: '', 
+    path: [...path], 
+    isVariation: variation !== this.mainline 
+  };
+  
+  // Si la variation est vide, retourner un tableau vide
+  if (!variation.nodes || variation.nodes.length === 0) {
+    return formattedMoves;
+  }
+    
+    // Déterminer le numéro du premier coup et qui joue
+    let moveNumber = 1;
+    let isBlackToMove = false;
+    
+    if (variation.parentNode) {
+      // Obtenir les informations de la position parente
+      const parentFen = variation.parentNode.fen;
+      const fenParts = parentFen.split(' ');
+      moveNumber = parseInt(fenParts[5]);
+      isBlackToMove = fenParts[1] === 'b';
+      
+      // Si c'est aux noirs de jouer, on doit commencer par un coup noir
+      if (isBlackToMove && variation.nodes.length > 0) {
+        currentPair = { 
+          white: '', 
+          black: variation.nodes[0].san, 
+          path: [...path, 0], 
+          isVariation: variation !== this.mainline,
+          moveNumber: moveNumber
+        };
+        formattedMoves.push(currentPair);
+        currentPair = { white: '', black: '', path: [...path, 1], isVariation: variation !== this.mainline };
+      }
+    }
+    
+    // Formater les coups normalement
+    for (let i = isBlackToMove ? 1 : 0; i < variation.nodes.length; i++) {
+      const node = variation.nodes[i];
+      const move = node.move;
+      const currentPath = [...path, i];
+      
+      if (move.color === 'w') {
+        // Nouveau coup blanc
+        if (currentPair.black) {
+          formattedMoves.push(currentPair);
+          currentPair = { 
+            white: move.san, 
+            black: '', 
+            path: currentPath,
+            isVariation: variation !== this.mainline 
+          };
+        } else {
+          currentPair.white = move.san;
+          currentPair.path = currentPath;
+        }
+      } else {
+        // Coup noir
+        currentPair.black = move.san;
+        currentPair.path = currentPath;
         formattedMoves.push(currentPair);
         currentPair = { 
-          white: move.san, 
+          white: '', 
           black: '', 
-          path: currentPath,
+          path: [...path, i + 1],
           isVariation: variation !== this.mainline 
         };
-      } else {
-        currentPair.white = move.san;
-        currentPair.path = currentPath;
       }
-    } else {
-      // Coup noir
-      currentPair.black = move.san;
-      currentPair.path = currentPath;
-      formattedMoves.push(currentPair);
-      currentPair = { 
-        white: '', 
-        black: '', 
-        path: [...path, i + 1],
-        isVariation: variation !== this.mainline 
-      };
     }
     
-    // Ajouter les variantes pour ce nœud
-    if (node.variations && node.variations.length > 0) {
-      for (const subVariation of node.variations) {
-        const subMoves = this.formatMovesForVariationRecursive(subVariation, [...currentPath, 0]);
-        // Insérer les coups de la sous-variation après le coup actuel
-        if (i + 1 < variation.nodes.length) {
-          // Insérer avant le prochain coup
-          formattedMoves.push(...subMoves);
-        } else {
-          // Ajouter à la fin
-          if (currentPair.white || currentPair.black) {
-            formattedMoves.push(currentPair);
-          }
-          formattedMoves.push(...subMoves);
-          currentPair = { 
-            white: '', 
-            black: '', 
-            path: [...path, i + 1], 
-            isVariation: variation !== this.mainline
-          };
-        }
-      }
+    // Ne pas oublier le dernier coup s'il est blanc
+    if (currentPair.white && !currentPair.black) {
+      formattedMoves.push(currentPair);
     }
+    
+    return formattedMoves;
   }
-  
-  // Ne pas oublier le dernier coup s'il est blanc
-  if (currentPair.white && !currentPair.black) {
-    formattedMoves.push(currentPair);
-  }
-  
-  return formattedMoves;
-}
 
   // Formater les coups d'une variante donnée
   formatMovesForVariation(variation: MoveTree) {
@@ -1013,62 +1054,228 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     return result || this.mainline; // Retourner la ligne principale par défaut
   }
 
+  // Remplacer la méthode updateFormattedMovesWithVariations
+
   updateFormattedMovesWithVariations() {
-    this.formattedMoves = [];
+    // Convertir l'arbre en structure hiérarchique
+    const displayMoves = this.convertTreeToDisplayMoves(this.mainline);
     
-    // D'abord, formater la ligne principale
-    const mainMoves = this.formatMovesForTree(this.mainline);
+    // Convertir la structure hiérarchique en liste plate pour l'affichage
+    this.formattedMoves = this.flattenDisplayMoves(displayMoves);
+  }
+
+  // Nouvelle méthode pour convertir l'arbre en structure hiérarchique
+  convertTreeToDisplayMoves(tree: MoveTree, depth: number = 0): DisplayMove[] {
+    const result: DisplayMove[] = [];
+    let moveNumber = 1;
+    let currentPair: DisplayMove | null = null;
     
-    // Ajouter la ligne principale à l'affichage
-    this.formattedMoves.push(...mainMoves);
+    // Déterminer le numéro initial du coup et si c'est au noir de jouer
+    if (tree.parentNode) {
+      const fenParts = tree.parentNode.fen.split(' ');
+      moveNumber = parseInt(fenParts[5]);
+      const isBlackToMove = fenParts[1] === 'b';
+      
+      // Si c'est au noir de jouer, nous commençons par un coup noir
+      if (isBlackToMove) {
+        currentPair = {
+          white: '',
+          black: '',
+          moveNumber: moveNumber,
+          isMainline: tree === this.mainline,
+          depth: depth,
+          variations: [],
+          isBlackContinuation: true
+        };
+      }
+    }
     
-    // Marquer la variante active si nécessaire
-    if (this.currentVariation !== this.mainline) {
-      for (let move of this.formattedMoves) {
-        // Marquer les coups qui font partie de la variante active
-        if (this.isMoveInCurrentVariation(move.path)) {
-          move.isActiveVariation = true;
+    // Traiter chaque nœud de l'arbre
+    for (let i = 0; i < tree.nodes.length; i++) {
+      const node = tree.nodes[i];
+      const path = [...(tree === this.mainline ? [] : []), i];
+      
+      if (!currentPair || node.move.color === 'w') {
+        // Nouveau coup blanc ou début de la séquence
+        if (currentPair) {
+          result.push(currentPair);
+        }
+        
+        currentPair = {
+          white: node.move.color === 'w' ? node.san : '',
+          black: node.move.color === 'b' ? node.san : '',
+          moveNumber: moveNumber,
+          whiteNodePath: node.move.color === 'w' ? path : undefined,
+          blackNodePath: node.move.color === 'b' ? path : undefined,
+          isMainline: tree === this.mainline,
+          depth: depth,
+          variations: []
+        };
+        
+        if (node.move.color === 'w') {
+          moveNumber++;
+        }
+      } else {
+        // Coup noir qui complète le coup blanc
+        currentPair.black = node.san;
+        currentPair.blackNodePath = path;
+        result.push(currentPair);
+        currentPair = null;
+      }
+      
+      // Traiter les variantes associées à ce nœud
+      if (node.variations && node.variations.length > 0) {
+        for (const variation of node.variations) {
+          const variationMoves = this.convertTreeToDisplayMoves(variation, depth + 1);
+          
+          // Ajouter la variante au bon endroit
+          if (currentPair) {
+            currentPair.variations.push(variationMoves);
+          } else if (result.length > 0) {
+            result[result.length - 1].variations.push(variationMoves);
+          }
         }
       }
     }
     
-    console.log('Moves updated for display:', this.formattedMoves);
+    // Ne pas oublier le dernier coup s'il n'a pas été ajouté
+    if (currentPair) {
+      result.push(currentPair);
+    }
+    
+    return result;
+  }
+
+  // Nouvelle méthode pour aplatir la structure hiérarchique
+  flattenDisplayMoves(moves: DisplayMove[]): FormattedMove[] {
+    const result: FormattedMove[] = [];
+    
+    for (const move of moves) {
+      // Ajouter le coup principal
+      const formattedMove: FormattedMove = {
+        white: move.white,
+        black: move.black,
+        moveNumber: move.moveNumber,
+        isVariation: !move.isMainline,
+        depth: move.depth,
+        path: move.whiteNodePath || move.blackNodePath,
+        isBlackContinuation: move.isBlackContinuation
+      };
+      
+      result.push(formattedMove);
+      
+      // Ajouter les variantes directement après le coup
+      for (const variationMoves of move.variations) {
+        const flattenedVariation = this.flattenDisplayMoves(variationMoves);
+        
+        // Marquer le premier et le dernier coup de la variante
+        if (flattenedVariation.length > 0) {
+          flattenedVariation[0].isVariationStart = true;
+          flattenedVariation[flattenedVariation.length - 1].isVariationEnd = true;
+        }
+        
+        result.push(...flattenedVariation);
+      }
+    }
+    
+    return result;
   }
   
   // Nouvelle méthode pour formater tous les coups d'un arbre
-  // Nouvelle méthode pour formater tous les coups d'un arbre
-  formatMovesForTree(tree: MoveTree, basePath: number[] = []): any[] {
-    const result = [];
+  formatMovesForTree(tree: MoveTree, basePath: number[] = [], depth: number = 0, previousPosition?: string): FormattedMove[] {
+    const result: FormattedMove[] = [];
+  
+    let moveNumber = 1;
+    let isBlackToMove = false;
     
-    // Utiliser formatMovesForVariationRecursive qui retourne un tableau
-    // au lieu de formatMovesForVariation qui modifie this.formattedMoves
+    // Déterminer le numéro de coup et qui joue
+    if (previousPosition) {
+      const positionParts = previousPosition.split(' ');
+      moveNumber = parseInt(positionParts[5]);
+      isBlackToMove = positionParts[1] === 'b';
+    } else if (tree.parentNode) {
+      const parentFen = tree.parentNode.fen;
+      const fenParts = parentFen.split(' ');
+      moveNumber = parseInt(fenParts[5]);
+      isBlackToMove = fenParts[1] === 'b';
+    }
+    
+    // Formater les coups de cette variante
     const moveList = this.formatMovesForVariationRecursive(tree, basePath);
-    result.push(...moveList);
     
-    // Pour chaque nœud, ajouter ses variantes
+    // Enrichir chaque coup avec des données de formatage
+    for (let i = 0; i < moveList.length; i++) {
+      const baseMove = moveList[i];
+      const move: FormattedMove = {
+        white: baseMove.white,
+        black: baseMove.black,
+        path: baseMove.path,
+        isVariation: baseMove.isVariation,
+        moveNumber: baseMove.moveNumber,
+        
+        depth: depth,
+        isBlackContinuation: false,
+        isVariationStart: false,
+        isVariationEnd: false,
+        parentPath: depth > 0 ? basePath.slice(0, -2) : undefined
+      };
+      
+      // Ajouter le numéro de coup
+      if (move.white) {
+        move.moveNumber = moveNumber;
+        moveNumber++;
+      } else if (move.black && i === 0) {
+        move.moveNumber = moveNumber - 1;
+        move.isBlackContinuation = true;
+      }
+      
+      // Marquer clairement le début et la fin de variante
+      if (i === 0 && depth > 0) {
+        move.isVariationStart = true;
+      }
+      if (i === moveList.length - 1 && depth > 0) {
+        move.isVariationEnd = true;
+      }
+      
+      result.push(move);
+    }
+    
+    // Traiter les variantes immédiatement après leur coup parent
     for (let i = 0; i < tree.nodes.length; i++) {
       const node = tree.nodes[i];
+      
       if (node.variations && node.variations.length > 0) {
         for (let v = 0; v < node.variations.length; v++) {
-          // Le chemin vers cette variante
-          const varPath = [...basePath, i, v];
-          const varMoves = this.formatMovesForTree(
-            node.variations[v],
-            varPath
+          // Trouver la position exacte où insérer cette variante
+          const parentPath = [...basePath, i];
+          
+          // Trouver l'index du coup parent dans le résultat
+          const insertIndex = result.findIndex(m => 
+            m.path && 
+            m.path.length === parentPath.length &&
+            m.path.every((val, idx) => val === parentPath[idx])
           );
-          // Marquer ces coups comme étant une variante
-          varMoves.forEach(m => {
-            m.isVariation = true;
-            m.parentPath = [...basePath, i];
-          });
-          result.push(...varMoves);
+          
+          if (insertIndex !== -1) {
+            // Formater les coups de la variante
+            const varMoves = this.formatMovesForTree(
+              node.variations[v],
+              [...parentPath, v],
+              depth + 1,
+              node.fen
+            );
+            
+            // Insérer immédiatement après le coup parent
+            result.splice(insertIndex + 1, 0, ...varMoves);
+          }
         }
       }
     }
     
     return result;
   }
-    
+
+
   // Vérifier si un coup fait partie de la variante actuelle
   isMoveInCurrentVariation(path: number[] | undefined): boolean {
     if (!path || !this.currentNode) return false;
@@ -1112,5 +1319,15 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     };
     
     return findInTree(this.mainline);
+  }
+
+  // Détermine si on doit afficher le numéro de coup pour cet élément
+  showMoveNumber(move: FormattedMove, index: number): boolean {
+    // Toujours montrer le numéro pour les coups blancs
+    if (move.white) return true;
+    
+    // Pour les coups noirs, vérifier si c'est le début d'une variante ou une continuation
+    return !!move.isBlackContinuation || 
+          (!!move.black && !move.white && !!move.isVariationStart);
   }
 }
