@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { Chess, Square } from "chess.js";
+import { LocalAnalysis } from './localAnalysis.service';
 import * as puzzlesData from '../assets/lichess_db_puzzle_reduit.json';
 import * as gamesData from '../assets/games_small.json';
 
@@ -15,15 +16,23 @@ import * as gamesData from '../assets/games_small.json';
 // Tri en fonction de son élo
 export class PuzzleScraper {
 
+    constructor(private LocalAnalysis: LocalAnalysis) {}
+
     public puzzlesRecommendedByOpening: any[] = [];
     public puzzlesRecommendedByFen: any[] = [];
     public losesPlayerData: { [key: string]: number } = {
         opening: 0,
         middlegame: 0,
         endgame: 0,
-        mate: 0,
         kingsideAttack: 0,
-        fork: 0
+        fork: 0,
+        mateIn1: 0,
+        mateIn2: 0,
+        mateIn3: 0,
+
+        mateIn1Missed: 0,
+        mateIn2Missed: 0,
+        mateIn3Missed: 0,
     };
 
     collectPuzzlesByOpening(opening: string): { recommendedPoints: number; Rating: number; URL: string }[] {
@@ -169,7 +178,7 @@ export class PuzzleScraper {
             .sort((a, b) => a.Rating - b.Rating); // Trie par rating décroissant
     }
 
-    detectThemesFromPGN(pgn: string) {
+    async detectThemesFromPGN(pgn: string) {
         const chess = new Chess();
         chess.loadPgn(pgn);
         const themes = new Set(); // Using Set to avoid duplicates
@@ -188,6 +197,26 @@ export class PuzzleScraper {
             themes.add('endgame');
         }
 
+        /*
+        // Pour obtenir simplement le nombre d'opportunités de mat
+        const mateCount = await this.LocalAnalysis.detectMateOpportunities(pgn);
+        console.log(`Mate en 1 : ${mateCount.mateIn1}`);
+        console.log(`Mate en 2 : ${mateCount.mateIn2}`);
+        console.log(`Mate en 3 : ${mateCount.mateIn3}`);
+
+        // Pour générer un rapport complet
+        const report = await this.LocalAnalysis.generateMateReport(pgn, 15, "white");
+        console.log(report);
+
+        // Ajouter les mates count aux variables d'instance
+        this.losesPlayerData['mateIn1'] += mateCount.mateIn1;
+        this.losesPlayerData['mateIn2'] += mateCount.mateIn2;
+        this.losesPlayerData['mateIn3'] += mateCount.mateIn3;
+        this.losesPlayerData['mateIn1Missed'] += report.missedMateIn1;
+        this.losesPlayerData['mateIn2Missed'] += report.missedMateIn2;
+        this.losesPlayerData['mateIn3Missed'] += report.missedMateIn3;
+        */
+
         // Analyze each move
         for (let i = 0; i < history.length; i++) {
             // Make the current move on our analysis board
@@ -197,10 +226,15 @@ export class PuzzleScraper {
             const move = history[i];
 
             // Now check for themes after this move
-            if (analyzeBoard.isCheckmate()) {
-                themes.add('mate');
-                themes.add(`mateIn${i + 1}`);
-            }
+            /*
+            const mateInCounts = await this.LocalAnalysis.detectMateIn(pgn, 15, 3);
+            mateInCounts.forEach(mateIn => {
+                if (mateIn !== null) {
+                    themes.add('mate');
+                    themes.add(`mateIn${Math.abs(mateIn)}`);
+                }
+            });
+            */
             
             if (move.promotion) themes.add('promotion');
 
@@ -271,16 +305,20 @@ export class PuzzleScraper {
             opening: 0,
             middlegame: 0,
             endgame: 0,
-            mate: 0,
             kingsideAttack: 0,
-            fork: 0
+            fork: 0,
+            mateIn1: 0,
+            mateIn2: 0,
+            mateIn3: 0,
+            mateIn1Missed: 0,
+            mateIn2Missed: 0,
+            mateIn3Missed: 0,
         };
 
         for (const item of data) {
             for (const game of item.games) {
-                
-                if ((game.black.username === "titouannnnnn" && game.black.result !== "win") || (game.white.username === "titouannnnnn" && game.white.result !== "win")) { // Assuming '0-1' or '1-0' indicates a loss
-                    const gameThemes = this.detectThemesFromPGN(game.pgn);
+                if ((game.black.username === "titouannnnnn" && game.black.result !== "win") || (game.white.username === "titouannnnnn" && game.white.result !== "win")) {
+                    const gameThemes = await this.detectThemesFromPGN(game.pgn);
                     (gameThemes as Set<string>).forEach((theme: string) => {
                         if (themesCount[theme] !== undefined) {
                             themesCount[theme]++;
@@ -290,8 +328,26 @@ export class PuzzleScraper {
             }
         }
 
+        await this.calculateMateOpportunities(themesCount);
         this.losesPlayerData = themesCount;
     }
+
+    private async calculateMateOpportunities(themesCount: { [key: string]: number }): Promise<void> {
+        // Analyse des mates du joueur
+        const mateAnalysis = await this.LocalAnalysis.analyzeEndgameMates('titouannnnnn', 10, 18);
+        
+        // Mettre à jour les statistiques
+        themesCount['mateIn1'] = mateAnalysis.mateOpportunities.mateIn1;
+        themesCount['mateIn2'] = mateAnalysis.mateOpportunities.mateIn2;
+        themesCount['mateIn3'] = mateAnalysis.mateOpportunities.mateIn3;
+        themesCount['mateIn1Missed'] = mateAnalysis.missedMates.mateIn1;
+        themesCount['mateIn2Missed'] = mateAnalysis.missedMates.mateIn2;
+        themesCount['mateIn3Missed'] = mateAnalysis.missedMates.mateIn3;
+        
+        console.log("Analyse des mats terminée:", mateAnalysis);
+      }
+
+
 }
 
     /*

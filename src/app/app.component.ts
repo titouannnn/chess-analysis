@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms'; // Ajoutez cette importation
 import { LitchessApi } from '../api/litchess-api.service';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
-import { PuzzleScraper } from '../analyse/puzzle'
+import { PuzzleScraper } from '../analyse/puzzle.service'
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
 import { ChessboardComponent } from './chessboard/chessboard.component';
@@ -75,6 +75,8 @@ export class AppComponent implements OnInit {
     //this.lichessTests();
     //this.chess_comTests();
     //this.testPuzzle();
+
+    //this.localAnalysisTests();
     this.localAnalysisTests();
     this.displayChessboard();
   }
