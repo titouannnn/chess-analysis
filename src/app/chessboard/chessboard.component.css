@@ -1,15 +1,291 @@
-.chessground {
-  width: 500px;
-  height: 500px;
+.chess-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.chessboard-container {
+  flex: 0 0 auto;
+  width: fit-content;
+}
+
+.chessboard {
+  width: 50vw; /* 2/3 de la largeur de la fenêtre */
+  height: 50vw; /* Maintient le ratio carré */
+  position: relative;
+  max-width: 600px; /* Limite la taille maximale */
+  max-height: 600px;
+}
+
+@media (max-width: 1024px) {
+  .chess-layout {
+    flex-direction: column;
+  }
+  
+  .chessboard {
+    width: 100%;
+    height: auto;
+    padding-bottom: 100%;
+  }
+}
+
+/* Réduire la taille de la section d'affichage des coups */
+.moves-display {
+  flex: 0 0 200px; /* Réduire la largeur fixe (était 1 1 300px) */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px; /* Réduire le padding (était 10px) */
+  height: fit-content;
+  max-height: 500px; /* Réduire un peu la hauteur maximale (était 600px) */
+  font-size: 0.9rem; /* Réduire la taille de police générale */
+}
+
+.moves-display h3 {
+  margin: 0 0 5px 0; /* Réduire les marges (était margin-top: 0) */
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px; /* Réduire le padding (était 10px) */
+  text-align: center;
+  font-size: 1rem; /* Réduire la taille du titre */
+}
+
+.moves-container {
+  overflow-y: auto;
+  max-height: 420px; /* Ajuster la hauteur maximale */
+}
+
+.move-row {
+  display: flex;
+  padding: 2px 0; /* Réduire le padding (était 5px 0) */
+  border-bottom: 1px solid #f0f0f0;
+  line-height: 1.2; /* Réduire la hauteur de ligne */
+}
+
+.move-number {
+  flex: 0 0 25px; /* Réduire la largeur (était 40px) */
+  font-weight: bold;
+  color: #777;
+  font-size: 0.85rem; /* Réduire un peu plus la taille de police */
+}
+
+.move-white, .move-black {
+  flex: 1;
+  cursor: pointer;
+  padding: 0 3px; /* Réduire le padding (était 0 5px) */
+  font-size: 0.85rem; /* Réduire un peu plus la taille de police */
+}
+
+/* Ajouter un style compact pour les coups */
+.moves-display.compact {
+  font-size: 0.8rem;
+}
+
+.moves-display.compact .move-row {
+  padding: 1px 0;
+}
+
+.moves-display.compact .move-number {
+  flex: 0 0 20px;
+}
+
+.move-white.active, .move-black.active {
+  background-color: #ffeb3b;
+  border-radius: 3px;
+}
+
+.header {
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 5px;
+}
+
+.navigation-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.navigation-controls button {
+  font-size: 1.5rem;
+  padding: 5px 15px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.navigation-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pgn-input {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.pgn-input textarea {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: monospace;
+  resize: vertical;
+}
+
+.pgn-input button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.moves-display {
+  flex: 1 1 300px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  height: fit-content;
+  max-height: 600px;
+}
+
+.moves-display h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.moves-container {
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.move-row {
+  display: flex;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.move-row:hover {
+  background-color: #f8f8f8;
+  cursor: pointer;
+}
+
+.move-row.active {
+  background-color: #e8f0fe;
+}
+
+.move-number {
+  flex: 0 0 40px;
+  font-weight: bold;
+  color: #777;
+}
+
+.move-white, .move-black {
+  flex: 1;
+  padding: 0 5px;
+}
+
+.move-white.active, .move-black.active {
+  background-color: #ffeb3b;
+  border-radius: 3px;
+}
+
+.header {
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 5px;
+}
+
+.move {
+  cursor: pointer;
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+.move:hover {
+  background-color: #e5e5e5;
+}
+
+.move.active {
+  background-color: #ffeb3b;
+}
+
+.variations {
+  padding-left: 10px;
+  color: #666;
+  font-size: 0.85em;
+}
+
+.variation {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+/* Styles pour les variantes */
+.variation {
+  padding-left: 15px;
+  border-left: 2px solid #eee;
+  margin-left: 5px;
+}
+
+.active-variation {
+  border-left: 2px solid #ffeb3b;
+  background-color: rgba(255, 235, 59, 0.1);
+}
+
+.move-white.active, .move-black.active {
+  background-color: #ffeb3b;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+/* Styles pour les variantes */
+.variation {
+  padding-left: 20px;
   position: relative;
 }
 
-/* Ces styles sont nécessaires pour Chessground */
-cg-board {
-  background-color: #bfcfdd;
+.variation::before {
+  content: "";
   position: absolute;
+  left: 8px;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  bottom: 0;
+  width: 2px;
+  background-color: #ddd;
+}
+
+.active-variation {
+  background-color: rgba(255, 235, 59, 0.1);
+}
+
+.active-variation::before {
+  background-color: #ffeb3b;
+}
+
+.move-white, .move-black {
+  cursor: pointer;
+  padding: 0 5px;
+  border-radius: 3px;
+}
+
+.move-white:hover, .move-black:hover {
+  background-color: #f0f0f0;
+}
+
+.move-white.active, .move-black.active {
+  background-color: #ffeb3b;
+  font-weight: bold;
+}
+
+.move-white:empty, .move-black:empty {
+  cursor: default;
 }

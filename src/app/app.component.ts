@@ -33,7 +33,8 @@ export class AppComponent implements OnInit {
               private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper, 
               private AnalysisApi: AnalysisApi) {}
 
-
+  // Ajouter une propriété pour stocker l'historique des coups
+  moveHistory: any[] = [];
 
   // Méthode pour afficher l'échiquier
   displayChessboard() {
@@ -201,5 +202,17 @@ export class AppComponent implements OnInit {
     */
     
 
+  }
+
+  // Méthode appelée quand la position de l'échiquier change
+  onPositionChanged(fenPosition: string) {
+    console.log('Position FEN mise à jour:', fenPosition);
+    this.currentFen = fenPosition;
+  }
+  
+  // Méthode appelée quand l'historique des coups change
+  onMoveHistoryChanged(moves: any[]) {
+    console.log('Historique des coups mis à jour:', moves);
+    this.moveHistory = moves;
   }
 }

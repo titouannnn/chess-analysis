@@ -178,33 +178,23 @@
 </style>
 
 <main class="main">
-  <div class="right-side">
-    <div class="pill-group">
-      <div>
-        <h1>Bienvenue dans l'application d'analyse d'échecs</h1>
-        
-        <!-- Champ pour entrer une position FEN -->
-        <div class="fen-input-container">
-          <label for="fenInput">Position FEN :</label>
-          <input 
-            type="text" 
-            id="fenInput" 
-            [(ngModel)]="currentFen" 
-            placeholder="Entrez une position FEN"
-            class="fen-input">
-          <button (click)="updatePosition()">Appliquer FEN</button>
-        </div>
-        
-        <!-- Bouton pour basculer l'affichage de l'échiquier -->
-        <button (click)="toggleChessboard()">
-          {{ showChessboard ? 'Masquer' : 'Afficher' }} l'échiquier
-        </button>
-        
-        <!-- Condition pour afficher l'échiquier uniquement si showChessboard est true -->
-        <div *ngIf="showChessboard">
-          <app-chessboard [fen]="currentFen"></app-chessboard>
-        </div>
-      </div>
+  <div class="chess-container">
+    <h2>Échiquier</h2>
+    
+    <app-chessboard
+      [fen]="currentFen"
+      (positionChanged)="onPositionChanged($event)"
+      (moveHistoryChanged)="onMoveHistoryChanged($event)">
+    </app-chessboard>
+  
+    <!-- Optionnel : Ajoutez un affichage des coups -->
+    <div class="move-list" *ngIf="moveHistory && moveHistory.length > 0">
+      <h3>Historique des coups</h3>
+      <ol>
+        <li *ngFor="let move of moveHistory">
+          {{ move.san }} ({{ move.color === 'w' ? 'Blancs' : 'Noirs' }})
+        </li>
+      </ol>
     </div>
   </div>
 </main>

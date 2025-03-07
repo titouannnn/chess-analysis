@@ -1,2 +1,57 @@
-<div class="chessground" #board></div>
-<button (click)="makeMove('e2e4')">Jouer e2-e4</button>
+<div class="chess-layout">
+    <div class="chessboard-container">
+      <div #board class="chessboard"></div>
+      
+      <div class="navigation-controls">
+        <button [disabled]="isAtStart()" (click)="goToStart()" title="Début de la partie">
+          ⏮
+        </button>
+        <button [disabled]="isAtStart()" (click)="goToPreviousMove()" title="Coup précédent">
+          ◀
+        </button>
+        <button [disabled]="isAtEnd()" (click)="goToNextMove()" title="Coup suivant">
+          ▶
+        </button>
+        <button [disabled]="isAtEnd()" (click)="goToEnd()" title="Fin de la partie">
+          ⏭
+        </button>
+      </div>
+    </div>
+  
+    <div class="moves-display">
+        <h3>Historique des coups</h3>
+        <div class="moves-container">
+          <div class="move-row header">
+            <div class="move-number">#</div>
+            <div class="move-white">Blancs</div>
+            <div class="move-black">Noirs</div>
+          </div>
+          
+          <div *ngFor="let move of formattedMoves; let i = index" 
+               class="move-row"
+               [class.variation]="move.isVariation" 
+               [class.active-variation]="move.isActiveVariation">
+            
+            <div class="move-number">{{ i+1 }}.</div>
+            
+            <div class="move-white" 
+                 [class.active]="isActiveMove(move.path, 'white')"
+                 (click)="move.white && move.path && goToPosition(move.path, 'white')">
+              {{ move.white }}
+            </div>
+            
+            <div class="move-black" 
+                 [class.active]="isActiveMove(move.path, 'black')"
+                 (click)="move.black && move.path && goToPosition(move.path, 'black')">
+              {{ move.black }}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+  
+    <div class="pgn-input">
+      <textarea placeholder="Collez votre PGN ici" #pgnInput></textarea>
+      <button (click)="loadPgn(pgnInput.value)">Charger PGN</button>
+    </div>
+  </div>
