@@ -3,7 +3,7 @@ import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
-import { PuzzleScraper } from '../analyse/puzzle'
+import { PuzzleScraper } from '../analyse/puzzle.service'
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
 // import test from 'node:test';
@@ -34,7 +34,7 @@ Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
     //this.lichessTests();
     //this.chess_comTests();
     //this.testPuzzle();
-    this.localAnalysisTests();
+    //this.localAnalysisTests();
   }
 
 

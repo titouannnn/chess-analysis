@@ -1,6 +1,7 @@
 import { Chess } from 'chess.js';
 import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import * as gamesData from '../assets/games_small.json';
 
 // Interface pour typer le résultat de l'analyse de chaque coup
 interface MoveAnalysis {
@@ -310,8 +311,6 @@ export class LocalAnalysis {
         
         return { positions, moves };
     }
-
-
         
         /**
          * Calcule la différence de score entre chaque coup et le précédent
@@ -438,6 +437,190 @@ export class LocalAnalysis {
             const maxAbsScore = Math.max(Math.abs(s1), Math.abs(s2));
             return scoreDifference * (1 - Math.tanh(beta * maxAbsScore));
         }
+
+   
+        /**
+     * Détecte les possibilités de mats et ceux manqués, se concentrant sur la fin des parties
+     * @param playerPseudo Pseudo du joueur à analyser
+     * @param maxGames Nombre maximum de parties à analyser
+     * @param depth Profondeur d'analyse pour Stockfish
+     */
+    async analyzeEndgameMates(playerPseudo: string, maxGames: number = 10, depth: number = 18): Promise<{
+        mateOpportunities: {mateIn1: number, mateIn2: number, mateIn3: number},
+        missedMates: {mateIn1: number, mateIn2: number, mateIn3: number},
+        detailedMissedMates: {position: number, pgn: string, fen: string, bestMove: string, mateIn: number}[]
+    }> {
+        if (!this.isBrowser) {
+        throw new Error("Web Workers ne sont pas disponibles dans cet environnement");
+        }
+    
+        // S'assurer que le moteur est initialisé
+        if (!this.engine) {
+        this.initEngine();
+        }
+    
+        const mateOpportunities = { mateIn1: 0, mateIn2: 0, mateIn3: 0 };
+        const missedMates = { mateIn1: 0, mateIn2: 0, mateIn3: 0 };
+        const detailedMissedMates: {position: number, pgn: string, fen: string, bestMove: string, mateIn: number}[] = [];
+    
+        try {
+        // Récupérer les données des parties
+        const data = (gamesData as any).default || gamesData;
+        if (!Array.isArray(data)) {
+            throw new Error("Le format des données JSON est invalide.");
+        }
+    
+        // Limiter le nombre de parties à analyser
+        let processedGames = 0;
+    
+        // Parcourir toutes les parties du jeu de données
+        for (const item of data) {
+
+            if (processedGames >= maxGames) break;
+    
+            for (const game of item.games) {
+
+                // Extraire la couleur du joueur à analyser
+                const playerColor = game.black.username === playerPseudo ? 'black' : 'white';
+
+                if((playerColor === 'black' && game.black.result === 'win') || (playerColor === 'white' && game.white.result === 'win')) {
+                    if (processedGames >= maxGames) break;
+                    processedGames++;
+                    
+                    console.log(`Analyse de la partie ${processedGames}/${maxGames}`);
+                    
+                    // Extraire les positions et coups
+                    const { positions, moves } = this.extractPositionsAndMoves(game.pgn);
+                    
+                    // Déterminer quelles positions sont jouées par le joueur à analyser
+                    // et se concentrer sur la fin de partie (dernier tiers)
+                    const playerPositions = [];
+                    const playerPositionIndices = []; // Garder trace des indices originaux
+                    const playerMoves = [];
+                    
+                    // Filtrer les positions où c'est au tour du joueur spécifié
+                    for (let i = 0; i < positions.length - 1; i++) {
+                        const activeColor = this.getActiveColorFromFEN(positions[i]);
+                        const isPlayerTurn = (activeColor === 'w' && playerColor === 'white') || 
+                                            (activeColor === 'b' && playerColor === 'black');
+                        
+                        if (isPlayerTurn) {
+                        playerPositions.push(positions[i]);
+                        playerPositionIndices.push(i);
+                        if (i < moves.length) {
+                            playerMoves.push(moves[i]);
+                        }
+                        }
+                    }
+            
+                    // Se concentrer sur la fin de partie (dernier tiers des coups)
+                    const endgameIndex = Math.max(0, Math.floor(playerPositions.length * 2/3));
+                    const endgamePositions = playerPositions.slice(endgameIndex);
+                    const endgamePositionIndices = playerPositionIndices.slice(endgameIndex);
+                    const endgameMoves = playerMoves.slice(endgameIndex);
+                    
+                    console.log(`Analyse de ${endgamePositions.length} positions de fin de partie`);
+                    
+                    // Analyser chaque position de fin de partie
+                    for (let i = 0; i < endgamePositions.length; i++) {
+                        try {
+                        const activeColor = this.getActiveColorFromFEN(endgamePositions[i]);
+                        const chess = new Chess(endgamePositions[i]); // Créer une instance pour cette position
+                        
+                        // Analyser la position
+                        const analysis = await this.evaluatePosition(endgamePositions[i], depth, activeColor);
+                        
+                        // Vérifier si l'évaluation indique un mat
+                        if (analysis.evaluation && analysis.evaluation.type === 'mate') {
+                            const mateInMoves = analysis.evaluation.score;
+                            
+                            // Si le score est positif, c'est un mat pour le joueur actif
+                            if (mateInMoves > 0 && mateInMoves <= 3) {
+                                // Incrémenter le compteur approprié
+                                if (mateInMoves === 1) mateOpportunities.mateIn1++;
+                                else if (mateInMoves === 2) mateOpportunities.mateIn2++;
+                                else if (mateInMoves === 3) mateOpportunities.mateIn3++;
+                            
+                                // Vérifier si le joueur a manqué ce mat
+                                if (i < endgameMoves.length) {
+                                    const bestMoveUCI = analysis.bestMove;
+                                    
+                                    // Convertir le UCI move en SAN move pour comparaison
+                                    let bestMoveSAN = "";
+                                    try {
+                                        // Extraire origine et destination du format UCI 
+                                        const from = bestMoveUCI.substring(0, 2);
+                                        const to = bestMoveUCI.substring(2, 4);
+                                        const promotion = bestMoveUCI.length > 4 ? bestMoveUCI.substring(4, 5) : undefined;
+                                        
+                                        // Tenter de jouer le coup sur la position
+                                        const moveObj = {
+                                            from: from,
+                                            to: to,
+                                            promotion: promotion
+                                        };
+                                        
+                                        // Obtenir la notation SAN
+                                        const move = chess.move(moveObj);
+                                        if (move) {
+                                            bestMoveSAN = move.san;
+                                            chess.undo(); // Annuler le coup pour revenir à la position originale
+                                        }
+                                    } catch (error) {
+                                        console.error(`Erreur lors de la conversion UCI->SAN: ${bestMoveUCI}`, error);
+                                    }
+                                    
+                                    const actualMove = endgameMoves[i];
+                                    
+                                    // Maintenant comparer les deux en format SAN
+                                    console.log(`Comparing actual move: ${actualMove} with best move: ${bestMoveSAN}`);
+                                    if (bestMoveSAN && actualMove !== bestMoveSAN) {
+                                        // Incrémenter le compteur de mats manqués
+                                        if (mateInMoves === 1) missedMates.mateIn1++;
+                                        else if (mateInMoves === 2) missedMates.mateIn2++;
+                                        else if (mateInMoves === 3) missedMates.mateIn3++;
+                                        
+                                        // Ajouter aux détails
+                                        detailedMissedMates.push({
+                                            position: endgamePositionIndices[i],
+                                            pgn: game.pgn,
+                                            fen: endgamePositions[i],
+                                            bestMove: bestMoveSAN || bestMoveUCI, // Utiliser SAN si disponible, sinon UCI
+                                            mateIn: mateInMoves
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        } catch (error) {
+                        console.error(`Erreur lors de l'analyse de la position ${i}:`, error);
+                        }
+                    }
+                } else {
+                    console.log("Partie perdue, on passe à la suivante");
+                }
+            }
+        }
+        
+        
+        console.log("Analyse des mats terminée:", {
+            mateOpportunities,
+            missedMates,
+            detailedMissedMates
+        });
+        
+        return {
+            mateOpportunities,
+            missedMates,
+            detailedMissedMates
+        };
+        } catch (error) {
+        console.error("Erreur lors de l'analyse des mats:", error);
+        throw error;
+        }
+  }
+
+
 
     // Nettoyage quand le service est détruit
     ngOnDestroy() {
