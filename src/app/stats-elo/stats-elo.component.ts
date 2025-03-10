@@ -1,4 +1,4 @@
-import { afterNextRender,OnInit, Component, ElementRef, Injectable, ViewChild } from '@angular/core';
+import { afterNextRender,OnInit,Component, ElementRef, Injectable, ViewChild } from '@angular/core';
 import { Api, Constantes } from '../../api/api.service';
 import * as Plot from "@observablehq/plot";
 import { time } from 'console';
@@ -8,7 +8,7 @@ import { ActivatedRoute , Params } from '@angular/router';
 
 
 @Component({
-  selector: 'app-stats-elo:not(p)',
+  selector: 'app-elo-stats-custom',
   imports: [],
   templateUrl: './stats-elo.component.html',
   styleUrl: './stats-elo.component.css'
@@ -28,13 +28,20 @@ export class StatsEloComponent implements OnInit {
     })
   }
 
+  // Définir correctement ngOnInit
   ngOnInit(): void {
-    // Récupérer le pseudo depuis les paramètres de la route
+    // On s'assure que les paramètres sont bien chargés avant de manipuler les données
     this.route.queryParams.subscribe((params: Params) => {
       this.pseudo = params['pseudo'];
+
+      // Après avoir récupéré le pseudo, on affiche les stats ELO
+      if (this.eloStats) {
+        this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+      }
     });
-    this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
   }
+
+ 
   /**
    * 
    * Méthode à utiliser uniquement avec afterNextRender, ou afterRender
@@ -42,17 +49,17 @@ export class StatsEloComponent implements OnInit {
    * 
    * Ce graphe va correspondre au différents niveau d'Elo de Chess.com
    */
-  showEloStat( time_class ?: Constantes.TypeJeuChessCom ){
+  showEloStat(time_class?: Constantes.TypeJeuChessCom): void {
     const eloList = this.api.getElo(time_class);
-    
+
     let plot = Plot.plot({
       marks: [
-        Plot.lineY(eloList, {y: "rating", x: "timestamp"})
+        Plot.lineY(eloList, { y: 'rating', x: 'timestamp' })
       ]
-    })
-    this.eloStats.nativeElement.replaceChildren( plot );
-    console.log("Plot append correctement, elo : ", eloList);
+    });
 
+    if (this.eloStats) {
+      this.eloStats.nativeElement.replaceChildren(plot);
+    }
   }
 }
-

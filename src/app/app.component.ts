@@ -8,10 +8,14 @@ import { Chess } from 'chess.js';
 import { Api, Constantes } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { AnalysisApi } from '../api/analysisApi.service';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
 
 @Component({
-  selector: 'app-root:not(p)',
-  imports: [HomeComponent],
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterModule ,FormsModule ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })

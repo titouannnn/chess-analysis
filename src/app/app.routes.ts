@@ -5,5 +5,5 @@ import { StatsEloComponent } from './stats-elo/stats-elo.component';  // Importe
 
 export const routes: Routes = [
     {path:'', component:HomeComponent},
-    { path: 'stats', component: StatsEloComponent }
+    {path: 'stats', component: StatsEloComponent }
 ];

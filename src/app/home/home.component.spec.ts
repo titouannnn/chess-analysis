@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-home-page-custom',
   standalone: true,
   imports: [CommonModule,FormsModule],
   templateUrl: './home.component.html',
