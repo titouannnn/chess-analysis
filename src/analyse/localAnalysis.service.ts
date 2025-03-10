@@ -182,20 +182,25 @@ export class LocalAnalysis {
      * @param depth Profondeur d'analyse pour Stockfish
      * @returns Un tableau avec l'analyse de chaque coup
      */
-    async analyzeGame(pgn: string, depth: number = 15): Promise<MoveAnalysis[]> {
+    async analyzeGame(pgn: string, depth: number = 15, progressCallback?: (progress: number) => void): Promise<MoveAnalysis[]> {
         console.log("Analyse de la partie");
+        // Variables pour la progression
+        let totalPositions = 0;
+        let analyzedPositions = 0;
+        
         // Vérifier l'environnement d'exécution
         if (!this.isBrowser) {
             throw new Error("Web Workers ne sont pas disponibles dans cet environnement");
         }
-
+    
         // S'assurer que le moteur est initialisé
         if (!this.engine) {
             this.initEngine();
         }
-
+    
         // Extraire les positions et coups
         const { positions, moves } = this.extractPositionsAndMoves(pgn);
+        totalPositions = positions.length;
         const analyses: MoveAnalysis[] = [];
         
         // On analyse chaque position
@@ -237,14 +242,22 @@ export class LocalAnalysis {
                         depth: analysis.depth
                     });
                 }
+                
+                // Mise à jour de la progression
+                analyzedPositions++;
+                if (progressCallback && totalPositions > 0) {
+                    const progress = Math.min(100, Math.round((analyzedPositions / totalPositions) * 100));
+                    progressCallback(progress);
+                }
             } catch (error) {
                 console.error(`Erreur lors de l'analyse du coup ${i}:`, error);
             }
         }
         
         console.log("Analyse terminée: ", analyses);
-        console.log("Deltas calculés : ", this.ErrorAnalysis(analyses));
-        return analyses;
+        console.log("Nombre total de positions analysées:", analyses.length);
+        const analyzedWithDeltas = this.ErrorAnalysis(analyses);
+        return analyzedWithDeltas;
     }
     
     /**
@@ -400,7 +413,8 @@ export class LocalAnalysis {
             ];
 
             // Trier les coups par delta décroissant (les erreurs les plus importantes en premier)
-            return analyzedMoves.sort((a, b) => (b.delta || 0) - (a.delta || 0));
+            //return analyzedMoves.sort((a, b) => (b.delta || 0) - (a.delta || 0));
+            return analyzedMoves;
         }
         
         // Helper method to convert any evaluation type to a numeric score

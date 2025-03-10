@@ -77,7 +77,7 @@ export class AppComponent implements OnInit {
     //this.testPuzzle();
 
     //this.localAnalysisTests();
-    this.localAnalysisTests();
+    //this.localAnalysisTests();
     this.displayChessboard();
   }
 
