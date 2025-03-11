@@ -247,19 +247,12 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   }
 
   updateFormattedMoves() {
-    console.log(
-      "Updating formatted moves, moves array length:",
-      this.moves.length
-    );
     this.formattedMoves = [];
 
     for (let i = 0; i < this.moves.length; i += 2) {
       const whiteMove = this.moves[i] ? this.moves[i].san : "";
       const blackMove = this.moves[i + 1] ? this.moves[i + 1].san : "";
 
-      console.log(
-        `Move ${i / 2 + 1}: White: ${whiteMove}, Black: ${blackMove}`
-      );
 
       this.formattedMoves.push({
         white: whiteMove,
@@ -267,7 +260,6 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       });
     }
 
-    console.log("Formatted moves array length:", this.formattedMoves.length);
   }
 
   // Méthode pour aller à un coup spécifique
@@ -554,7 +546,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
 
     this.currentVariation.nodes.push(moveNode);
     this.currentNode = moveNode;
-
+    this.updateArrowsForMove(moveNode);
     // Mettre à jour l'historique linéaire
     this.history.push(newFen);
     this.moves.push(move);
@@ -859,6 +851,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     // Mise à jour de l'affichage actif (si un nœud existe)
     const node = this.findNodeByIndex(this.currentMoveIndex);
     if (node) {
+      this.updateArrowsForMove(node);
       const newPath = this.getPathToNode(node);
       this.activeMovePath = newPath ?? undefined;
       this.activeColor = node.move.color === 'w' ? 'white' : 'black';
@@ -903,6 +896,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     // Mise à jour du coup actif
     const node = this.findNodeByIndex(this.currentMoveIndex);
     if (node) {
+      this.updateArrowsForMove(node);
       const newPath = this.getPathToNode(node);
       this.activeMovePath = newPath ?? undefined;
       this.activeColor = node.move.color === 'w' ? 'white' : 'black';
@@ -939,6 +933,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     if (node) {
       this.currentNode = node;
       const newPath = this.getPathToNode(node);
+      
       // Utilisez cette syntaxe pour éviter l'erreur Type 'number[] | null'
       this.activeMovePath = newPath ?? undefined;
       // Important: utilisez la couleur réelle du nœud
@@ -963,13 +958,17 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: lastMove,
     });
-  
+    
     this.isReviewing = true;
     this.positionChanged.emit(fen);
+    if (node) {
+      this.updateArrowsForMove(node);
+    }
   }
 
   // Aller au coup suivant
   goToNextMove() {
+    
     if (this.currentMoveIndex >= this.history.length - 1) return;
   
     this.currentMoveIndex++;
@@ -1009,7 +1008,9 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     if (this.currentMoveIndex === this.history.length - 1) {
       this.isReviewing = false;
     }
-  
+    if (node) {
+      this.updateArrowsForMove(node);
+    }
     this.positionChanged.emit(fen);
   }
 
@@ -1215,21 +1216,22 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
 
   // Naviguer vers une position spécifique
   // Corriger la méthode goToPosition pour bien mettre à jour l'évaluation
+  // Modifiez votre méthode goToPosition pour appliquer les flèches APRÈS la mise à jour de l'échiquier
   goToPosition(path: number[] | undefined, color: "white" | "black"): void {
     if (!path) return;
-  
+
     const node = this.findNodeByPath(path);
     if (!node) return;
-  
+
     console.log("Navigation vers le nœud:", node);
-  
+
     // Charger la position FEN de ce nœud
     this.chess.load(node.fen);
-  
-    // CORRECTION: Utiliser la couleur réelle du coup depuis le nœud, non pas le paramètre
+
+    // Utiliser la couleur réelle du coup via node.move.color
     const actualColor = node.move.color === 'w' ? "white" : "black";
-  
-    // Mettre à jour l'interface
+
+    // IMPORTANT: D'abord mettre à jour l'échiquier
     this.chessground.set({
       fen: node.fen,
       turnColor: this.chess.turn() === "w" ? "white" : "black",
@@ -1239,30 +1241,27 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: [node.move.from, node.move.to],
     });
-  
-    // Mettre à jour l'état courant
+
+    // Mise à jour de l'état courant
     this.currentNode = node;
     this.currentVariation = this.findVariationForNode(node);
     this.isReviewing = true;
-  
-    // Sauvegarder les évaluations actuelles avant de recréer les formattedMoves
+
     this.saveCurrentEvaluations();
-  
-    // Mettre à jour l'affichage des variantes
     this.updateFormattedMovesWithVariations();
-    
-    // Restaurer les évaluations
     this.restoreEvaluations();
-    
-    // CORRECTION: Utiliser la couleur réelle du coup, pas le paramètre
+
     this.activeMovePath = [...path];
-    this.activeColor = actualColor; 
-  
-    // CORRECTION: Passer la couleur réelle à updateCurrentEvaluation
+    this.activeColor = actualColor;
+
     this.updateCurrentEvaluation(path, actualColor);
     console.log(`Mise à jour du coup actif: chemin=${path}, couleur=${actualColor}, évaluation=${this.currentEvaluation}`);
-  
-    // Émettre l'événement de changement de position
+
+    // IMPORTANT: Dessiner les flèches EN DERNIER après un court délai
+    setTimeout(() => {
+      this.updateArrowsForMove(node);
+    }, 50);
+
     this.positionChanged.emit(node.fen);
   }
 
@@ -1960,5 +1959,91 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       }
     }
     return groups;
+  }
+
+  // Ajoutez cette méthode dans votre ChessboardComponent
+
+  private updateArrowsForMove(node: MoveNode): void {
+    console.log("Préparation des flèches pour le nœud:", node);
+    
+    // Créer un tableau de formes vide
+    const shapes: Array<{ orig: string; dest: string; brush: string; shape: string }> = [];
+    
+    // Trouver le PROCHAIN coup dans la même variante pour la flèche rouge
+    const nextNode = this.findNextNode(node);
+    if (nextNode && nextNode.move.from && nextNode.move.to) {
+      console.log("Coup suivant trouvé:", nextNode.move.from, "→", nextNode.move.to);
+      shapes.push({
+        orig: nextNode.move.from,
+        dest: nextNode.move.to,
+        brush: 'red',
+        shape: 'arrow'
+      });
+      
+      // Flèche bleue pour le meilleur coup suivant (pas celui du coup actuel)
+      // Récupérer le chemin du PROCHAIN nœud
+      const nextPath = this.getPathToNode(nextNode);
+      if (nextPath) {
+        // Utiliser la couleur du PROCHAIN coup pour déterminer la clé
+        const nextKey = nextNode.move.color === 'w' ? `w_${nextPath.join('_')}` : `b_${nextPath.join('_')}`;
+        const nextEvalData = this.moveEvaluations.get(nextKey);
+        if (nextEvalData?.bestMove?.length === 4) {
+          shapes.push({
+            orig: nextEvalData.bestMove.substring(0, 2),
+            dest: nextEvalData.bestMove.substring(2, 4),
+            brush: 'blue',
+            shape: 'arrow'
+          });
+          console.log("Meilleur coup alternatif trouvé:", nextEvalData.bestMove.substring(0, 2), "→", nextEvalData.bestMove.substring(2, 4));
+        }
+      }
+    } else {
+      console.log("Pas de coup suivant disponible");
+      
+      // Si pas de coup suivant, essayer de trouver le meilleur coup pour la position actuelle
+      // La couleur du joueur actuel est l'opposé de celle du nœud actuel
+      const currentColor = node.move.color === 'w' ? 'b' : 'w';
+      const fenParts = node.fen.split(' ');
+      
+      // Vérifier si le joueur actuel correspond bien à la couleur dans le FEN
+      if (fenParts[1] === currentColor) {
+        // Chercher dans moveEvaluations s'il existe une entrée pour cette position
+        // Logique supplémentaire pour chercher le meilleur coup pour la position actuelle
+        // (Cette partie nécessiterait une autre approche, car votre structure stocke les évaluations par coups joués)
+      }
+    }
+    
+    // Appliquer les flèches avec un léger délai pour s'assurer que l'échiquier est prêt
+    setTimeout(() => {
+      this.chessground.set({
+        drawable: {
+          enabled: true,
+          visible: true,
+          autoShapes: [],
+          shapes: shapes
+        }
+      });
+      console.log("Flèches appliquées:", shapes);
+    }, 50);
+  }
+
+  private findNextNode(currentNode: MoveNode): MoveNode | null {
+    if (!currentNode) return null;
+    
+    // Déterminer la variante contenant ce nœud
+    const variation = this.findVariationForNode(currentNode);
+    if (!variation || !variation.nodes || variation.nodes.length === 0) return null;
+    
+    // Trouver l'index du nœud actuel dans cette variante
+    const nodeIndex = variation.nodes.indexOf(currentNode);
+    if (nodeIndex === -1) return null;
+    
+    // S'il y a un nœud suivant dans cette variante, le renvoyer
+    if (nodeIndex < variation.nodes.length - 1) {
+      return variation.nodes[nodeIndex + 1];
+    }
+    
+    // Sinon, pas de coup suivant dans cette variante
+    return null;
   }
 }
