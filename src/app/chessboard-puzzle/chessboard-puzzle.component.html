@@ -1,32 +1,36 @@
 <div class="puzzle-container">
   <div class="puzzle-header">
-    <h2>Chess Puzzle</h2>
-    <div class="puzzle-info" *ngIf="currentPuzzle">
-      <span class="puzzle-rating">Rating: {{ puzzleRating }}</span>
-      <span class="puzzle-themes">Themes: {{ puzzleThemes }}</span>
+    <h2>Puzzle d'échecs</h2>
+    <div *ngIf="currentPuzzle" class="puzzle-info">
+      <span>Rating: {{ puzzleRating }}</span>
+      <span>Thèmes: {{ puzzleThemes }}</span>
+    </div>
+    <div class="turn-indicator" [class.player-turn]="isPlayerTurn" [class.computer-turn]="!isPlayerTurn">
+      {{ isPlayerTurn ? 'À vous de jouer' : 'L\'ordinateur joue...' }}
     </div>
   </div>
-
+  
   <div class="chessboard-wrapper" [class.puzzle-error]="puzzleError">
     <app-chessboard 
       #chessboard 
-      [fen]="currentFen"
-      (moveHistoryChanged)="onBoardMove($event[0])">
+      [fen]="currentFen">
     </app-chessboard>
   </div>
 
   <div class="puzzle-status">
     <div *ngIf="puzzleComplete" class="puzzle-complete">
-      <h3>Puzzle Completed!</h3>
-      <button (click)="loadNextPuzzle()">Next Puzzle</button>
+      <h3>Puzzle réussi !</h3>
+      <button (click)="loadNextPuzzle()">Puzzle suivant</button>
     </div>
     
     <div *ngIf="puzzleError" class="puzzle-error-message">
-      Incorrect move. Try again!
+      Coup incorrect. Essayez à nouveau!
     </div>
-    
-    <div *ngIf="errorMessage" class="error-message">
-      {{ errorMessage }}
-    </div>
+  </div>
+
+  <div class="debug-info" *ngIf="currentPuzzle">
+    <p>Puzzle ID: {{ currentPuzzle.PuzzleId }}</p>
+    <p>Mouvements à effectuer: {{ currentPuzzle.Moves }}</p>
+    <p>Indice de mouvement actuel: {{ currentMoveIndex }}</p>
   </div>
 </div>

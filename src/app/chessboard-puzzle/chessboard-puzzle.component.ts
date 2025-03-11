@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { Chess } from 'chess.js';
@@ -16,6 +16,7 @@ interface Puzzle {
 interface ChessMove {
   from: string;
   to: string;
+  promotion?: string;
 }
 
 @Component({
@@ -25,7 +26,7 @@ interface ChessMove {
   templateUrl: './chessboard-puzzle.component.html',
   styleUrl: './chessboard-puzzle.component.css'
 })
-export class ChessboardPuzzleComponent implements OnInit {
+export class ChessboardPuzzleComponent implements OnInit, AfterViewInit {
   @ViewChild('chessboard') chessboard!: ChessboardComponent;
 
   puzzles: Puzzle[] = [];
@@ -41,6 +42,8 @@ export class ChessboardPuzzleComponent implements OnInit {
   puzzleRating: number = 0;
   puzzleThemes: string = '';
   isPlayerTurn: boolean = true;
+  private isResetting: boolean = false;
+  private isProcessingEvent: boolean = false;
 
   private chess = new Chess();
 
@@ -50,16 +53,32 @@ export class ChessboardPuzzleComponent implements OnInit {
     this.loadPuzzles();
   }
 
+  ngAfterViewInit(): void {
+    if (this.chessboard) {
+      console.log('Chessboard component initialized');
+      
+      // On écoute les événements moveHistoryChanged qui nous donnent les mouvements effectués
+      this.chessboard.moveHistoryChanged.subscribe((moves: any[]) => {
+        if (this.isResetting || this.isProcessingEvent) return;
+        
+        console.log('Move history changed:', moves);
+        if (moves && moves.length > 0) {
+          const lastMove = moves[moves.length - 1];
+          this.handlePlayerMove(lastMove);
+        }
+      });
+    }
+  }
+
   loadPuzzles(): void {
     try {
       const data = (puzzlesData as any).default || puzzlesData;
       if (!Array.isArray(data)) {
-        this.errorMessage = "Invalid JSON data format";
+        this.errorMessage = "Format JSON invalide";
         return;
       }
       
-      // Take the first 100 puzzles as sample
-      this.puzzles = data.slice(0, 10).filter(item => 
+      this.puzzles = data.filter(item => 
         item.PuzzleId && item.FEN && item.Moves && 
         typeof item.Moves === 'string' && item.Moves.length >= 4
       ).map((item: any) => ({
@@ -73,21 +92,20 @@ export class ChessboardPuzzleComponent implements OnInit {
       
       console.log(`Loaded ${this.puzzles.length} puzzles`);
       
-      // Load the first puzzle once data is ready
       if (this.puzzles.length > 0) {
         this.loadRandomPuzzle();
       } else {
-        this.errorMessage = "No puzzles available";
+        this.errorMessage = "Aucun puzzle disponible";
       }
     } catch (error) {
-      console.error("Error loading puzzles:", error);
-      this.errorMessage = "Failed to load puzzles";
+      console.error("Erreur lors du chargement des puzzles:", error);
+      this.errorMessage = "Échec du chargement des puzzles";
     }
   }
 
   loadRandomPuzzle(): void {
     if (this.puzzles.length === 0) {
-      this.errorMessage = 'No puzzles available.';
+      this.errorMessage = 'Aucun puzzle disponible.';
       return;
     }
 
@@ -105,8 +123,10 @@ export class ChessboardPuzzleComponent implements OnInit {
     this.errorMessage = '';
     this.currentMoveIndex = 0;
     this.isPlayerTurn = true;
-
-    // Set up the puzzle
+    this.isResetting = false;
+    this.isProcessingEvent = false;
+    
+    // Setup puzzle
     this.currentFen = this.currentPuzzle.FEN;
     this.puzzleRating = this.currentPuzzle.Rating;
     this.puzzleThemes = this.currentPuzzle.Themes;
@@ -114,37 +134,36 @@ export class ChessboardPuzzleComponent implements OnInit {
     // Parse moves correctly
     this.parseMoves();
 
-    // Initialize the chess engine with the puzzle position
+    // Initialize chess engine
     this.chess.load(this.currentFen);
 
-    // If the ChessboardComponent is already initialized, reset it
+    // Reset chessboard component
     if (this.chessboard) {
       setTimeout(() => {
         this.chessboard.resetBoard();
         this.chessboard.fen = this.currentFen;
-      });
+      }, 100);
     }
   }
 
   parseMoves(): void {
-    if (!this.currentPuzzle || !this.currentPuzzle.Moves) {
-      return;
-    }
+    if (!this.currentPuzzle || !this.currentPuzzle.Moves) return;
     
     const movesStr = this.currentPuzzle.Moves;
     this.playerMoves = [];
     this.opponentMoves = [];
     this.allMoves = [];
     
-    // Split moves into chunks of 4 characters (fromTo format)
-    const movesList = movesStr.match(/.{1,4}/g) || [];
+    console.log('Parsing moves string:', movesStr);
+    const movesList = movesStr.split(' ');
     
     // Process each move
     movesList.forEach((move, index) => {
-      if (move.length === 4) {
-        const chessMove = {
+      if (move.length >= 4) {
+        const chessMove: ChessMove = {
           from: move.substring(0, 2),
-          to: move.substring(2, 4)
+          to: move.substring(2, 4),
+          promotion: move.length > 4 ? move.substring(4, 5) : undefined
         };
         
         // Even indices are player moves, odd indices are opponent moves
@@ -160,73 +179,181 @@ export class ChessboardPuzzleComponent implements OnInit {
     
     console.log('Player moves:', this.playerMoves);
     console.log('Opponent moves:', this.opponentMoves);
+    console.log('All moves:', this.allMoves);
   }
 
-  onBoardMove(move: any): void {
-    if (!this.isPlayerTurn) return;
+  handlePlayerMove(move: any): void {
+    if (!this.isPlayerTurn || this.isResetting || this.isProcessingEvent) {
+      console.log('Move ignored: not player turn or resetting');
+      return;
+    }
     
-    const expectedMove = this.playerMoves[Math.floor(this.currentMoveIndex / 2)];
+    this.isProcessingEvent = true;
     
-    if (move.from === expectedMove.from && move.to === expectedMove.to) {
-      // Correct move
-      this.currentMoveIndex++;
-      this.isPlayerTurn = false;
+    const expectedMoveIndex = Math.floor(this.currentMoveIndex / 2);
+    console.log('Expected move index:', expectedMoveIndex, 'Current index:', this.currentMoveIndex);
+    
+    if (!this.playerMoves || expectedMoveIndex >= this.playerMoves.length) {
+      console.error('No expected move found at index', expectedMoveIndex);
+      this.isProcessingEvent = false;
+      return;
+    }
+    
+    const expectedMove = this.playerMoves[expectedMoveIndex];
+    const moveFrom = move.from || "";
+    const moveTo = move.to || "";
+    
+    console.log(`Player move: ${moveFrom}${moveTo}, Expected: ${expectedMove.from}${expectedMove.to}`);
+    
+    // Calculate expected FEN after the expected move
+    const tempChess = new Chess(this.chess.fen());
+    tempChess.move({
+      from: expectedMove.from,
+      to: expectedMove.to,
+      promotion: expectedMove.promotion || 'q'
+    });
+    const expectedFEN = tempChess.fen();
+    
+    // Make the actual move on another temp chess instance
+    const actualChess = new Chess(this.chess.fen());
+    try {
+      actualChess.move({
+        from: moveFrom,
+        to: moveTo,
+        promotion: move.promotion || 'q'
+      });
+      const actualFEN = actualChess.fen();
       
-      // If there are more moves in the sequence, make the opponent's move
-      if (this.currentMoveIndex < this.allMoves.length) {
-        setTimeout(() => {
-          this.makeNextOpponentMove();
-        }, 500);
+      // Compare the FENs (ignoring move counters which might differ)
+      const expectedFENParts = expectedFEN.split(' ');
+      const actualFENParts = actualFEN.split(' ');
+      
+      // Compare only the piece positions, active color, and castling rights
+      const isCorrectMove = (
+        expectedFENParts[0] === actualFENParts[0] &&
+        expectedFENParts[1] === actualFENParts[1] &&
+        expectedFENParts[2] === actualFENParts[2]
+      );
+      
+      if (isCorrectMove) {
+        // Correct move
+        console.log('Correct move!');
+        this.chess.move({from: moveFrom, to: moveTo, promotion: move.promotion || 'q'});
+        this.currentMoveIndex++;
+        this.isPlayerTurn = false;
+        
+        // If there are more moves in the sequence, make the opponent's move
+        if (this.currentMoveIndex < this.allMoves.length) {
+          setTimeout(() => {
+            this.makeNextOpponentMove();
+          }, 500);
+        } else {
+          // Puzzle completed
+          this.puzzleComplete = true;
+        }
       } else {
-        // Puzzle completed
-        this.puzzleComplete = true;
+        // Incorrect move, revert to the previous position
+        console.log('Incorrect move! Expected FEN:', expectedFEN, 'Actual FEN:', actualFEN);
+        this.puzzleError = true;
+        this.revertToCurrentPosition();
+        
+        setTimeout(() => {
+          this.puzzleError = false;
+        }, 1000);
       }
-    } else {
-      // Incorrect move, revert to the previous position
+    } catch (e) {
+      // Invalid move
+      console.error('Invalid move:', e);
       this.puzzleError = true;
+      this.revertToCurrentPosition();
+      
       setTimeout(() => {
-        // Reset board to the current puzzle position
-        this.chessboard.resetBoard();
-        this.chessboard.fen = this.getCurrentPosition();
         this.puzzleError = false;
-      }, 300);
+      }, 1000);
+    }
+    
+    setTimeout(() => {
+      this.isProcessingEvent = false;
+    }, 200);
+  }
+
+  revertToCurrentPosition(): void {
+    this.isResetting = true;
+    console.log('Reverting to current position');
+    
+    // Reset to the current position based on the moves made so far
+    this.chess.load(this.currentPuzzle!.FEN);
+    
+    // Replay moves up to the current index
+    for (let i = 0; i < this.currentMoveIndex; i++) {
+      const move = this.allMoves[i];
+      this.chess.move({
+        from: move.from,
+        to: move.to,
+        promotion: move.promotion || 'q'
+      });
+    }
+    
+    const currentPosition = this.chess.fen();
+    
+    // Apply the position to the chessboard
+    if (this.chessboard) {
+      // First reset the board to clear all pieces
+      this.chessboard.resetBoard();
+      
+      // Then set the new position
+      setTimeout(() => {
+        this.chessboard.fen = currentPosition;
+        
+        setTimeout(() => {
+          this.isResetting = false;
+        }, 200);
+      }, 50);
+    } else {
+      this.isResetting = false;
     }
   }
 
   makeNextOpponentMove(): void {
-  const opponentMoveIndex = Math.floor(this.currentMoveIndex / 2);
-  
-  if (opponentMoveIndex < this.opponentMoves.length) {
-    const opponentMove = this.opponentMoves[opponentMoveIndex];
+    this.isResetting = true;
     
-    // Convert the move object to a string format that makeMove() accepts
-    const moveString = `${opponentMove.from}${opponentMove.to}`;
+    const opponentMoveIndex = Math.floor(this.currentMoveIndex / 2);
+    console.log('Making opponent move:', opponentMoveIndex);
     
-    // Make the move on the chessboard using string notation
-    this.chessboard.makeMove(moveString);
-    
-    // Increment move index and set back to player's turn
-    this.currentMoveIndex++;
-    this.isPlayerTurn = true;
-  }
-}
-
-  getCurrentPosition(): string {
-    // Reset chess engine
-    this.chess.load(this.currentPuzzle!.FEN);
-    
-    // Apply moves up to the current index (excluding player's incorrect move)
-    for (let i = 0; i < this.currentMoveIndex; i++) {
-      const move = this.allMoves[i];
+    if (opponentMoveIndex < this.opponentMoves.length) {
+      const opponentMove = this.opponentMoves[opponentMoveIndex];
+      console.log('Opponent move:', opponentMove);
       
+      // Update internal chess engine state
       this.chess.move({
-        from: move.from,
-        to: move.to,
-        promotion: 'q' // Default to queen for simplicity
+        from: opponentMove.from,
+        to: opponentMove.to,
+        promotion: opponentMove.promotion || 'q'
       });
+      
+      // Get the updated FEN
+      this.currentFen = this.chess.fen();
+      
+      // Update the chessboard - IMPORTANT: Use a complete reset + set FEN approach
+      if (this.chessboard) {
+        this.chessboard.resetBoard();
+        
+        setTimeout(() => {
+          // Set the new FEN
+          this.chessboard.fen = this.currentFen;
+          
+          // Increment move index and set back to player's turn
+          this.currentMoveIndex++;
+          this.isPlayerTurn = true;
+          
+          setTimeout(() => {
+            this.isResetting = false;
+          }, 200);
+        }, 50);
+      }
+    } else {
+      this.isResetting = false;
     }
-    
-    return this.chess.fen();
   }
 
   loadNextPuzzle(): void {
