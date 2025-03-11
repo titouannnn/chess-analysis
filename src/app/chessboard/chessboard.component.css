@@ -846,3 +846,168 @@
   flex: 0 0 auto;
   white-space: nowrap;
 }
+
+/* Ajoutez ce code dans chessboard.component.css */
+.board-container {
+  display: flex;
+  align-items: stretch;
+}
+
+.eval-bar {
+  width: 30px;
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 3px;
+  margin-right: 10px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.black-bar {
+  width: 100%;
+  background-color: #4d4d4d;
+  transition: height 0.5s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.zero-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(214, 79, 0, 0.4);
+  z-index: 1;
+}
+
+.eval-number {
+  position: absolute;
+  bottom: 5px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.precision-indicator {
+  position: absolute;
+  bottom: 25px;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+/* Classes d'évaluation */
+.evaluation-positive {
+  color: #15781B;
+}
+
+.evaluation-negative {
+  color: #882020;
+}
+
+.evaluation-equal {
+  color: #7d7d7d;
+}
+
+.evaluation-winning-mate {
+  color: #15781B;
+  font-weight: bold;
+}
+
+.evaluation-losing-mate {
+  color: #882020;
+  font-weight: bold;
+}
+
+/* Classes de précision */
+.precision-excellent {
+  color: #15781B;
+}
+
+.precision-good {
+  color: #4d7c0f;
+}
+
+.precision-inaccuracy {
+  color: #ca8a04;
+}
+
+.precision-mistake {
+  color: #ea580c;
+}
+
+.precision-blunder {
+  color: #b91c1c;
+}
+
+/* Ajoutez ces styles dans votre CSS si nécessaire */
+.board-container {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+
+.eval-bar {
+  width: 30px;
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 3px;
+  margin-right: 10px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  height: 600px;  /* Ajustez à la taille de votre échiquier */
+}
+
+.black-bar {
+  width: 100%;
+  background-color: #4d4d4d;
+  transition: height 0.5s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.zero-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(214, 79, 0, 0.4);
+  z-index: 1;
+}
+
+.eval-number {
+  position: absolute;
+  bottom: 5px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.precision-indicator {
+  position: absolute;
+  bottom: 25px;
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 2;
+}
+
+.chessboard {
+  flex: 1;
+  width: 600px;  /* Augmenté de 500px à 600px */
+  height: 600px; /* Augmenté de 500px à 600px pour garder le ratio 1:1 */
+}

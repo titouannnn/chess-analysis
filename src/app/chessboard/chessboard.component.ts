@@ -856,6 +856,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       this.activeMovePath = newPath ?? undefined;
       this.activeColor = node.move.color === 'w' ? 'white' : 'black';
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
+      this.updatePrecision(newPath ?? undefined, this.activeColor);
+
     } else {
       // Pour la position initiale sans coup joué, on peut réinitialiser
       this.currentEvaluation = "0.00";
@@ -901,6 +903,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       this.activeMovePath = newPath ?? undefined;
       this.activeColor = node.move.color === 'w' ? 'white' : 'black';
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
+      this.updatePrecision(newPath ?? undefined, this.activeColor);
+
     } else {
       this.currentEvaluation = "0.00";
       this.activeMovePath = undefined;
@@ -940,7 +944,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       this.activeColor = node.move.color === 'w' ? 'white' : 'black';
       // Passer la couleur réelle à updateCurrentEvaluation
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
-      
+      this.updatePrecision(newPath ?? undefined, this.activeColor);
+
       // Ajouter du logging pour le débogage
       console.log(`Coup actif mis à jour: chemin=${JSON.stringify(this.activeMovePath)}, couleur=${this.activeColor}`);
     }else {
@@ -989,7 +994,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       this.activeColor = node.move.color === 'w' ? 'white' : 'black';
       // Passer la couleur réelle à updateCurrentEvaluation
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
-      
+      this.updatePrecision(newPath ?? undefined, this.activeColor);
+
       // Ajouter du logging pour le débogage
       console.log(`Coup actif mis à jour: chemin=${JSON.stringify(this.activeMovePath)}, couleur=${this.activeColor}`);
 
@@ -1214,9 +1220,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     );
   }
 
-  // Naviguer vers une position spécifique
-  // Corriger la méthode goToPosition pour bien mettre à jour l'évaluation
-  // Modifiez votre méthode goToPosition pour appliquer les flèches APRÈS la mise à jour de l'échiquier
+  // Mettre à jour cette méthode dans votre composant
   goToPosition(path: number[] | undefined, color: "white" | "black"): void {
     if (!path) return;
 
@@ -1255,6 +1259,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     this.activeColor = actualColor;
 
     this.updateCurrentEvaluation(path, actualColor);
+    this.updatePrecision(path, actualColor); // Ajoutez cette ligne pour mettre à jour la précision
+
     console.log(`Mise à jour du coup actif: chemin=${path}, couleur=${actualColor}, évaluation=${this.currentEvaluation}`);
 
     // IMPORTANT: Dessiner les flèches EN DERNIER après un court délai
@@ -2045,5 +2051,70 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     
     // Sinon, pas de coup suivant dans cette variante
     return null;
+  }
+
+  // Format de l'évaluation pour l'affichage
+  formatEvaluation(evaluation: string): string {
+    if (!evaluation) return '0.00';
+    
+    // Si c'est un mat
+    if (evaluation.includes('Mat')) {
+      return evaluation;
+    }
+    
+    // Pour les valeurs numériques
+    let numericValue = parseFloat(evaluation.replace(',', '.').replace('+', ''));
+    
+    // Si la valeur est supérieure à 10, la limiter pour l'affichage
+    if (Math.abs(numericValue) > 10) {
+      return numericValue > 0 ? '+10' : '-10';
+    }
+    
+    // Formater avec le signe + si positif
+    if (numericValue > 0) {
+      return '+' + numericValue.toFixed(2).replace('.', ',');
+    } else {
+      return numericValue.toFixed(2).replace('.', ',');
+    }
+  }
+
+  // Calculer la hauteur de la barre noire
+  getBlackBarHeight(): string {
+    if (!this.currentEvaluation) return '50%';
+    
+    // Si c'est un mat
+    if (this.currentEvaluation.includes('Mat')) {
+      if (this.currentEvaluation.includes('contre vous')) return '100%';
+      return '0%';
+    }
+    
+    // Convertir l'évaluation en nombre
+    const evaluation = parseFloat(this.currentEvaluation.replace(',', '.').replace('+', ''));
+    
+    // Calculer la hauteur basée sur l'évaluation
+    // L'évaluation va de -15 à +15, ce qui correspond à 0% à 100%
+    let blackBarHeight = 50 - (evaluation / 15) * 100;
+    
+    // Limiter la hauteur entre 0% et 100%
+    blackBarHeight = Math.max(0, Math.min(100, blackBarHeight));
+    
+    return blackBarHeight + '%';
+  }
+
+  updatePrecision(path: number[] | undefined, color: "white" | "black"): void {
+    this.currentPrecision = undefined;
+    
+    if (!path || !this.formattedMoves) return;
+    
+    // Trouver le move formaté correspondant
+    for (const move of this.formattedMoves) {
+      if (!move.path || !this.arraysEqual(move.path, path)) continue;
+      
+      if (color === "white" && move.white) {
+        this.currentPrecision = move.whitePrecision;
+      } else if (color === "black" && move.black) {
+        this.currentPrecision = move.blackPrecision;
+      }
+    }
   }
 }

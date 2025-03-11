@@ -1,10 +1,24 @@
 <div class="chess-main-container">
   <!-- Colonne gauche: échiquier -->
   <div class="chess-board-column">
-    <div class="chessboard-container">
+    <div class="board-container">
+      <!-- Barre d'évaluation -->
+      <div class="eval-bar">
+        <div class="black-bar" [style.height]="getBlackBarHeight()"></div>
+        <div class="zero-line"></div>
+        <div class="eval-number" [class]="getEvaluationClass(currentEvaluation)">
+          {{ formatEvaluation(currentEvaluation) }}
+        </div>
+        <div *ngIf="currentPrecision !== undefined" class="precision-indicator" 
+             [class]="getPrecisionClass(currentPrecision)">
+          {{ (currentPrecision * 100).toFixed(0) }}%
+        </div>
+      </div>
+      
+      <!-- UN SEUL échiquier -->
       <div #board class="chessboard"></div>
     </div>
-
+    
     <div class="navigation-controls">
       <button (click)="goToStart()" [disabled]="isAtStart()">⏮</button>
       <button (click)="goToPreviousMove()" [disabled]="isAtStart()">⏪</button>
@@ -38,7 +52,6 @@
   </div>
 
   <!-- Colonne droite: coups -->
-  <!-- Dans la colonne des coups, juste après <h3>Historique des coups</h3> -->
   <div class="moves-column">
     <h3>Historique des coups</h3>
 
