@@ -785,3 +785,64 @@
   border-radius: 3px;
   padding: 2px 4px;
 }
+
+.navigation-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.navigation-controls button {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+}
+
+.navigation-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navigation-controls button:not(:disabled):hover {
+  background-color: #f0f0f0;
+}
+
+/* Modification de la classe move-row pour garder les éléments en ligne */
+.move-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--chess-medium-brown);
+  transition: background-color 0.2s ease;
+  background-color: var(--chess-light-brown);
+  margin: 2px 0;
+  border-radius: 3px;
+  overflow-x: hidden; /* Empêcher le débordement horizontal */
+}
+
+/* Ajuster la largeur et l'overflow des coups */
+.move-white, .move-black {
+  flex: 0 0 auto; /* Ne pas réduire ou agrandir automatiquement */
+  white-space: nowrap; /* Empêcher le retour à la ligne du texte */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Ajouter des points de suspension si nécessaire */
+  max-width: 100px; /* Limiter la largeur maximale */
+}
+
+/* Style pour le numéro de coup pour qu'il reste compact */
+.move-number {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Ajuster l'indicateur de variante pour qu'il reste en ligne */
+.variation-indicator {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

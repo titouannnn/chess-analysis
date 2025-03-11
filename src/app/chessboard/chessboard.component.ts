@@ -51,6 +51,18 @@ interface FormattedMove {
   blackDelta?: number;
 }
 
+interface GroupedMove {
+  moveNumber: number;
+  white?: string;
+  black?: string;
+  whitePath?: number[];
+  blackPath?: number[];
+  whiteEvaluation?: string;
+  whitePrecision?: number;
+  blackEvaluation?: string;
+  blackPrecision?: number;
+}
+
 
 interface DisplayMove {
   white: string;
@@ -829,10 +841,10 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   // Aller au début de la partie
   goToStart() {
     if (this.history.length === 0) return;
-
+  
     this.currentMoveIndex = 0;
     const fen = this.history[0];
-
+  
     this.chess.load(fen);
     this.chessground.set({
       fen: fen,
@@ -843,26 +855,41 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: undefined,
     });
-
+  
+    // Mise à jour de l'affichage actif (si un nœud existe)
+    const node = this.findNodeByIndex(this.currentMoveIndex);
+    if (node) {
+      const newPath = this.getPathToNode(node);
+      this.activeMovePath = newPath ?? undefined;
+      this.activeColor = node.move.color === 'w' ? 'white' : 'black';
+      this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
+    } else {
+      // Pour la position initiale sans coup joué, on peut réinitialiser
+      this.currentEvaluation = "0.00";
+      this.activeMovePath = undefined;
+      this.activeColor = undefined;
+    }
+  
     this.isReviewing = true;
     this.positionChanged.emit(fen);
   }
+  
 
   // Aller à la fin de la partie
   goToEnd() {
     if (this.history.length === 0) return;
-
+  
     this.currentMoveIndex = this.history.length - 1;
     const fen = this.history[this.currentMoveIndex];
-
+  
     this.chess.load(fen);
-
+  
     let lastMove = undefined;
     if (this.moves.length > 0) {
       const lastMoveObj = this.moves[this.moves.length - 1];
       lastMove = [lastMoveObj.from, lastMoveObj.to];
     }
-
+  
     this.chessground.set({
       fen: fen,
       turnColor: this.chess.turn() === "w" ? "white" : "black",
@@ -872,7 +899,20 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: lastMove,
     });
-
+  
+    // Mise à jour du coup actif
+    const node = this.findNodeByIndex(this.currentMoveIndex);
+    if (node) {
+      const newPath = this.getPathToNode(node);
+      this.activeMovePath = newPath ?? undefined;
+      this.activeColor = node.move.color === 'w' ? 'white' : 'black';
+      this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
+    } else {
+      this.currentEvaluation = "0.00";
+      this.activeMovePath = undefined;
+      this.activeColor = undefined;
+    }
+  
     this.isReviewing = true;
     this.positionChanged.emit(fen);
   }
@@ -954,11 +994,6 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       // Ajouter du logging pour le débogage
       console.log(`Coup actif mis à jour: chemin=${JSON.stringify(this.activeMovePath)}, couleur=${this.activeColor}`);
 
-      if (newPath) {
-        this.activeMovePath = newPath;
-        const color = node.move.color === 'w' ? 'white' : 'black';
-        this.updateCurrentEvaluation(newPath, color);
-      }
     }
   
     this.chessground.set({
@@ -1399,32 +1434,47 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   }
 
   // Nouvelle méthode pour aplatir la structure hiérarchique
+  // Modifier la méthode flattenDisplayMoves pour créer des entrées distinctes pour chaque coup
   flattenDisplayMoves(moves: DisplayMove[]): FormattedMove[] {
     const result: FormattedMove[] = [];
 
     for (const move of moves) {
-      // Ajouter le coup principal
-      const formattedMove: FormattedMove = {
-        white: move.white,
-        black: move.black,
-        moveNumber: move.moveNumber,
-        isVariation: !move.isMainline,
-        depth: move.depth,
-        path: move.whiteNodePath || move.blackNodePath,
-        isBlackContinuation: move.isBlackContinuation,
-      };
+      // Si nous avons un coup blanc, l'ajouter comme entrée indépendante
+      if (move.white) {
+        const whiteMove: FormattedMove = {
+          white: move.white,
+          black: "",
+          moveNumber: move.moveNumber,
+          isVariation: !move.isMainline,
+          depth: move.depth,
+          path: move.whiteNodePath,
+          isBlackContinuation: false,
+        };
+        result.push(whiteMove);
+      }
 
-      result.push(formattedMove);
+      // Si nous avons un coup noir, l'ajouter comme entrée indépendante
+      if (move.black) {
+        const blackMove: FormattedMove = {
+          white: "",
+          black: move.black,
+          moveNumber: move.moveNumber,
+          isVariation: !move.isMainline,
+          depth: move.depth,
+          path: move.blackNodePath,
+          isBlackContinuation: move.isBlackContinuation || (move.white === ""),
+        };
+        result.push(blackMove);
+      }
 
-      // Ajouter les variantes directement après le coup
+      // Ajouter les variantes directement après le coup approprié
       for (const variationMoves of move.variations) {
         const flattenedVariation = this.flattenDisplayMoves(variationMoves);
 
         // Marquer le premier et le dernier coup de la variante
         if (flattenedVariation.length > 0) {
           flattenedVariation[0].isVariationStart = true;
-          flattenedVariation[flattenedVariation.length - 1].isVariationEnd =
-            true;
+          flattenedVariation[flattenedVariation.length - 1].isVariationEnd = true;
         }
 
         result.push(...flattenedVariation);
@@ -1884,4 +1934,31 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     return 'evaluation-equal';
   }
 
+  get groupedMoves(): GroupedMove[] {
+    const groups: GroupedMove[] = [];
+  
+    for (const move of this.formattedMoves) {
+      // S'assurer que move.moveNumber est un nombre en lui assignant 0 par défaut
+      const moveNum: number = move.moveNumber !== undefined ? move.moveNumber : 0;
+      // Rechercher un groupe existant par numéro de coup
+      let group = groups.find(g => g.moveNumber === moveNum);
+      if (!group) {
+        group = { moveNumber: moveNum };
+        groups.push(group);
+      }
+      if (move.white) {
+        group.white = move.white;
+        group.whitePath = move.path;
+        group.whiteEvaluation = move.whiteEvaluation;
+        group.whitePrecision = move.whitePrecision;
+      }
+      if (move.black) {
+        group.black = move.black;
+        group.blackPath = move.path;
+        group.blackEvaluation = move.blackEvaluation;
+        group.blackPrecision = move.blackPrecision;
+      }
+    }
+    return groups;
+  }
 }
