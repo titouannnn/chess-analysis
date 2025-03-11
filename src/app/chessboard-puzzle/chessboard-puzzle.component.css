@@ -1,0 +1,81 @@
+.puzzle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .puzzle-header {
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .puzzle-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .chessboard-wrapper {
+    width: 500px;
+    height: 500px;
+    margin: 0 auto;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .puzzle-error .chessboard-wrapper {
+    border-color: #ff3333;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+  
+  .puzzle-status {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .puzzle-complete {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+  }
+  
+  .puzzle-error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+  }
+  
+  .error-message {
+    color: #721c24;
+    margin-top: 10px;
+  }
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }

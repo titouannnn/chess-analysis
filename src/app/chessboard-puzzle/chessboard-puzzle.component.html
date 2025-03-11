@@ -1,0 +1,33 @@
+<div class="puzzle-container">
+    <div class="puzzle-header">
+      <h2>Chess Puzzle</h2>
+      <div class="puzzle-info" *ngIf="currentPuzzle">
+        <span class="puzzle-rating">Rating: {{ puzzleRating }}</span>
+        <span class="puzzle-themes">Themes: {{ puzzleThemes }}</span>
+        <span class="puzzle-id">ID: {{ currentPuzzle.PuzzleId }}</span>
+      </div>
+    </div>
+  
+    <div class="chessboard-wrapper" [class.puzzle-error]="puzzleError">
+      <app-chessboard 
+        #chessboard 
+        [fen]="currentFen"
+        (positionChanged)="onBoardMove($event)">
+      </app-chessboard>
+    </div>
+  
+    <div class="puzzle-status">
+      <div *ngIf="puzzleComplete" class="puzzle-complete">
+        <h3>Puzzle Completed!</h3>
+        <button (click)="loadNextPuzzle()">Next Puzzle</button>
+      </div>
+      
+      <div *ngIf="puzzleError" class="puzzle-error-message">
+        Incorrect move. Try again!
+      </div>
+      
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </div>
+</div>

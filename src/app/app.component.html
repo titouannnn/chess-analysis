@@ -178,7 +178,13 @@
 </style>
 
 <main class="main">
-  <div class="chess-container">
+
+  <div class="control-buttons">
+    <button (click)="toggleChessboard()">Toggle Regular Chessboard</button>
+    <button (click)="togglePuzzle()">Toggle Puzzle Mode</button>
+  </div>
+
+  <div *ngIf="showChessboard && !showPuzzle" class="chess-container">
     <h2>Échiquier</h2>
     
     <app-chessboard
@@ -186,7 +192,13 @@
       (positionChanged)="onPositionChanged($event)"
       (moveHistoryChanged)="onMoveHistoryChanged($event)">
     </app-chessboard>
-  
+  </div>
+
+  <div *ngIf="showPuzzle" class="puzzle-container">
+    <h2>Chess Puzzle Challenge</h2>
+    <app-chessboard-puzzle></app-chessboard-puzzle>
+  </div>
+
     <!-- Optionnel : Ajoutez un affichage des coups -->
     <div class="move-list" *ngIf="moveHistory && moveHistory.length > 0">
       <h3>Historique des coups</h3>
@@ -196,7 +208,6 @@
         </li>
       </ol>
     </div>
-  </div>
 </main>
 
 

@@ -9,6 +9,7 @@ import { PuzzleScraper } from '../analyse/puzzle.service'
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
 import { ChessboardComponent } from './chessboard/chessboard.component';
+import { ChessboardPuzzleComponent } from './chessboard-puzzle/chessboard-puzzle.component';
 
 @Component({
   selector: 'unique-app-root',
@@ -16,6 +17,7 @@ import { ChessboardComponent } from './chessboard/chessboard.component';
   imports: [
     RouterOutlet, 
     ChessboardComponent, 
+    ChessboardPuzzleComponent,
     NgIf, 
     CommonModule, 
     FormsModule // Ajoutez FormsModule ici
@@ -27,6 +29,7 @@ import { ChessboardComponent } from './chessboard/chessboard.component';
 export class AppComponent implements OnInit {
   message: string = '';
   showChessboard: boolean = false; // Propriété pour contrôler l'affichage
+  showPuzzle: boolean = false; // Puzzle pour contrôler l'affichage
   currentFen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Position initiale par défaut
 
   constructor(private LocalAnalysis : LocalAnalysis, private api: Api, private LitchessApi: LitchessApi, 
@@ -49,6 +52,15 @@ export class AppComponent implements OnInit {
   // Méthode pour basculer l'affichage de l'échiquier
   toggleChessboard() {
     this.showChessboard = !this.showChessboard;
+  }
+
+  // Method to toggle puzzle display
+  togglePuzzle() {
+    this.showPuzzle = !this.showPuzzle;
+    // Hide regular chessboard when showing puzzle
+    if (this.showPuzzle) {
+      this.showChessboard = false;
+    }
   }
 
   updatePosition() {
