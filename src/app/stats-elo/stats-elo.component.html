@@ -1,10 +1,11 @@
-<div  #eloStats ></div>
+
+<canvas #eloStats></canvas>
 <button (click)="showEloStat(typeJeu.BULLET)">BULLET</button>
 <button (click)="showEloStat(typeJeu.BLITZ)">BLITZ</button>
 <button (click)="showEloStat(typeJeu.RAPID)">RAPID</button>
 <button (click)="showEloStat(typeJeu.DAILY)">DAILY</button>
 
-<div #playFrequencyStats ></div>
+<canvas #playFrequencyStats ></canvas>
 <div class="yearBar" >
     <button (click)="frequencyLeftArrowClick()" >
         <img [src]="'/assets/images/left.png'" alt="leftButton">
@@ -15,3 +16,12 @@
     </button>
 </div>
 
+<div #gamesBy >
+    <canvas></canvas>
+    <canvas></canvas>
+    <canvas></canvas>
+</div>
+
+<div>
+    <button (click)="resetgamesBy()">{{ w_b }}</button>
+</div>

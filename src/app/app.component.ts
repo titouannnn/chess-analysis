@@ -30,7 +30,6 @@ export class AppComponent implements OnInit {
     //this.chess_comTests();
     //this.testPuzzle();
     //this.analysisApiTests();
-    //this.statsComponent.showEloStat();
   }
 
   async analysisApiTests(): Promise<void> {
@@ -95,7 +94,6 @@ export class AppComponent implements OnInit {
     const winrateBlack = this.api.WinrateByColor(Constantes.CouleurPiece.BLACK);
     console.log("Statistiques pour les noirs :", winrateBlack);
 
-    
     // Liste des accuracies
     const accuracyList = this.api.getAccuracyList();
     console.log("Liste des accuracies :", accuracyList);

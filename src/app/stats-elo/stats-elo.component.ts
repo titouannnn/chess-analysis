@@ -1,9 +1,15 @@
-import { afterNextRender, Component, ElementRef, Injectable, ViewChild } from '@angular/core';
+import { afterNextRender, Component, ElementRef, Injectable, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Api, Constantes } from '../../api/api.service';
-import * as Plot from "@observablehq/plot";
 import { time } from 'console';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
+import { ChartJS } from '../../api/ChartJS.service';
+
+enum W_B {
+  Black = "black",
+  White = "white",
+  W_B = "w/b"
+}
 
 @Component({
   selector: 'app-stats-elo:not(p)',
@@ -15,43 +21,52 @@ import { ChesscomApi } from '../../api/chesscomapi.service';
 export class StatsEloComponent {  
   @ViewChild('eloStats') eloStats !: ElementRef
   @ViewChild('playFrequencyStats') frequencyStats !: ElementRef
-
+  @ViewChild('gamesBy') gamesByStats !: ElementRef
+  
+  
   // Variable utilisé pour le HTML
   typeJeu = Constantes.TypeJeuChessCom;
   annee = new Date().getFullYear();
+  w_b : W_B = W_B.Black;
 
   private api: Api;
-  constructor(chessApi : ChesscomApi, lichessApi : LitchessApi ){ 
+  private chartGenerator: ChartJS;
+  constructor(chessApi : ChesscomApi, lichessApi : LitchessApi, chartGenerator: ChartJS ){ 
     this.api = chessApi;
+    this.chartGenerator = chartGenerator;
+
     afterNextRender(()=>{
       this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
       this.showPlayFrequency();
+      this.showGamesBy();
     })
   }
 
+  
   /**
    * Méthode à utiliser uniquement avec afterNextRender, ou afterRender
-   * Elle "append" un graphe generée grace à Plot de Observable. 
+   * Elle "append" un graphe generée grace à Chart.js. 
    * 
    * Ce graphe va correspondre au différents niveau d'Elo de Chess.com
-   */
+  */
+  eloChart : any = null;
   showEloStat( time_class ?: Constantes.TypeJeuChessCom ){
     this.api.initTimeInterval();
     this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
     
     const eloList = this.api.getElo(time_class);
+    if(eloList === undefined) return;
+    if(this.eloChart != null){
+      this.eloChart.destroy();
+    }
+    this.eloChart = this.chartGenerator.getLineGraph( this.eloStats.nativeElement, 
+      eloList.map( row => row.rating ), 
+      'Elo', eloList.map(row => row.timestamp ) );
     
-    let plot = Plot.plot({
-      marks: [
-        Plot.lineY(eloList, {y: "rating", x: "timestamp"})
-      ]
-    });
-    console.log(eloList);
-    this.eloStats.nativeElement.replaceChildren( plot );
   }
 
   /**
-   * Cette méthode va permettre de donner la date de début et de fin fin 
+   * Cette méthode va permettre de donner la date de début et de fin 
    * d'un mois spécifié dans une année spécifiée.
    * 
    * @param year Année de l'intervalle de dates voulu
@@ -104,31 +119,86 @@ export class StatsEloComponent {
    * à analyser.
    * 
    */
+  playFreqChart : any = null;
   showPlayFrequency( ){
     let data = this.getPlayFrequency(this.annee);
 
-    const plot = Plot.plot(
-      {
-        x: {padding: 0.4, domain: data.map(d => d.mois)},
-        grid: true,
-        marks : [
-          Plot.ruleY([0]),
-          Plot.barY(data, {y:"occurences", x:"mois", fill: "green"})
-        ],
-      }
-    );
-    this.frequencyStats.nativeElement.replaceChildren( plot );
-  }
+    if(this.playFreqChart != null){
+      this.playFreqChart.destroy();
+    }
 
+    this.playFreqChart = this.chartGenerator.getSimpleBarChart( this.frequencyStats.nativeElement, 
+     data.map(row => row.occurences), 
+     'Nb Parties', 
+     data.map( row => row.mois ) );
+
+  }
+  /**
+   * Event handler for frequencyStat
+   */
   frequencyRightArrowClick(){
     if(this.annee < new Date().getFullYear()) this.annee++;
     this.showPlayFrequency();
   }
+  /**
+   * Event handler for frequencyStat
+   */
   frequencyLeftArrowClick(){
     this.annee--;
     this.showPlayFrequency();
   }
 
+  /**
+   * Cette méthode va nous permettre d'afficher un graphe qui nous permet d'analyser le résultat de nos parties
+   * On devrait être capable d'afficher ces informations en fonction du couleur du joueur, ainsi que du type de jeu
+   * 
+   */
+  chartGamesBy : any[] = [];
+  showGamesBy(){
+    
+    this.api.initTimeInterval();
+    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+    const endgames = this.api.getEndgames();
+
+    let win_data: any, draw_data: any, lose_data :any;
+    switch(this.w_b){
+      case W_B.Black:
+        win_data = endgames["blackWin"];
+        draw_data = endgames["blackDraw"];
+        lose_data = endgames["blackLoose"];
+        break;
+      case W_B.White:
+        win_data = endgames["whiteWin"];
+        draw_data = endgames["whiteDraw"];
+        lose_data = endgames["whiteLoose"];
+        break;
+    }
+
+    if(this.chartGamesBy.length == 3){
+      this.chartGamesBy[0].destroy();
+      this.chartGamesBy[1].destroy();
+      this.chartGamesBy[2].destroy();
+    }
+
+    this.chartGamesBy[0] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[0], Object.values(win_data), Object.keys(win_data) );
+    this.chartGamesBy[1] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[1], Object.values(draw_data), Object.keys(draw_data) );
+    this.chartGamesBy[2] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[2], Object.values(lose_data), Object.keys(lose_data) );
+    console.log(this.gamesByStats);
+  }
+
+  resetgamesBy(){
+    switch( this.w_b ){
+      case W_B.Black:
+        this.w_b = W_B.White;
+        break;
+      case W_B.White:
+        this.w_b = W_B.Black;
+        break;
+      default:
+          this.w_b = W_B.Black;
+        break;
+    }
+    this.showGamesBy();
+  }
+
 }
-
-
