@@ -7,7 +7,7 @@ import { Chart } from "chart.js/auto";
 })
 export class ChartJS {
 
-    getDoughnutGraph( nativeElement : any,  data_o: any, labels_o: any ) : any{
+    getDoughnutGraph( nativeElement : any,  data_o: any, labels_o: any, options_o : any ) : any{
       
       return new Chart(
             nativeElement,
@@ -20,7 +20,8 @@ export class ChartJS {
                     data: data_o
                   }
                 ]
-              }
+              },
+              options: options_o
             }
           );
 

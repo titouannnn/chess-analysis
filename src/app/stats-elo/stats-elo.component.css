@@ -8,8 +8,8 @@
     opacity: 0.5;
 }
 div:not(:has(parent div)){
-    background-color: aquamarine;
     display: flex;
     justify-content: center;
     text-align: center;
+    flex-wrap: wrap;
 }

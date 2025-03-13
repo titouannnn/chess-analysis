@@ -4,6 +4,7 @@ import { time } from 'console';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
 import { ChartJS } from '../../api/ChartJS.service';
+import { ChartConfiguration } from 'chart.js';
 
 enum W_B {
   Black = "black",
@@ -52,15 +53,14 @@ export class StatsEloComponent {
   eloChart : any = null;
   showEloStat( time_class ?: Constantes.TypeJeuChessCom ){
     this.api.initTimeInterval();
-    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
-    
+
     const eloList = this.api.getElo(time_class);
     if(eloList === undefined) return;
     if(this.eloChart != null){
       this.eloChart.destroy();
     }
     this.eloChart = this.chartGenerator.getLineGraph( this.eloStats.nativeElement, 
-      eloList.map( row => row.rating ), 
+      eloList.map( row => row.rating ),
       'Elo', eloList.map(row => row.timestamp ) );
     
   }
@@ -138,13 +138,16 @@ export class StatsEloComponent {
    */
   frequencyRightArrowClick(){
     if(this.annee < new Date().getFullYear()) this.annee++;
+    else return;
     this.showPlayFrequency();
   }
   /**
    * Event handler for frequencyStat
    */
   frequencyLeftArrowClick(){
-    this.annee--;
+    this.api.initTimeInterval();
+    if( this.annee > this.api.dateDebut.getFullYear() ) this.annee--;
+    else return;
     this.showPlayFrequency();
   }
 
@@ -180,10 +183,26 @@ export class StatsEloComponent {
       this.chartGamesBy[2].destroy();
     }
 
-    this.chartGamesBy[0] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[0], Object.values(win_data), Object.keys(win_data) );
-    this.chartGamesBy[1] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[1], Object.values(draw_data), Object.keys(draw_data) );
-    this.chartGamesBy[2] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[2], Object.values(lose_data), Object.keys(lose_data) );
-    console.log(this.gamesByStats);
+    let optionsChart : ChartConfiguration['options'] = { 
+      aspectRatio: 2.5, 
+      layout: { 
+        padding: 
+        { left: 0, right: 0, top: 10, bottom: 20} 
+      }, 
+      plugins : {
+        title: {
+          display: true,
+          text: 'Jeu gagnés par : '
+        }
+      }};
+    
+    
+    this.chartGamesBy[0] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[0], Object.values(win_data), Object.keys(win_data), optionsChart );
+    optionsChart.plugins!.title!.text = 'Match nul par :';
+    this.chartGamesBy[1] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[1], Object.values(draw_data), Object.keys(draw_data), optionsChart );
+    optionsChart.plugins!.title!.text = 'Jeu perdus par :';
+    this.chartGamesBy[2] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[2], Object.values(lose_data), Object.keys(lose_data), optionsChart );
+
   }
 
   resetgamesBy(){

@@ -114,7 +114,7 @@ initTimeInterval() {
   this.dateDebut = this.getDateDebut();
   // La dateFin est la date d'aujourd'hui
   this.dateFin = new Date();
-  console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
+  //console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
 }
 
 /* return le tableau : [winrate, nombre de victoires, nombre de défaites, nombre de matchs nuls] */
