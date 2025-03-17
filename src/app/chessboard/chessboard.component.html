@@ -19,6 +19,11 @@
       <div #board class="chessboard"></div>
     </div>
     
+    <!-- Message de feedback positionné près de l'échiquier -->
+    <div *ngIf="showFeedback" [ngClass]="['feedback-container', feedbackClass]">
+      {{ feedbackMessage }}
+    </div>
+    
     <div class="navigation-controls">
       <button (click)="goToStart()" [disabled]="isAtStart()">⏮</button>
       <button (click)="goToPreviousMove()" [disabled]="isAtStart()">⏪</button>
@@ -54,7 +59,6 @@
 
   <!-- Colonne droite: coups -->
   <div class="moves-column">
-    <h3>Historique des coups</h3>
 
     <!-- Affichage en grand de l'évaluation du coup actuel -->
     <div class="current-evaluation" *ngIf="currentEvaluation">
@@ -113,47 +117,58 @@
         </ng-container>
       </div>
     </div>
-  </div>
-
-  <!-- UI pour Rejouer les erreurs -->
-  <div class="mistakes-replay-controls" *ngIf="analysisResults && analysisResults.length > 0">
-    <!-- Bouton pour lancer le mode replay des erreurs -->
-    <button *ngIf="!isReplayingMistakes" 
-            class="mistakes-button" 
-            (click)="startReplayMistakes()">
-      Rejouer mes erreurs
-    </button>
     
-    <!-- Contrôles de navigation entre les erreurs -->
-    <div *ngIf="isReplayingMistakes" class="mistakes-navigation">
-      <div class="mistakes-header">
-        <h3>Analyse des erreurs</h3>
-        <span class="mistake-counter">Erreur {{currentMistakeIndex + 1}}/{{mistakesList.length}}</span>
+    <!-- UI pour Rejouer les erreurs - MODIFIÉ AVEC CHOIX DE COULEUR -->
+    <div class="mistakes-replay-controls" *ngIf="analysisResults && analysisResults.length > 0">
+      <!-- Options pour choisir la couleur des erreurs à rejouer -->
+      <div *ngIf="!isReplayingMistakes" class="color-selection">
+        <h3>Rejouer mes erreurs</h3>
+        <div class="color-buttons">
+          <button class="color-btn both-btn" (click)="startReplayMistakes('both')">
+            Toutes les erreurs
+          </button>
+          <button class="color-btn white-btn" (click)="startReplayMistakes('white')">
+            Erreurs des Blancs
+          </button>
+          <button class="color-btn black-btn" (click)="startReplayMistakes('black')">
+            Erreurs des Noirs
+          </button>
+        </div>
       </div>
       
-      <div class="mistakes-info" *ngIf="currentMistakeIndex >= 0 && mistakesList[currentMistakeIndex]">
-        <div class="delta-display">
-          Δ: {{mistakesList[currentMistakeIndex].delta.toFixed(2)}}
+      <!-- Interface pendant le mode replay des erreurs -->
+      <div *ngIf="isReplayingMistakes" class="mistakes-navigation">
+        <div class="mistakes-header">
+          <h3>Rejouer vos erreurs</h3>
+          <span class="mistake-counter">Erreur {{currentMistakeIndex + 1}}/{{mistakesList.length}}</span>
         </div>
-        <div class="mistake-hint">
-          Pouvez-vous trouver un meilleur coup?
+        
+        <div class="mistakes-info" *ngIf="currentMistakeIndex >= 0 && mistakesList[currentMistakeIndex]">
+          <div class="move-display">
+            <span class="move-number">Coup {{mistakesList[currentMistakeIndex].moveNumber}}</span>
+            <span class="move-color" [ngClass]="{'white-turn': chess.turn() === 'w', 'black-turn': chess.turn() === 'b'}">
+              {{chess.turn() === 'w' ? 'Trait aux blancs' : 'Trait aux noirs'}}
+            </span>
+          </div>
+          <div class="mistake-hint">
+            Essayez de trouver un meilleur coup que celui joué dans la partie
+          </div>
         </div>
-      </div>
-      
-      <div class="mistakes-buttons">
-        <button (click)="previousMistake()" 
-                [disabled]="currentMistakeIndex <= 0">
-          ◀ Erreur précédente
-        </button>
-        <button (click)="nextMistake()" 
-                [disabled]="currentMistakeIndex >= mistakesList.length - 1">
-          Erreur suivante ▶
-        </button>
-        <button (click)="exitReplayMistakes()" class="exit-button">
-          ✕ Quitter
-        </button>
+        
+        <div class="mistakes-buttons">
+          <button (click)="previousMistake()" 
+                  [disabled]="currentMistakeIndex <= 0">
+            ◀ Erreur précédente
+          </button>
+          <button (click)="nextMistake()" 
+                  [disabled]="currentMistakeIndex >= mistakesList.length - 1">
+            Erreur suivante ▶
+          </button>
+          <button (click)="exitReplayMistakes()" class="exit-button">
+            ✕ Quitter
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
 </div>

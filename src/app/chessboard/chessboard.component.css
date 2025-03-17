@@ -1020,6 +1020,7 @@
 }
 
 /* Styles pour la fonctionnalité "Rejouer mes erreurs" */
+/* Styles pour la fonctionnalité "Rejouer mes erreurs" */
 
 .mistakes-replay-controls {
   margin-top: 20px;
@@ -1067,16 +1068,27 @@
   margin-bottom: 15px;
 }
 
-.delta-display {
-  font-weight: bold;
+.move-display {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
   font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.move-number {
+  color: #333;
+}
+
+.move-color {
   color: #d64f00;
-  margin-bottom: 5px;
 }
 
 .mistake-hint {
   font-style: italic;
   color: #555;
+  text-align: center;
 }
 
 .mistakes-buttons {
@@ -1111,4 +1123,188 @@
 
 .mistakes-buttons .exit-button:hover {
   background-color: #f0c0c0;
+}
+
+.move-feedback {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  max-width: 80%;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.feedback-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.feedback-warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.feedback-error {
+  background-color: #f44336;
+  color: white;
+}
+
+.white-turn {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.black-turn {
+  color: #cc0000;
+  font-weight: bold;
+}
+
+/* Styles améliorés pour le feedback */
+.move-feedback {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 16px;
+  z-index: 1000; /* Augmenter le z-index pour s'assurer qu'il est visible */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  max-width: 90%;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.feedback-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.feedback-warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.feedback-error {
+  background-color: #f44336;
+  color: white;
+}
+
+
+/* Styles pour le message de feedback */
+.feedback-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  max-width: 250px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-weight: bold;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
+.feedback-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.feedback-warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.feedback-error {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Styles pour les boutons de sélection de couleur */
+.mistake-replay-controls {
+  margin: 10px 0;
+  display: flex;
+  gap: 10px;
+}
+
+.replay-btn {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  border: none;
+  background-color: #4285f4;
+  color: white;
+}
+
+.replay-btn.white-btn {
+  background-color: #f8f8f8;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.replay-btn.black-btn {
+  background-color: #333;
+  color: #fff;
+}
+
+.mistake-replay-navigation {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.exit-btn {
+  margin-left: auto;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Styles pour le message de feedback */
+.feedback-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  max-width: 250px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-weight: bold;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
+.feedback-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.feedback-warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+.feedback-error {
+  background-color: #f44336;
+  color: white;
 }

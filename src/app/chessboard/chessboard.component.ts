@@ -38,13 +38,13 @@ interface FormattedMove {
   isVariationStart?: boolean;
   isVariationEnd?: boolean;
   parentPath?: number[];
-  
+
   // Évaluations séparées pour blanc et noir
   whiteEvaluation?: string;
   whitePrecision?: number;
   whiteBestMove?: string;
   whiteDelta?: number;
-  
+
   blackEvaluation?: string;
   blackPrecision?: number;
   blackBestMove?: string;
@@ -62,7 +62,6 @@ interface GroupedMove {
   blackEvaluation?: string;
   blackPrecision?: number;
 }
-
 
 interface DisplayMove {
   white: string;
@@ -101,9 +100,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   // Structure pour l'historique et les variantes
   mainline: MoveTree = { nodes: [], parentNode: null };
   currentNode: MoveNode | null = null;
-  
-  currentPrecision: number | undefined = undefined;
 
+  currentPrecision: number | undefined = undefined;
 
   // Propriétés pour l'historique des positions (conservées pour compatibilité)
   history: string[] = [];
@@ -122,22 +120,36 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   analysisProgress: number = 0;
   analysisProgressText: string = "";
 
-  // pour rejouer les erreurs : 
+  // pour rejouer les erreurs :
   isReplayingMistakes: boolean = false;
-  mistakeThreshold: number = 1.5;
-  mistakesList: {index: number, path: number[], color: "white" | "black", delta: number}[] = [];
+  mistakeThreshold: number = 1;
+  mistakesList: {
+    index: number;
+    path: number[];
+    color: "white" | "black";
+    delta: number;
+    originalMove?: any; // Pour stocker le coup original
+    moveNumber?: number; // Pour stocker le numéro du coup
+  }[] = [];
   currentMistakeIndex: number = -1;
   mistakeCorrectMove: string | null = null; // Stocke le coup correct à jouer
+  replayMistakesColor: "both" | "white" | "black" = "both";
 
-  
 
-  private moveEvaluations: Map<string, { 
-    evaluation?: string;
-    bestMove?: string;
-    delta?: number;
-    precision?: number;
-  }> = new Map();
-  
+  // Propriétés pour le feedback visuel
+  showFeedback: boolean = false;
+  feedbackClass: string = "";
+  feedbackMessage: string = "";
+
+  private moveEvaluations: Map<
+    string,
+    {
+      evaluation?: string;
+      bestMove?: string;
+      delta?: number;
+      precision?: number;
+    }
+  > = new Map();
 
   constructor(private localAnalysis: LocalAnalysis) {
     // Modifier le constructeur
@@ -270,13 +282,11 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       const whiteMove = this.moves[i] ? this.moves[i].san : "";
       const blackMove = this.moves[i + 1] ? this.moves[i + 1].san : "";
 
-
       this.formattedMoves.push({
         white: whiteMove,
         black: blackMove,
       });
     }
-
   }
 
   // Méthode pour aller à un coup spécifique
@@ -475,27 +485,27 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       this.isReviewing = true;
 
       // If we want to start at the beginning of the game:
-    this.goToStart(); // Uncomment this if you want to start at the beginning
-    
-    // Create proper history entries for arrow navigation
-    if (this.moves.length > 0) {
-      // Make sure the currentMoveIndex is tracking correctly
-      if (this.history.length !== this.moves.length + 1) {
-        console.warn("History and moves mismatch - rebuilding history");
-        this.resetHistory();
-        const chess = new Chess();
-        this.history = [chess.fen()];
-        
-        for (const move of this.moves) {
-          chess.move({
-            from: move.from as Square,
-            to: move.to as Square,
-            promotion: move.promotion as any,
-          });
-          this.history.push(chess.fen());
+      this.goToStart(); // Uncomment this if you want to start at the beginning
+
+      // Create proper history entries for arrow navigation
+      if (this.moves.length > 0) {
+        // Make sure the currentMoveIndex is tracking correctly
+        if (this.history.length !== this.moves.length + 1) {
+          console.warn("History and moves mismatch - rebuilding history");
+          this.resetHistory();
+          const chess = new Chess();
+          this.history = [chess.fen()];
+
+          for (const move of this.moves) {
+            chess.move({
+              from: move.from as Square,
+              to: move.to as Square,
+              promotion: move.promotion as any,
+            });
+            this.history.push(chess.fen());
+          }
         }
       }
-    }
 
       this.positionChanged.emit(this.chess.fen());
       this.moveHistoryChanged.emit([...this.moves]);
@@ -850,10 +860,10 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   // Aller au début de la partie
   goToStart() {
     if (this.history.length === 0) return;
-  
+
     this.currentMoveIndex = 0;
     const fen = this.history[0];
-  
+
     this.chess.load(fen);
     this.chessground.set({
       fen: fen,
@@ -864,44 +874,42 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: undefined,
     });
-  
+
     // Mise à jour de l'affichage actif (si un nœud existe)
     const node = this.findNodeByIndex(this.currentMoveIndex);
     if (node) {
       this.updateArrowsForMove(node);
       const newPath = this.getPathToNode(node);
       this.activeMovePath = newPath ?? undefined;
-      this.activeColor = node.move.color === 'w' ? 'white' : 'black';
+      this.activeColor = node.move.color === "w" ? "white" : "black";
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
       this.updatePrecision(newPath ?? undefined, this.activeColor);
-
     } else {
       // Pour la position initiale sans coup joué, on peut réinitialiser
       this.currentEvaluation = "0.00";
       this.activeMovePath = undefined;
       this.activeColor = undefined;
     }
-  
+
     this.isReviewing = true;
     this.positionChanged.emit(fen);
   }
-  
 
   // Aller à la fin de la partie
   goToEnd() {
     if (this.history.length === 0) return;
-  
+
     this.currentMoveIndex = this.history.length - 1;
     const fen = this.history[this.currentMoveIndex];
-  
+
     this.chess.load(fen);
-  
+
     let lastMove = undefined;
     if (this.moves.length > 0) {
       const lastMoveObj = this.moves[this.moves.length - 1];
       lastMove = [lastMoveObj.from, lastMoveObj.to];
     }
-  
+
     this.chessground.set({
       fen: fen,
       turnColor: this.chess.turn() === "w" ? "white" : "black",
@@ -911,23 +919,22 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: lastMove,
     });
-  
+
     // Mise à jour du coup actif
     const node = this.findNodeByIndex(this.currentMoveIndex);
     if (node) {
       this.updateArrowsForMove(node);
       const newPath = this.getPathToNode(node);
       this.activeMovePath = newPath ?? undefined;
-      this.activeColor = node.move.color === 'w' ? 'white' : 'black';
+      this.activeColor = node.move.color === "w" ? "white" : "black";
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
       this.updatePrecision(newPath ?? undefined, this.activeColor);
-
     } else {
       this.currentEvaluation = "0.00";
       this.activeMovePath = undefined;
       this.activeColor = undefined;
     }
-  
+
     this.isReviewing = true;
     this.positionChanged.emit(fen);
   }
@@ -935,11 +942,11 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   // Aller au coup précédent
   goToPreviousMove() {
     if (this.currentMoveIndex <= 0) return;
-  
+
     this.currentMoveIndex--;
     const fen = this.history[this.currentMoveIndex];
     this.chess.load(fen);
-  
+
     // Définir le dernier coup (si applicable)
     let lastMove;
     if (this.currentMoveIndex - 1 >= 0) {
@@ -948,29 +955,33 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     } else {
       lastMove = undefined;
     }
-  
+
     // Mettre à jour le coup actif en récupérant le nœud correspondant
     const node = this.findNodeByIndex(this.currentMoveIndex);
     if (node) {
       this.currentNode = node;
       const newPath = this.getPathToNode(node);
-      
+
       // Utilisez cette syntaxe pour éviter l'erreur Type 'number[] | null'
       this.activeMovePath = newPath ?? undefined;
       // Important: utilisez la couleur réelle du nœud
-      this.activeColor = node.move.color === 'w' ? 'white' : 'black';
+      this.activeColor = node.move.color === "w" ? "white" : "black";
       // Passer la couleur réelle à updateCurrentEvaluation
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
       this.updatePrecision(newPath ?? undefined, this.activeColor);
 
       // Ajouter du logging pour le débogage
-      console.log(`Coup actif mis à jour: chemin=${JSON.stringify(this.activeMovePath)}, couleur=${this.activeColor}`);
-    }else {
-      this.currentEvaluation = "0.00";         // Réinitialisation si pas de node trouvé
+      console.log(
+        `Coup actif mis à jour: chemin=${JSON.stringify(
+          this.activeMovePath
+        )}, couleur=${this.activeColor}`
+      );
+    } else {
+      this.currentEvaluation = "0.00"; // Réinitialisation si pas de node trouvé
       this.activeMovePath = undefined;
       this.activeColor = undefined;
     }
-  
+
     this.chessground.set({
       fen: fen,
       turnColor: this.chess.turn() === "w" ? "white" : "black",
@@ -980,7 +991,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: lastMove,
     });
-    
+
     this.isReviewing = true;
     this.positionChanged.emit(fen);
     if (node) {
@@ -990,16 +1001,15 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
 
   // Aller au coup suivant
   goToNextMove() {
-    
     if (this.currentMoveIndex >= this.history.length - 1) return;
-  
+
     this.currentMoveIndex++;
     const fen = this.history[this.currentMoveIndex];
     this.chess.load(fen);
-  
+
     const lastMoveObj = this.moves[this.currentMoveIndex - 1];
     const lastMove = [lastMoveObj.from, lastMoveObj.to];
-  
+
     // Mettre à jour le coup actif en récupérant le nœud correspondant
     const node = this.findNodeByIndex(this.currentMoveIndex);
     if (node) {
@@ -1008,16 +1018,19 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       // Utilisez cette syntaxe pour éviter l'erreur Type 'number[] | null'
       this.activeMovePath = newPath ?? undefined;
       // Important: utilisez la couleur réelle du nœud
-      this.activeColor = node.move.color === 'w' ? 'white' : 'black';
+      this.activeColor = node.move.color === "w" ? "white" : "black";
       // Passer la couleur réelle à updateCurrentEvaluation
       this.updateCurrentEvaluation(newPath ?? undefined, this.activeColor);
       this.updatePrecision(newPath ?? undefined, this.activeColor);
 
       // Ajouter du logging pour le débogage
-      console.log(`Coup actif mis à jour: chemin=${JSON.stringify(this.activeMovePath)}, couleur=${this.activeColor}`);
-
+      console.log(
+        `Coup actif mis à jour: chemin=${JSON.stringify(
+          this.activeMovePath
+        )}, couleur=${this.activeColor}`
+      );
     }
-  
+
     this.chessground.set({
       fen: fen,
       turnColor: this.chess.turn() === "w" ? "white" : "black",
@@ -1027,7 +1040,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       },
       lastMove: lastMove,
     });
-  
+
     if (this.currentMoveIndex === this.history.length - 1) {
       this.isReviewing = false;
     }
@@ -1250,7 +1263,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     this.chess.load(node.fen);
 
     // Utiliser la couleur réelle du coup via node.move.color
-    const actualColor = node.move.color === 'w' ? "white" : "black";
+    const actualColor = node.move.color === "w" ? "white" : "black";
 
     // IMPORTANT: D'abord mettre à jour l'échiquier
     this.chessground.set({
@@ -1278,7 +1291,9 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     this.updateCurrentEvaluation(path, actualColor);
     this.updatePrecision(path, actualColor); // Ajoutez cette ligne pour mettre à jour la précision
 
-    console.log(`Mise à jour du coup actif: chemin=${path}, couleur=${actualColor}, évaluation=${this.currentEvaluation}`);
+    console.log(
+      `Mise à jour du coup actif: chemin=${path}, couleur=${actualColor}, évaluation=${this.currentEvaluation}`
+    );
 
     // IMPORTANT: Dessiner les flèches EN DERNIER après un court délai
     setTimeout(() => {
@@ -1288,7 +1303,6 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     this.positionChanged.emit(node.fen);
   }
 
-
   // Méthode auxiliaire pour trouver un noeud par son chemin
   // Modify the goToPosition method to ensure it works for both player and opponent moves
   private findNodeByPath(path: number[]): MoveNode | null {
@@ -1296,7 +1310,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
 
     // Ensure we're using the correct root variation
     let variation: MoveTree = this.mainline;
-    
+
     // Simple case - direct index in mainline
     if (path.length === 1) {
       const index = path[0];
@@ -1315,18 +1329,18 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       // Correctly navigate through the variation tree
       for (let i = 0; i < currentPath.length - 1; i += 2) {
         if (i + 1 >= currentPath.length) break;
-        
+
         const moveIndex = currentPath[i];
         const varIndex = currentPath[i + 1];
-        
+
         if (moveIndex >= variation.nodes.length) return null;
-        
+
         const node = variation.nodes[moveIndex];
         if (!node || varIndex >= node.variations.length) return null;
-        
+
         variation = node.variations[varIndex];
       }
-      
+
       // Get the final index
       nodeIndex = currentPath[currentPath.length - 1];
     }
@@ -1484,7 +1498,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
           isVariation: !move.isMainline,
           depth: move.depth,
           path: move.blackNodePath,
-          isBlackContinuation: move.isBlackContinuation || (move.white === ""),
+          isBlackContinuation: move.isBlackContinuation || move.white === "",
         };
         result.push(blackMove);
       }
@@ -1496,7 +1510,8 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
         // Marquer le premier et le dernier coup de la variante
         if (flattenedVariation.length > 0) {
           flattenedVariation[0].isVariationStart = true;
-          flattenedVariation[flattenedVariation.length - 1].isVariationEnd = true;
+          flattenedVariation[flattenedVariation.length - 1].isVariationEnd =
+            true;
         }
 
         result.push(...flattenedVariation);
@@ -1717,20 +1732,20 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       );
       return;
     }
-  
+
     console.log(
       "Nombre total de coups analysés:",
       this.analysisResults.length - 1
     );
     console.log("Nombre de coups formatés:", this.formattedMoves.length);
-  
+
     // Convertir les coups formatés en une structure plate pour faciliter la correspondance
     const flatMoves: {
       index: number;
       formattedIndex: number;
       isWhite: boolean;
     }[] = [];
-  
+
     for (let i = 0; i < this.formattedMoves.length; i++) {
       const move = this.formattedMoves[i];
       if (move.white) {
@@ -1748,9 +1763,9 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
         });
       }
     }
-  
+
     console.log("Nombre total de coups mis à plat:", flatMoves.length);
-  
+
     // Parcourir les analyses (en sautant la position initiale à l'index 0)
     for (
       let i = 1;
@@ -1759,21 +1774,21 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     ) {
       const analysis = this.analysisResults[i];
       const flatIndex = i - 1; // L'index 0 dans analysisResults correspond à la position initiale
-  
+
       if (flatIndex >= flatMoves.length) {
         console.warn(`Pas de coup correspondant à l'analyse ${i}`);
         continue;
       }
-  
+
       const flatMove = flatMoves[flatIndex];
       const formattedMove = this.formattedMoves[flatMove.formattedIndex];
-  
+
       // Calculer la précision (1 - delta)
       const precision =
         analysis.delta !== undefined
           ? Math.max(0, Math.min(1, 1 - (analysis.delta || 0)))
           : undefined;
-  
+
       // Associer les données d'analyse au coup correspondant (blanc ou noir)
       if (flatMove.isWhite) {
         console.log(
@@ -1792,7 +1807,7 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
         formattedMove.blackDelta = analysis.delta;
         formattedMove.blackPrecision = precision;
       }
-  
+
       // Afficher les détails dans la console
       console.log(
         `Coup ${analysis.moveNumber}${flatMove.isWhite ? "." : "..."} ${
@@ -1816,46 +1831,56 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
 
   private saveCurrentEvaluations(): void {
     if (!this.formattedMoves) return;
-    
+
     // Parcourir tous les coups formatés et sauvegarder leurs évaluations
     for (const move of this.formattedMoves) {
       // Créer une clé unique pour chaque coup (blanc ou noir)
       if (move.white && move.path) {
-        const key = `w_${move.path.join('_')}`;
-        if (move.whiteEvaluation || move.whiteBestMove || move.whiteDelta !== undefined || move.whitePrecision !== undefined) {
+        const key = `w_${move.path.join("_")}`;
+        if (
+          move.whiteEvaluation ||
+          move.whiteBestMove ||
+          move.whiteDelta !== undefined ||
+          move.whitePrecision !== undefined
+        ) {
           this.moveEvaluations.set(key, {
             evaluation: move.whiteEvaluation,
             bestMove: move.whiteBestMove,
             delta: move.whiteDelta,
-            precision: move.whitePrecision
+            precision: move.whitePrecision,
           });
         }
       }
-      
+
       if (move.black && move.path) {
-        const key = `b_${move.path.join('_')}`;
-        if (move.blackEvaluation || move.blackBestMove || move.blackDelta !== undefined || move.blackPrecision !== undefined) {
+        const key = `b_${move.path.join("_")}`;
+        if (
+          move.blackEvaluation ||
+          move.blackBestMove ||
+          move.blackDelta !== undefined ||
+          move.blackPrecision !== undefined
+        ) {
           this.moveEvaluations.set(key, {
             evaluation: move.blackEvaluation,
             bestMove: move.blackBestMove,
             delta: move.blackDelta,
-            precision: move.blackPrecision
+            precision: move.blackPrecision,
           });
         }
       }
     }
-    
+
     console.log("Évaluations sauvegardées:", this.moveEvaluations.size);
   }
 
   private restoreEvaluations(): void {
     if (!this.formattedMoves || this.moveEvaluations.size === 0) return;
-    
+
     // Parcourir tous les coups formatés et restaurer leurs évaluations
     for (const move of this.formattedMoves) {
       // Restaurer les évaluations pour les coups blancs
       if (move.white && move.path) {
-        const key = `w_${move.path.join('_')}`;
+        const key = `w_${move.path.join("_")}`;
         const evaluation = this.moveEvaluations.get(key);
         if (evaluation) {
           move.whiteEvaluation = evaluation.evaluation;
@@ -1864,10 +1889,10 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
           move.whitePrecision = evaluation.precision;
         }
       }
-      
+
       // Restaurer les évaluations pour les coups noirs
       if (move.black && move.path) {
-        const key = `b_${move.path.join('_')}`;
+        const key = `b_${move.path.join("_")}`;
         const evaluation = this.moveEvaluations.get(key);
         if (evaluation) {
           move.blackEvaluation = evaluation.evaluation;
@@ -1877,20 +1902,23 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
         }
       }
     }
-    
+
     console.log("Évaluations restaurées aux coups formatés");
   }
 
   getPrecisionClass(precision: number): string {
-    if (precision >= 0.9) return 'precision-excellent';
-    if (precision >= 0.7) return 'precision-good';
-    if (precision >= 0.5) return 'precision-inaccuracy';
-    if (precision >= 0.3) return 'precision-mistake';
-    return 'precision-blunder';
+    if (precision >= 0.9) return "precision-excellent";
+    if (precision >= 0.7) return "precision-good";
+    if (precision >= 0.5) return "precision-inaccuracy";
+    if (precision >= 0.3) return "precision-mistake";
+    return "precision-blunder";
   }
 
   // Améliorer la méthode updateCurrentEvaluation pour mieux gérer les évaluations
-  private updateCurrentEvaluation(path: number[] | undefined, color: "white" | "black"): void {
+  private updateCurrentEvaluation(
+    path: number[] | undefined,
+    color: "white" | "black"
+  ): void {
     // Position initiale ou cas invalide - évaluation à 0.00
     if (!path || !this.formattedMoves || this.formattedMoves.length === 0) {
       this.currentEvaluation = "0.00";
@@ -1898,72 +1926,89 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       this.activeColor = undefined;
       return;
     }
-    
-    console.log(`Recherche d'évaluation pour: chemin=${path}, couleur=${color}`);
-    
+
+    console.log(
+      `Recherche d'évaluation pour: chemin=${path}, couleur=${color}`
+    );
+
     // Trouver le move formaté correspondant
     for (const move of this.formattedMoves) {
       // Vérifier si les chemins correspondent
       if (!move.path || move.path.length !== path.length) continue;
-      
+
       const pathMatches = move.path.every((val, idx) => val === path[idx]);
-      
+
       if (pathMatches) {
         // CORRECTION: Vérifier explicitement la correspondance avec le coup blanc ou noir
         if (color === "white" && move.white) {
           this.currentEvaluation = move.whiteEvaluation || "0.00";
-          console.log(`Coup blanc trouvé avec évaluation: ${this.currentEvaluation}`);
+          console.log(
+            `Coup blanc trouvé avec évaluation: ${this.currentEvaluation}`
+          );
           return;
         }
         if (color === "black" && move.black) {
           this.currentEvaluation = move.blackEvaluation || "0.00";
-          console.log(`Coup noir trouvé avec évaluation: ${this.currentEvaluation}`);
+          console.log(
+            `Coup noir trouvé avec évaluation: ${this.currentEvaluation}`
+          );
           return;
         }
       }
     }
-    
+
     // Si aucun coup correspondant n'est trouvé
     this.currentEvaluation = "0.00";
     console.log("Aucun coup correspondant trouvé, évaluation par défaut: 0.00");
   }
 
-  private arraysEqual(a: number[] | undefined, b: number[] | undefined): boolean {
+  private arraysEqual(
+    a: number[] | undefined,
+    b: number[] | undefined
+  ): boolean {
     if (!a || !b) return false;
     if (a.length !== b.length) return false;
     return a.every((val, idx) => val === b[idx]);
   }
-  
+
   // Remplacer votre méthode isActiveMoveInList pour qu'elle soit plus robuste
-  isActiveMoveInList(path: number[] | undefined, color: "white" | "black"): boolean {
+  isActiveMoveInList(
+    path: number[] | undefined,
+    color: "white" | "black"
+  ): boolean {
     if (!path || !this.activeMovePath || !this.activeColor) return false;
-    
+
     // Vérifier si ce coup correspond exactement au coup actif (chemin et couleur)
-    return this.activeColor === color && this.arraysEqual(path, this.activeMovePath);
+    return (
+      this.activeColor === color && this.arraysEqual(path, this.activeMovePath)
+    );
   }
   // Méthode pour obtenir la classe CSS du score d'évaluation
   getEvaluationClass(score: string | undefined): string {
-    if (!score) return '';
-    
-    if (score.includes('Mat')) {
-      return score.includes('contre vous') ? 'evaluation-losing-mate' : 'evaluation-winning-mate';
+    if (!score) return "";
+
+    if (score.includes("Mat")) {
+      return score.includes("contre vous")
+        ? "evaluation-losing-mate"
+        : "evaluation-winning-mate";
     }
-    
+
     // Pour les scores numériques
-    if (score.startsWith('+')) return 'evaluation-positive';
-    if (score.startsWith('-')) return 'evaluation-negative';
-    
-    return 'evaluation-equal';
+    if (score.startsWith("+")) return "evaluation-positive";
+    if (score.startsWith("-")) return "evaluation-negative";
+
+    return "evaluation-equal";
   }
 
   get groupedMoves(): GroupedMove[] {
     const groups: GroupedMove[] = [];
-  
+
     for (const move of this.formattedMoves) {
       // S'assurer que move.moveNumber est un nombre en lui assignant 0 par défaut
-      const moveNum: number = move.moveNumber !== undefined ? move.moveNumber : 0;
+      const moveNum: number =
+        move.moveNumber !== undefined ? move.moveNumber : 0;
       // Rechercher un groupe existant par numéro de coup
-      let group = groups.find(g => g.moveNumber === moveNum);
+      let group = groups.find((g) => g.moveNumber === moveNum);
       if (!group) {
         group = { moveNumber: moveNum };
         groups.push(group);
@@ -1984,84 +2029,88 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     return groups;
   }
 
-
   private findNextNode(currentNode: MoveNode): MoveNode | null {
     if (!currentNode) return null;
-    
+
     // Déterminer la variante contenant ce nœud
     const variation = this.findVariationForNode(currentNode);
-    if (!variation || !variation.nodes || variation.nodes.length === 0) return null;
-    
+    if (!variation || !variation.nodes || variation.nodes.length === 0)
+      return null;
+
     // Trouver l'index du nœud actuel dans cette variante
     const nodeIndex = variation.nodes.indexOf(currentNode);
     if (nodeIndex === -1) return null;
-    
+
     // S'il y a un nœud suivant dans cette variante, le renvoyer
     if (nodeIndex < variation.nodes.length - 1) {
       return variation.nodes[nodeIndex + 1];
     }
-    
+
     // Sinon, pas de coup suivant dans cette variante
     return null;
   }
 
   // Format de l'évaluation pour l'affichage
   formatEvaluation(evaluation: string): string {
-    if (!evaluation) return '0.00';
-    
+    if (!evaluation) return "0.00";
+
     // Si c'est un mat
-    if (evaluation.includes('Mat')) {
+    if (evaluation.includes("Mat")) {
       return evaluation;
     }
-    
+
     // Pour les valeurs numériques
-    let numericValue = parseFloat(evaluation.replace(',', '.').replace('+', ''));
-    
+    let numericValue = parseFloat(
+      evaluation.replace(",", ".").replace("+", "")
+    );
+
     // Si la valeur est supérieure à 10, la limiter pour l'affichage
     if (Math.abs(numericValue) > 10) {
-      return numericValue > 0 ? '+10' : '-10';
+      return numericValue > 0 ? "+10" : "-10";
     }
-    
+
     // Formater avec le signe + si positif
     if (numericValue > 0) {
-      return '+' + numericValue.toFixed(2).replace('.', ',');
+      return "+" + numericValue.toFixed(2).replace(".", ",");
     } else {
-      return numericValue.toFixed(2).replace('.', ',');
+      return numericValue.toFixed(2).replace(".", ",");
     }
   }
 
   // Calculer la hauteur de la barre noire
   getBlackBarHeight(): string {
-    if (!this.currentEvaluation) return '50%';
-    
+    if (!this.currentEvaluation) return "50%";
+
     // Si c'est un mat
-    if (this.currentEvaluation.includes('Mat')) {
-      if (this.currentEvaluation.includes('contre vous')) return '100%';
-      return '0%';
+    if (this.currentEvaluation.includes("Mat")) {
+      if (this.currentEvaluation.includes("contre vous")) return "100%";
+      return "0%";
     }
-    
+
     // Convertir l'évaluation en nombre
-    const evaluation = parseFloat(this.currentEvaluation.replace(',', '.').replace('+', ''));
-    
+    const evaluation = parseFloat(
+      this.currentEvaluation.replace(",", ".").replace("+", "")
+    );
+
     // Calculer la hauteur basée sur l'évaluation
     // L'évaluation va de -15 à +15, ce qui correspond à 0% à 100%
     let blackBarHeight = 50 - (evaluation / 15) * 100;
-    
+
     // Limiter la hauteur entre 0% et 100%
     blackBarHeight = Math.max(0, Math.min(100, blackBarHeight));
-    
-    return blackBarHeight + '%';
+
+    return blackBarHeight + "%";
   }
 
   updatePrecision(path: number[] | undefined, color: "white" | "black"): void {
     this.currentPrecision = undefined;
-    
+
     if (!path || !this.formattedMoves) return;
-    
+
     // Trouver le move formaté correspondant
     for (const move of this.formattedMoves) {
       if (!move.path || !this.arraysEqual(move.path, path)) continue;
-      
+
       if (color === "white" && move.white) {
         this.currentPrecision = move.whitePrecision;
       } else if (color === "black" && move.black) {
@@ -2070,74 +2119,270 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  // Ajouter cette méthode pour identifier les erreurs
-  findMistakes(): void {
-    this.mistakesList = [];
-    
-    if (!this.formattedMoves) return;
-    
-    for (const move of this.formattedMoves) {
-      if (move.white && move.whiteDelta !== undefined && move.whiteDelta > this.mistakeThreshold && move.path) {
-        this.mistakesList.push({
-          index: this.mistakesList.length,
-          path: move.path,
-          color: "white",
-          delta: move.whiteDelta
-        });
-      }
-      
-      if (move.black && move.blackDelta !== undefined && move.blackDelta > this.mistakeThreshold && move.path) {
-        this.mistakesList.push({
-          index: this.mistakesList.length,
-          path: move.path,
-          color: "black",
-          delta: move.blackDelta
-        });
-      }
-    }
-    
-    this.mistakesList.sort((a, b) => b.delta - a.delta); // Trier du plus grand delta au plus petit
-    console.log(`Trouvé ${this.mistakesList.length} erreurs avec delta > ${this.mistakeThreshold}`);
-  }
-
   // Méthode pour démarrer le mode replay des erreurs
-  startReplayMistakes(): void {
+  startReplayMistakes(color: "both" | "white" | "black" = "both"): void {
+    this.replayMistakesColor = color;
     this.findMistakes();
-    
+  
     if (this.mistakesList.length === 0) {
-      alert("Aucune erreur significative n'a été trouvée dans la partie.");
+      alert("Aucune erreur significative n'a été trouvée pour cette couleur.");
       return;
     }
-    
+  
     this.isReplayingMistakes = true;
     this.currentMistakeIndex = 0;
     this.goToMistake(0);
   }
 
-  // Méthode pour aller à une erreur spécifique
+  // Méthode pour aller à une erreur spécifique - version corrigée avec orientation inversée
   goToMistake(index: number): void {
     if (index < 0 || index >= this.mistakesList.length) return;
     
     const mistake = this.mistakesList[index];
     this.currentMistakeIndex = index;
     
-    // Aller à la position sans afficher les flèches du meilleur coup
-    this.goToPosition(mistake.path, mistake.color);
+    // Trouver le coup précédent pour afficher la position avant l'erreur
+    const previousPosition = this.findPreviousPosition(mistake.path);
+    if (!previousPosition) return;
     
-    // Modifier ici: Supprimer les flèches bleues (meilleures coups)
-    setTimeout(() => {
-      if (this.chessground && this.isReplayingMistakes) {
-        const currentShapes = this.chessground.state.drawable.shapes || [];
-        const filteredShapes = currentShapes.filter((shape: { brush: string; }) => shape.brush !== 'blue');
+    // Charger la position précédant l'erreur
+    this.chess.load(previousPosition.fen);
+    
+    // Stocker le coup original qui était une erreur (pour référence)
+    this.mistakeCorrectMove = `${mistake.originalMove.from}${mistake.originalMove.to}`;
+    
+    // Calculer qui doit jouer (blanc ou noir)
+    const turnColor = this.chess.turn() === 'w' ? 'white' : 'black';
+    
+    // CORRECTION: INVERSER l'orientation par rapport à la couleur qui a commis l'erreur
+    // Si l'erreur est des blancs, orienter pour voir du point de vue des noirs, et vice versa
+    const boardOrientation = mistake.color === "white" ? "black" : "white";
+    
+    console.log(`Erreur de: ${mistake.color}, Trait aux: ${turnColor}, Orientation: ${boardOrientation}`);
+    
+    // CORRECTION DU BUG DE DÉCALAGE : Détruire et recréer l'échiquier
+    if (this.chessground) {
+      this.chessground.destroy();
+      
+      // Attendre que le DOM soit prêt
+      setTimeout(() => {
+        // Réinitialiser l'échiquier avec les nouvelles dimensions et positions
+        this.chessground = Chessground(this.boardElement!.nativeElement, {
+          fen: previousPosition.fen,
+          turnColor: turnColor,
+          orientation: boardOrientation, // Utiliser l'orientation inversée
+          coordinates: true,
+          movable: {
+            color: turnColor,
+            free: false,
+            dests: this.getLegalMoves(),
+            events: {
+              after: (orig: string, dest: string) => this.handleMistakeMove(orig, dest, mistake)
+            }
+          },
+          highlight: {
+            lastMove: true,
+            check: true,
+          },
+          animation: {
+            enabled: true,
+            duration: 200,
+          },
+          draggable: {
+            enabled: true,
+            distance: 3,
+            autoDistance: true,
+            showGhost: true,
+          },
+          lastMove: previousPosition.lastMove as Key[] | undefined
+        });
+        
+        // Forcer un recalcul de la mise en page
+        window.dispatchEvent(new Event('resize'));
+      }, 50);
+    }
+  }
+  
+  
+  // Gérer le coup joué pendant le mode "rejouer erreurs" avec feedback amélioré
+  handleMistakeMove(orig: string, dest: string, mistake: any): void {
+    // Récupérer le coup joué
+    const moveString = `${orig}${dest}`;
+    
+    // Récupérer le coup original (qui était une erreur)
+    const originalMove = `${mistake.originalMove.from}${mistake.originalMove.to}`;
+    
+    // Trouver le meilleur coup selon l'analyse
+    const bestMove = this.getBestMoveForPosition(mistake.path, mistake.color);
+    
+    console.log("----DÉBOGAGE RÉPONSE----");
+    console.log(`Coup joué: ${moveString}`);
+    console.log(`Coup erreur original: ${originalMove}`);
+    console.log(`Meilleur coup à trouver: ${bestMove}`);
+    console.log(`Couleur à jouer: ${mistake.color}`);
+    console.log(`Position FEN: ${this.chess.fen()}`);
+    console.log(`Trait aux: ${this.chess.turn() === 'w' ? 'Blancs' : 'Noirs'}`);
+    console.log("-----------------------");
+    
+    // Obtenir la notation SAN du meilleur coup pour l'utiliser en interne seulement
+    let bestMoveDisplay = "non disponible";
+    if (bestMove) {
+      try {
+        const tempAnalysisChess = new Chess(this.chess.fen());
+        const sanMove = tempAnalysisChess.move({
+          from: bestMove.substring(0, 2) as Square,
+          to: bestMove.substring(2, 4) as Square,
+          promotion: bestMove.length > 4 ? bestMove.substring(4, 5) as any : undefined
+        });
+        
+        if (sanMove) {
+          bestMoveDisplay = sanMove.san;
+        } else {
+          bestMoveDisplay = `${bestMove.substring(0, 2)} → ${bestMove.substring(2, 4)}`;
+        }
+      } catch (e) {
+        bestMoveDisplay = `${bestMove.substring(0, 2)} → ${bestMove.substring(2, 4)}`;
+      }
+    }
+    
+    // Jouer le coup que le joueur vient de faire
+    const tempChess = new Chess(this.chess.fen());
+    const move = tempChess.move({
+      from: orig as Square,
+      to: dest as Square,
+      promotion: 'q'
+    });
+    
+    if (!move) return;
+    
+    // Mise à jour de l'échiquier temporairement
+    this.chessground.set({
+      fen: tempChess.fen(),
+      lastMove: [orig, dest]
+    });
+    
+    // Si le joueur a trouvé le meilleur coup
+    if (bestMove && moveString === bestMove) {
+      // Feedback positif sans montrer le coup (puisque le joueur l'a déjà trouvé)
+      this.feedbackMessage = `Excellent! Vous avez trouvé le meilleur coup.`;
+      this.feedbackClass = "feedback-success";
+      this.showFeedback = true;
+      
+      // Laisser le temps de voir le coup
+      setTimeout(() => {
+        this.showFeedback = false;
+        setTimeout(() => this.nextMistake(), 800);
+      }, 2000);
+    }
+    // Si le joueur a rejoué le même coup erroné
+    else if (moveString === originalMove) {
+      // Feedback négatif sans montrer le meilleur coup
+      this.feedbackMessage = `C'était l'erreur originale. Essayez un autre coup.`;
+      this.feedbackClass = "feedback-error";
+      this.showFeedback = true;
+      
+      setTimeout(() => {
+        this.chess.load(this.findPreviousPosition(mistake.path)!.fen);
+        this.showFeedback = false;
         
         this.chessground.set({
-          drawable: {
-            shapes: filteredShapes
+          fen: this.chess.fen(),
+          turnColor: this.chess.turn() === 'w' ? 'white' : 'black',
+          movable: {
+            color: this.chess.turn() === 'w' ? 'white' : 'black',
+            dests: this.getLegalMoves(),
+            events: {
+              after: (o: string, d: string) => this.handleMistakeMove(o, d, mistake)
+            }
           }
         });
-      }
-    }, 100);
+      }, 2000);
+    }
+    // Si le joueur a joué un autre coup qui n'est pas le meilleur
+    else {
+      // Feedback pour coup sous-optimal sans montrer le meilleur coup
+      this.feedbackMessage = `Essayez de trouver un meilleur coup.`;
+      this.feedbackClass = "feedback-warning";
+      this.showFeedback = true;
+      
+      setTimeout(() => {
+        this.chess.load(this.findPreviousPosition(mistake.path)!.fen);
+        this.showFeedback = false;
+        
+        this.chessground.set({
+          fen: this.chess.fen(),
+          turnColor: this.chess.turn() === 'w' ? 'white' : 'black',
+          movable: {
+            color: this.chess.turn() === 'w' ? 'white' : 'black',
+            dests: this.getLegalMoves(),
+            events: {
+              after: (o: string, d: string) => this.handleMistakeMove(o, d, mistake)
+            }
+          }
+        });
+      }, 2000);
+    }
   }
+    
+
+  // Nouvelle version de getBestMoveForPosition qui utilise directement la position FEN
+  getBestMoveForPosition(path: number[], color: "white" | "black"): string | null {
+    if (!path || path.length === 0 || !this.analysisResults || this.analysisResults.length === 0) return null;
+    
+    // Obtenir la position FEN actuelle
+    const currentFEN = this.chess.fen();
+    console.log(`Recherche du meilleur coup pour la position: ${currentFEN}`);
+    
+    // Rechercher cette position exacte dans les résultats d'analyse
+    for (const analysis of this.analysisResults) {
+      // Comparer les parties importantes du FEN (ignorer le compteur de demi-coups et le numéro de coup)
+      const currentPositionParts = currentFEN.split(' ').slice(0, 4).join(' ');
+      
+      // Utiliser analysis.position au lieu de analysis.fen
+      const analysisPositionParts = analysis.position?.split(' ').slice(0, 4).join(' ');
+      
+      if (currentPositionParts === analysisPositionParts) {
+        console.log("✓ Position trouvée dans l'analyse!");
+        console.log(`  bestMove: ${analysis.bestMove}`);
+        
+        // Utiliser directement le champ bestMove de l'analyse
+        if (analysis.bestMove) {
+          return analysis.bestMove;
+        }
+      }
+    }
+    
+    // Si la position n'est pas trouvée, revenir à la méthode précédente comme fallback
+    console.log("Position non trouvée dans analysisResults, utilisation de la méthode de secours");
+    
+    // Recherche dans moveEvaluations (méthode précédente)
+    const key = color === "white" ? `w_${path.join("_")}` : `b_${path.join("_")}`;
+    const evalData = this.moveEvaluations.get(key);
+    
+    if (evalData?.bestMove) {
+      console.log(`✓ bestMove trouvé via moveEvaluations: ${evalData.bestMove}`);
+      return evalData.bestMove;
+    }
+    
+    // Recherche dans formattedMoves (méthode précédente)
+    for (const move of this.formattedMoves) {
+      if (!move.path || !this.arraysEqual(move.path, path)) continue;
+      
+      if (color === "white" && move.whiteBestMove) {
+        console.log(`✓ bestMove trouvé via whiteBestMove: ${move.whiteBestMove}`);
+        return move.whiteBestMove;
+      }
+      
+      if (color === "black" && move.blackBestMove) {
+        console.log(`✓ bestMove trouvé via blackBestMove: ${move.blackBestMove}`);
+        return move.blackBestMove;
+      }
+    }
+    
+    console.log("✗ Aucun bestMove trouvé pour cette position");
+    return null;
+  }
+
 
   // Aller à l'erreur suivante
   nextMistake(): void {
@@ -2157,57 +2402,216 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     }
   }
 
-  // Quitter le mode replay des erreurs
+  // Quitter le mode replay des erreurs avec vérifications améliorées
   exitReplayMistakes(): void {
     this.isReplayingMistakes = false;
     this.currentMistakeIndex = -1;
+    this.mistakeCorrectMove = null;
     
-    // Restaurer l'affichage normal des flèches si nécessaire
+    // Restaurer l'état de l'échiquier avec une recréation complète
     if (this.currentNode) {
-      this.updateArrowsForMove(this.currentNode);
+      // Stocker une référence au currentNode avant le setTimeout
+      const nodeToRestore = this.currentNode;
+      
+      // Détruire et recréer l'instance
+      if (this.chessground) {
+        this.chessground.destroy();
+        
+        setTimeout(() => {
+          // Vérifier à nouveau que nodeToRestore est toujours valide
+          if (!nodeToRestore) return;
+          
+          // Recréer l'échiquier avec l'état normal
+          this.chessground = Chessground(this.boardElement!.nativeElement, {
+            fen: nodeToRestore.fen,
+            turnColor: this.chess.turn() === 'w' ? 'white' : 'black',
+            orientation: 'white',
+            coordinates: true,
+            movable: {
+              color: 'both',
+              free: false,
+              dests: this.getLegalMoves(),
+              events: {
+                after: (orig: string, dest: string) => this.onMove(orig, dest)
+              }
+            },
+            highlight: {
+              lastMove: true,
+              check: true,
+            },
+            animation: {
+              enabled: true,
+              duration: 200,
+            },
+            draggable: {
+              enabled: true,
+              distance: 3,
+              autoDistance: true,
+              showGhost: true,
+            },
+            lastMove: nodeToRestore.move ? 
+                      [nodeToRestore.move.from, nodeToRestore.move.to] as Key[] : 
+                      undefined
+          });
+          
+          // Synchroniser et forcer un recalcul
+          window.dispatchEvent(new Event('resize'));
+          
+          // Vérifier à nouveau que this.currentNode est toujours valide
+          if (this.currentNode) {
+            this.updateArrowsForMove(this.currentNode);
+          }
+        }, 50);
+      }
+    } else {
+      // Si pas de currentNode, réinitialiser l'échiquier à sa position initiale
+      this.resetBoard();
     }
+  }
+
+  // Nouveau - Trouver la position précédant une erreur
+  findPreviousPosition(
+    path: number[]
+  ): { fen: string; lastMove?: [string, string] } | null {
+    // Si nous sommes au premier coup, retourner la position initiale
+    if (path.length === 0 || path[0] === 0) {
+      return {
+        fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      };
+    }
+
+    // Obtenir l'index du coup précédent
+    const previousIndex = path[0] - 1;
+
+    // Trouver le nœud du coup précédent
+    const previousNode = this.findNodeByIndex(previousIndex);
+    if (!previousNode) return null;
+
+    return {
+      fen: previousNode.fen,
+      lastMove: previousNode.move
+        ? [previousNode.move.from, previousNode.move.to]
+        : undefined,
+    };
+  }
+
+  // Modifications à findMistakes pour afficher correctement les erreurs par couleur
+  findMistakes(): void {
+    this.mistakesList = [];
+
+    if (!this.formattedMoves) return;
+
+    for (const move of this.formattedMoves) {
+      // CORRECTION: Quand on choisit "erreurs des blancs", on veut jouer en tant que blancs
+      // donc on cherche les erreurs des noirs qui précèdent un coup blanc
+      if (
+        (this.replayMistakesColor === "both" || this.replayMistakesColor === "black") &&
+        move.white &&
+        move.whiteDelta !== undefined &&
+        move.whiteDelta > this.mistakeThreshold &&
+        move.path
+      ) {
+        // Trouver le node original correspondant à ce coup
+        const node = this.findNodeByPath(move.path);
+        if (node) {
+          this.mistakesList.push({
+            index: this.mistakesList.length,
+            path: move.path,
+            color: "white",  // C'est une erreur des blancs
+            delta: move.whiteDelta,
+            originalMove: node.move,
+            moveNumber: move.moveNumber,
+          });
+        }
+      }
+
+      // CORRECTION: Quand on choisit "erreurs des noirs", on veut jouer en tant que noirs
+      // donc on cherche les erreurs des blancs qui précèdent un coup noir
+      if (
+        (this.replayMistakesColor === "both" || this.replayMistakesColor === "white") &&
+        move.black &&
+        move.blackDelta !== undefined &&
+        move.blackDelta > this.mistakeThreshold &&
+        move.path
+      ) {
+        const node = this.findNodeByPath(move.path);
+        if (node) {
+          this.mistakesList.push({
+            index: this.mistakesList.length,
+            path: move.path,
+            color: "black",  // C'est une erreur des noirs
+            delta: move.blackDelta,
+            originalMove: node.move,
+            moveNumber: move.moveNumber,
+          });
+        }
+      }
+    }
+
+    this.mistakesList.sort((a, b) => b.delta - a.delta); // Trier du plus grand delta au plus petit
+    console.log(
+      `Trouvé ${this.mistakesList.length} erreurs (${this.replayMistakesColor}) avec delta > ${this.mistakeThreshold}`
+    );
   }
 
   // Modifier la méthode updateArrowsForMove pour prendre en compte le mode replay erreurs
   private updateArrowsForMove(node: MoveNode): void {
     console.log("Préparation des flèches pour le nœud:", node);
-    
+
     // Créer un tableau de formes vide
-    const shapes: Array<{ orig: string; dest: string; brush: string; shape: string }> = [];
-    
+    const shapes: Array<{
+      orig: string;
+      dest: string;
+      brush: string;
+      shape: string;
+    }> = [];
+
     // Trouver le PROCHAIN coup dans la même variante pour la flèche rouge
     const nextNode = this.findNextNode(node);
     if (nextNode && nextNode.move.from && nextNode.move.to) {
-      console.log("Coup suivant trouvé:", nextNode.move.from, "→", nextNode.move.to);
+      console.log(
+        "Coup suivant trouvé:",
+        nextNode.move.from,
+        "→",
+        nextNode.move.to
+      );
       shapes.push({
         orig: nextNode.move.from,
         dest: nextNode.move.to,
-        brush: 'red',
-        shape: 'arrow'
+        brush: "red",
+        shape: "arrow",
       });
-      
+
       // Flèche bleue pour le meilleur coup suivant (pas celui du coup actuel)
       // Ne pas montrer la flèche bleue si en mode replay des erreurs
       if (!this.isReplayingMistakes) {
         const nextPath = this.getPathToNode(nextNode);
         if (nextPath) {
-          const nextKey = nextNode.move.color === 'w' ? `w_${nextPath.join('_')}` : `b_${nextPath.join('_')}`;
+          const nextKey =
+            nextNode.move.color === "w"
+              ? `w_${nextPath.join("_")}`
+              : `b_${nextPath.join("_")}`;
           const nextEvalData = this.moveEvaluations.get(nextKey);
           if (nextEvalData?.bestMove?.length === 4) {
             shapes.push({
               orig: nextEvalData.bestMove.substring(0, 2),
               dest: nextEvalData.bestMove.substring(2, 4),
-              brush: 'blue',
-              shape: 'arrow'
+              brush: "blue",
+              shape: "arrow",
             });
-            console.log("Meilleur coup alternatif trouvé:", nextEvalData.bestMove.substring(0, 2), "→", nextEvalData.bestMove.substring(2, 4));
+            console.log(
+              "Meilleur coup alternatif trouvé:",
+              nextEvalData.bestMove.substring(0, 2),
+              "→",
+              nextEvalData.bestMove.substring(2, 4)
+            );
           }
         }
       }
     }
-    
+
     // Le reste de la méthode reste identique...
-    
+
     // Appliquer les flèches avec un léger délai
     setTimeout(() => {
       this.chessground.set({
@@ -2215,12 +2619,12 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
           enabled: true,
           visible: true,
           autoShapes: [],
-          shapes: shapes
-        }
+          shapes: shapes,
+        },
       });
       console.log("Flèches appliquées:", shapes);
     }, 50);
   }
 
-
+  
 }
