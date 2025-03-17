@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-
 import { Chess, Square } from "chess.js";
 import { LocalAnalysis } from './localAnalysis.service';
 import * as puzzlesData from '../assets/lichess_db_puzzle_reduit.json';
 import * as gamesData from '../assets/games_small.json';
+import { Observable, of } from 'rxjs';
+
 
 
 @Injectable({
@@ -15,6 +16,8 @@ import * as gamesData from '../assets/games_small.json';
 // Tri en fonction de l'opening joué par le joueur
 // Tri en fonction de son élo
 export class PuzzleScraper {
+
+    private puzzlesUrl = 'assets/lichess_db_puzzle_reduit.json'; // Adapter selon l'emplacement de vos données
 
     constructor(private LocalAnalysis: LocalAnalysis) {}
 
@@ -34,6 +37,22 @@ export class PuzzleScraper {
         mateIn2Missed: 0,
         mateIn3Missed: 0,
     };
+
+    getPuzzles(): Observable<any[]> {
+        try {
+            const data = (puzzlesData as any).default || puzzlesData;
+            if (!Array.isArray(data)) {
+                console.error("Le format des données JSON est invalide.");
+                return of([]);
+            }
+            
+            // Return the puzzles as an Observable
+            return of(data);
+        } catch (error) {
+            console.error("Erreur lors du chargement des puzzles", error);
+            return of([]);
+        }
+    }
 
     collectPuzzlesByOpening(opening: string): { recommendedPoints: number; Rating: number; URL: string }[] {
         console.log("Tentative de récupération des puzzles hors ligne");
