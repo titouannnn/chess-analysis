@@ -56,8 +56,9 @@
 
 /* Échiquier avec taille fixe */
 .chessboard {
-  width: 700px;
-  height: 700px;
+  flex: 1;
+  width: 600px;
+  height: 600px;
   position: relative;
 }
 
@@ -150,14 +151,15 @@
 /* Lignes de coups plus structurées avec alternance */
 .move-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  padding: 4px 0;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--chess-medium-brown);
   transition: background-color 0.2s ease;
   background-color: var(--chess-light-brown);
   margin: 2px 0;
   border-radius: 3px;
+  overflow-x: hidden;
 }
 
 .move-row:nth-child(even) {
@@ -170,7 +172,7 @@
 
 /* Numéro de coup plus visible */
 .move-number {
-  color: var(--chess-text-light);
+  color: #333;
   margin-right: 6px;
   font-weight: 600;
   min-width: 32px;
@@ -179,6 +181,8 @@
   padding: 3px;
   background-color: rgba(0, 0, 0, 0.03);
   border-radius: 3px;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 /* Coups blancs */
@@ -192,6 +196,11 @@
   transition: all 0.15s ease;
   background-color: var(--chess-white-move-bg);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
 }
 
 /* Coups noirs */
@@ -205,6 +214,11 @@
   transition: all 0.15s ease;
   background-color: var(--chess-black-move-bg);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
 }
 
 /* Effets au survol */
@@ -215,22 +229,29 @@
 }
 
 /* Coup actif/sélectionné */
-.move-white.active, .move-black.active {
-  background-color: var(--chess-selected);
-  color: var(--chess-move-text);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--chess-highlight);
+.active-move {
+  background-color: rgba(255, 235, 59, 0.4);
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.6);
+  font-weight: bold;
+}
+
+.move-white.active-move, .move-black.active-move {
+  background-color: #ffff99;
+  font-weight: bold;
+  border-radius: 3px;
+  padding: 2px 4px;
 }
 
 /* Styles pour les variantes */
 .variation {
   position: relative;
-  padding-left: 24px;
   margin: 2px 0;
-  color: var(--chess-text-dark);
+  padding-top: 3px;
+  padding-bottom: 3px;
   background-color: rgba(181, 136, 99, 0.08);
   border-radius: 4px;
+  border-left: 3px solid var(--chess-medium-brown);
 }
 
 .variation::before {
@@ -246,7 +267,9 @@
 
 /* Variante active */
 .active-variation {
-  background-color: var(--chess-highlight-bg);
+  background-color: rgba(205, 155, 74, 0.2);
+  border-left-color: var(--chess-highlight);
+  border-left-width: 4px;
 }
 
 .active-variation::before {
@@ -256,13 +279,60 @@
 
 /* Indicateurs de variante plus élégants */
 .variation-indicator {
-  color: var(--chess-text-light);
-  font-weight: 600;
-  margin: 0 2px;
-  font-size: 1em;
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 0 4px;
-  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--chess-dark-brown);
+  margin-right: 6px;
+  font-style: italic;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.variation-marker {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 4px;
+}
+
+.variation-text {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+/* Indicateur de début et fin de variante */
+.variation-start {
+  margin-top: 6px;
+  border-top: 1px dashed var(--chess-medium-brown);
+  padding-top: 6px;
+}
+
+.variation-start-marker {
+  color: var(--chess-dark-brown);
+  font-weight: bold;
+  margin-right: 5px;
+  font-size: 1.2em;
+}
+
+.variation-end {
+  margin-bottom: 6px;
+  border-bottom: 1px dashed var(--chess-medium-brown);
+  padding-bottom: 6px;
+}
+
+/* Style selon la profondeur de la variante */
+[data-depth="1"] {
+  border-left-color: #cd9b4a;
+  background-color: rgba(205, 155, 74, 0.08);
+}
+
+[data-depth="2"] {
+  border-left-color: #7d9b4a;
+  background-color: rgba(125, 155, 74, 0.08);
+}
+
+[data-depth="3"] {
+  border-left-color: #4a9b9b;
+  background-color: rgba(74, 155, 155, 0.08);
 }
 
 /* Styles pour les différents niveaux d'imbrication des variantes */
@@ -281,12 +351,28 @@
   border-left: 3px solid rgba(181, 136, 99, 0.4);
 }
 
+/* Améliorer la lisibilité des numéros de coup dans les variantes */
+.variation .move-number {
+  background-color: rgba(255, 255, 255, 0.4);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  min-width: 32px;
+}
+
+/* Style des coups dans les variantes */
+.variation .move-white,
+.variation .move-black {
+  padding: 2px 5px;
+  transition: all 0.2s ease;
+}
+
 /* Navigation controls */
 .navigation-controls {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 15px;
+  margin: 15px 0;
 }
 
 .navigation-controls button {
@@ -300,7 +386,8 @@
   transition: all 0.2s ease;
 }
 
-.navigation-controls button:hover {
+.navigation-controls button:hover,
+.navigation-controls button:not(:disabled):hover {
   background-color: var(--chess-highlight-bg);
 }
 
@@ -362,182 +449,13 @@
   background: var(--chess-highlight);
 }
 
-/* Styles améliorés pour les variantes */
-.variation {
-  position: relative;
-  margin: 2px 0;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  background-color: rgba(181, 136, 99, 0.08);
-  border-radius: 4px;
-  border-left: 3px solid var(--chess-medium-brown);
+/* Animation du feedback */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Indicateur de début de variante */
-.variation-start {
-  border-top: 1px solid var(--chess-medium-brown);
-  margin-top: 6px;
-  padding-top: 6px;
-}
-
-.variation-start-marker {
-  color: var(--chess-dark-brown);
-  font-weight: bold;
-  margin-right: 5px;
-  font-size: 1.2em;
-}
-
-/* Indicateur de fin de variante */
-.variation-end {
-  border-bottom: 1px solid var(--chess-medium-brown);
-  margin-bottom: 6px;
-  padding-bottom: 6px;
-}
-
-/* Style selon la profondeur de la variante */
-[data-depth="1"] {
-  background-color: rgba(181, 136, 99, 0.08);
-  border-left-color: var(--chess-medium-brown);
-}
-
-[data-depth="2"] {
-  background-color: rgba(181, 136, 99, 0.12);
-  border-left-color: var(--chess-dark-brown);
-}
-
-[data-depth="3"] {
-  background-color: rgba(181, 136, 99, 0.16);
-  border-left-color: var(--chess-highlight);
-}
-
-/* Améliorer la lisibilité des numéros de coup dans les variantes */
-.variation .move-number {
-  background-color: rgba(255, 255, 255, 0.4);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-weight: 600;
-  min-width: 32px;
-}
-
-/* Variante active (celle qui est actuellement affichée) */
-.active-variation {
-  background-color: var(--chess-highlight-bg);
-  border-left-color: var(--chess-highlight);
-  border-left-width: 4px;
-}
-
-/* Style des coups dans les variantes */
-.variation .move-white,
-.variation .move-black {
-  padding: 2px 5px;
-  transition: all 0.2s ease;
-}
-
-/* Styles améliorés pour les variantes */
-
-.variation {
-  position: relative;
-  border-left: 3px solid var(--chess-medium-brown);
-  margin: 2px 0;
-  background-color: rgba(181, 136, 99, 0.08);
-  border-radius: 4px;
-}
-
-.variation-start {
-  margin-top: 6px;
-  border-top: 1px dashed var(--chess-medium-brown);
-  padding-top: 6px;
-}
-
-.variation-end {
-  margin-bottom: 6px;
-  border-bottom: 1px dashed var(--chess-medium-brown);
-  padding-bottom: 6px;
-}
-
-.variation-indicator {
-  display: inline-flex;
-  align-items: center;
-  color: var(--chess-dark-brown);
-  margin-right: 6px;
-  font-style: italic;
-}
-
-.variation-marker {
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-right: 4px;
-}
-
-.variation-text {
-  font-size: 0.9em;
-  opacity: 0.8;
-}
-
-/* Différentes couleurs selon la profondeur */
-[data-depth="1"] {
-  border-left-color: #cd9b4a;
-  background-color: rgba(205, 155, 74, 0.08);
-}
-
-[data-depth="2"] {
-  border-left-color: #7d9b4a;
-  background-color: rgba(125, 155, 74, 0.08);
-}
-
-[data-depth="3"] {
-  border-left-color: #4a9b9b;
-  background-color: rgba(74, 155, 155, 0.08);
-}
-
-/* Style pour la ligne active */
-.active-variation {
-  background-color: rgba(205, 155, 74, 0.2);
-  border-left-width: 4px;
-}
-
-/* Variantes de coups */
-.variation {
-  position: relative;
-  margin: 2px 0;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  background-color: rgba(181, 136, 99, 0.08);
-  border-radius: 4px;
-  border-left: 3px solid var(--chess-medium-brown);
-}
-
-.variation-start {
-  margin-top: 6px;
-  border-top: 1px dashed var(--chess-medium-brown);
-  padding-top: 6px;
-}
-
-.variation-end {
-  margin-bottom: 6px;
-  border-bottom: 1px dashed var(--chess-medium-brown);
-  padding-bottom: 6px;
-}
-
-.variation-indicator {
-  display: inline-flex;
-  align-items: center;
-  color: var(--chess-dark-brown);
-  margin-right: 6px;
-  font-style: italic;
-}
-
-.variation-marker {
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-right: 4px;
-}
-
-.variation-text {
-  font-size: 0.9em;
-  opacity: 0.8;
-}
-
+/* Analyse et statistiques */
 .analysis-controls {
   margin: 10px 0;
 }
@@ -582,30 +500,7 @@
   color: #666;
 }
 
-.move-analysis {
-  font-size: 12px;
-  margin-left: 5px;
-  display: inline-block;
-}
-
-.evaluation {
-  font-weight: bold;
-}
-
-.positive {
-  color: #4CAF50;
-}
-
-.negative {
-  color: #f44336;
-}
-
-.precision {
-  color: #666;
-  margin-left: 4px;
-}
-
-/* Style pour l'affichage de la précision en grand */
+/* Styles pour l'affichage de la précision et de l'évaluation */
 .current-precision {
   background-color: var(--chess-light-brown);
   border-radius: var(--chess-border-radius);
@@ -632,93 +527,24 @@
 
 /* Classes pour différentes plages de précision */
 .precision-excellent {
-  color: #4CAF50; /* Vert */
+  color: #15781B;
 }
 
 .precision-good {
-  color: #8BC34A; /* Vert clair */
+  color: #4d7c0f;
 }
 
 .precision-inaccuracy {
-  color: #FFC107; /* Jaune */
+  color: #ca8a04;
 }
 
 .precision-mistake {
-  color: #FF9800; /* Orange */
+  color: #ea580c;
 }
 
 .precision-blunder {
-  color: #F44336; /* Rouge */
+  color: #b91c1c;
 }
-
-/* Style pour l'affichage de l'évaluation en grand */
-.current-evaluation {
-  background-color: var(--chess-light-brown);
-  border-radius: var(--chess-border-radius);
-  padding: 12px;
-  margin-bottom: 12px;
-  text-align: center;
-  box-shadow: var(--chess-shadow);
-  border: 1px solid var(--chess-medium-brown);
-}
-
-.evaluation-label {
-  font-size: 14px;
-  color: var(--chess-text-light);
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.evaluation-value {
-  font-size: 32px;
-  font-weight: 700;
-  padding: 5px 0;
-}
-
-/* Classes pour les différents types d'évaluation */
-.evaluation-positive {
-  color: #4CAF50; /* Vert */
-}
-
-.evaluation-negative {
-  color: #F44336; /* Rouge */
-}
-
-.evaluation-equal {
-  color: #2196F3; /* Bleu */
-}
-
-.evaluation-winning-mate {
-  color: #4CAF50; /* Vert */
-  font-weight: bold;
-}
-
-.evaluation-losing-mate {
-  color: #F44336; /* Rouge */
-  font-weight: bold;
-}
-
-/* Style pour la mise en surbrillance du coup actuel */
-.active-move {
-  background-color: rgba(255, 235, 59, 0.4); /* Jaune semi-transparent */
-  border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.6); /* Contour orange */
-}
-
-.active-move.move-white {
-  font-weight: bold;
-}
-
-.active-move.move-black {
-  font-weight: bold;
-}
-
-/* Couleurs différentes selon la profondeur */
-[data-depth="1"] { background-color: rgba(205, 155, 74, 0.08); border-left-color: #cd9b4a; }
-[data-depth="2"] { background-color: rgba(125, 155, 74, 0.08); border-left-color: #7d9b4a; }
-[data-depth="3"] { background-color: rgba(74, 155, 155, 0.08); border-left-color: #4a9b9b; }
-
 
 /* Style pour l'affichage de l'évaluation en grand */
 .current-evaluation {
@@ -744,169 +570,6 @@
 
 /* Classes pour les différents types d'évaluation */
 .evaluation-positive {
-  color: #4CAF50;
-}
-
-.evaluation-negative {
-  color: #F44336;
-}
-
-.evaluation-equal {
-  color: #2196F3;
-}
-
-.evaluation-winning-mate {
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-.evaluation-losing-mate {
-  color: #F44336;
-  font-weight: bold;
-}
-
-/* Style pour la mise en surbrillance du coup actuel */
-.active-move {
-  background-color: rgba(255, 235, 59, 0.4);
-  border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.6);
-  font-weight: bold;
-}
-.move-white.active-move {
-  background-color: #ffff99;
-  font-weight: bold;
-  border-radius: 3px;
-  padding: 2px 4px;
-}
-
-.move-black.active-move {
-  background-color: #ffff99;
-  font-weight: bold;
-  border-radius: 3px;
-  padding: 2px 4px;
-}
-
-.navigation-controls {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.navigation-controls button {
-  padding: 8px 12px;
-  font-size: 16px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: white;
-  cursor: pointer;
-}
-
-.navigation-controls button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.navigation-controls button:not(:disabled):hover {
-  background-color: #f0f0f0;
-}
-
-/* Modification de la classe move-row pour garder les éléments en ligne */
-.move-row {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  padding: 4px 8px;
-  border-bottom: 1px solid var(--chess-medium-brown);
-  transition: background-color 0.2s ease;
-  background-color: var(--chess-light-brown);
-  margin: 2px 0;
-  border-radius: 3px;
-  overflow-x: hidden; /* Empêcher le débordement horizontal */
-}
-
-/* Ajuster la largeur et l'overflow des coups */
-.move-white, .move-black {
-  flex: 0 0 auto; /* Ne pas réduire ou agrandir automatiquement */
-  white-space: nowrap; /* Empêcher le retour à la ligne du texte */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Ajouter des points de suspension si nécessaire */
-  max-width: 100px; /* Limiter la largeur maximale */
-}
-
-/* Style pour le numéro de coup pour qu'il reste compact */
-.move-number {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-/* Ajuster l'indicateur de variante pour qu'il reste en ligne */
-.variation-indicator {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-/* Ajoutez ce code dans chessboard.component.css */
-.board-container {
-  display: flex;
-  align-items: stretch;
-}
-
-.eval-bar {
-  width: 30px;
-  position: relative;
-  background-color: #ffffff;
-  border-radius: 3px;
-  margin-right: 10px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.black-bar {
-  width: 100%;
-  background-color: #4d4d4d;
-  transition: height 0.5s ease;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.zero-line {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: rgba(214, 79, 0, 0.4);
-  z-index: 1;
-}
-
-.eval-number {
-  position: absolute;
-  bottom: 5px;
-  width: 100%;
-  text-align: center;
-  font-size: 12px;
-  font-weight: bold;
-  z-index: 2;
-}
-
-.precision-indicator {
-  position: absolute;
-  bottom: 25px;
-  width: 100%;
-  text-align: center;
-  font-size: 11px;
-  font-weight: bold;
-  z-index: 2;
-}
-
-/* Classes d'évaluation */
-.evaluation-positive {
   color: #15781B;
 }
 
@@ -928,32 +591,12 @@
   font-weight: bold;
 }
 
-/* Classes de précision */
-.precision-excellent {
-  color: #15781B;
-}
-
-.precision-good {
-  color: #4d7c0f;
-}
-
-.precision-inaccuracy {
-  color: #ca8a04;
-}
-
-.precision-mistake {
-  color: #ea580c;
-}
-
-.precision-blunder {
-  color: #b91c1c;
-}
-
-/* Ajoutez ces styles dans votre CSS si nécessaire */
+/* Board container et barre d'évaluation */
 .board-container {
   display: flex;
   align-items: stretch;
   margin-bottom: 20px;
+  width: 640px;
 }
 
 .eval-bar {
@@ -963,7 +606,8 @@
   border-radius: 3px;
   margin-right: 10px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  height: 600px;  /* Ajustez à la taille de votre échiquier */
+  height: 600px;
+  overflow: hidden;
 }
 
 .black-bar {
@@ -1006,22 +650,7 @@
   z-index: 2;
 }
 
-.chessboard {
-  flex: 1;
-  width: 600px;  /* Augmenté de 500px à 600px */
-  height: 600px; /* Augmenté de 500px à 600px pour garder le ratio 1:1 */
-}
-
-.board-container {
-  display: flex;
-  align-items: stretch;
-  margin-bottom: 20px;
-  width: 640px;       /* 600px + 30px + 10px de marge */
-}
-
 /* Styles pour la fonctionnalité "Rejouer mes erreurs" */
-/* Styles pour la fonctionnalité "Rejouer mes erreurs" */
-
 .mistakes-replay-controls {
   margin-top: 20px;
   padding-top: 15px;
@@ -1077,12 +706,18 @@
   margin-bottom: 8px;
 }
 
-.move-number {
-  color: #333;
-}
-
 .move-color {
   color: #d64f00;
+}
+
+.white-turn {
+  color: #0066cc;
+  font-weight: bold;
+}
+
+.black-turn {
+  color: #cc0000;
+  font-weight: bold;
 }
 
 .mistake-hint {
@@ -1125,84 +760,6 @@
   background-color: #f0c0c0;
 }
 
-.move-feedback {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  border-radius: 4px;
-  font-weight: bold;
-  z-index: 10;
-  animation: fadeIn 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  max-width: 80%;
-  text-align: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-.feedback-success {
-  background-color: #4caf50;
-  color: white;
-}
-
-.feedback-warning {
-  background-color: #ff9800;
-  color: white;
-}
-
-.feedback-error {
-  background-color: #f44336;
-  color: white;
-}
-
-.white-turn {
-  color: #0066cc;
-  font-weight: bold;
-}
-
-.black-turn {
-  color: #cc0000;
-  font-weight: bold;
-}
-
-/* Styles améliorés pour le feedback */
-.move-feedback {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 16px;
-  z-index: 1000; /* Augmenter le z-index pour s'assurer qu'il est visible */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  max-width: 90%;
-  text-align: center;
-  transition: all 0.3s ease;
-}
-
-.feedback-success {
-  background-color: #4caf50;
-  color: white;
-}
-
-.feedback-warning {
-  background-color: #ff9800;
-  color: white;
-}
-
-.feedback-error {
-  background-color: #f44336;
-  color: white;
-}
-
-
 /* Styles pour le message de feedback */
 .feedback-container {
   position: absolute;
@@ -1234,12 +791,6 @@
 }
 
 /* Styles pour les boutons de sélection de couleur */
-.mistake-replay-controls {
-  margin: 10px 0;
-  display: flex;
-  gap: 10px;
-}
-
 .replay-btn {
   padding: 8px 12px;
   border-radius: 4px;
@@ -1277,34 +828,4 @@
   border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
-}
-
-/* Styles pour le message de feedback */
-.feedback-container {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
-  max-width: 250px;
-  padding: 12px 15px;
-  border-radius: 6px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  font-weight: bold;
-  transition: opacity 0.3s ease;
-  text-align: center;
-}
-
-.feedback-success {
-  background-color: #4caf50;
-  color: white;
-}
-
-.feedback-warning {
-  background-color: #ff9800;
-  color: white;
-}
-
-.feedback-error {
-  background-color: #f44336;
-  color: white;
 }
