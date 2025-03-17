@@ -122,6 +122,15 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
   analysisProgress: number = 0;
   analysisProgressText: string = "";
 
+  // pour rejouer les erreurs : 
+  isReplayingMistakes: boolean = false;
+  mistakeThreshold: number = 1.5;
+  mistakesList: {index: number, path: number[], color: "white" | "black", delta: number}[] = [];
+  currentMistakeIndex: number = -1;
+  mistakeCorrectMove: string | null = null; // Stocke le coup correct à jouer
+
+  
+
   private moveEvaluations: Map<string, { 
     evaluation?: string;
     bestMove?: string;
@@ -169,6 +178,14 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
         break;
     }
   }
+
+  defaultPgn = `1. e3 d5 2. Ne2 Nc6 3. Ng3 e5 4. Be2 Nf6 5. O-O Bd6 6. Bd3 e4 7. Bb5 Bd7 8. Nh5
+  O-O 9. Nxf6+ Qxf6 10. Nc3 Qh6 11. g3 Bh3 12. Re1 Qg5 13. Ne2 h5 14. Nf4 Bxf4 15.
+  exf4 Qg6 16. Bxc6 bxc6 17. d4 h4 18. Be3 hxg3 19. fxg3 Bg4 20. Qd2 Bf3 21. b4 f5
+  22. c3 Kf7 23. a4 Rh8 24. Kf1 Rh6 25. Bg1 Rah8 26. c4 e3 27. Rxe3 Be4 28. cxd5
+  cxd5 29. b5 Qf6 30. Qc3 Rc8 31. a5 Qe6 32. b6 axb6 33. axb6 c6 34. b7 Rb8 35.
+  Ra7 Qd7 36. Qb4 Rhh8 37. Rb3 g5 38. fxg5 f4 39. Ra8 Qh3+ 40. Kf2 Qg2+ 41. Ke1
+  Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
 
   initChessground() {
     // Calculer les destinations légales
@@ -1967,71 +1984,6 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
     return groups;
   }
 
-  // Ajoutez cette méthode dans votre ChessboardComponent
-
-  private updateArrowsForMove(node: MoveNode): void {
-    console.log("Préparation des flèches pour le nœud:", node);
-    
-    // Créer un tableau de formes vide
-    const shapes: Array<{ orig: string; dest: string; brush: string; shape: string }> = [];
-    
-    // Trouver le PROCHAIN coup dans la même variante pour la flèche rouge
-    const nextNode = this.findNextNode(node);
-    if (nextNode && nextNode.move.from && nextNode.move.to) {
-      console.log("Coup suivant trouvé:", nextNode.move.from, "→", nextNode.move.to);
-      shapes.push({
-        orig: nextNode.move.from,
-        dest: nextNode.move.to,
-        brush: 'red',
-        shape: 'arrow'
-      });
-      
-      // Flèche bleue pour le meilleur coup suivant (pas celui du coup actuel)
-      // Récupérer le chemin du PROCHAIN nœud
-      const nextPath = this.getPathToNode(nextNode);
-      if (nextPath) {
-        // Utiliser la couleur du PROCHAIN coup pour déterminer la clé
-        const nextKey = nextNode.move.color === 'w' ? `w_${nextPath.join('_')}` : `b_${nextPath.join('_')}`;
-        const nextEvalData = this.moveEvaluations.get(nextKey);
-        if (nextEvalData?.bestMove?.length === 4) {
-          shapes.push({
-            orig: nextEvalData.bestMove.substring(0, 2),
-            dest: nextEvalData.bestMove.substring(2, 4),
-            brush: 'blue',
-            shape: 'arrow'
-          });
-          console.log("Meilleur coup alternatif trouvé:", nextEvalData.bestMove.substring(0, 2), "→", nextEvalData.bestMove.substring(2, 4));
-        }
-      }
-    } else {
-      console.log("Pas de coup suivant disponible");
-      
-      // Si pas de coup suivant, essayer de trouver le meilleur coup pour la position actuelle
-      // La couleur du joueur actuel est l'opposé de celle du nœud actuel
-      const currentColor = node.move.color === 'w' ? 'b' : 'w';
-      const fenParts = node.fen.split(' ');
-      
-      // Vérifier si le joueur actuel correspond bien à la couleur dans le FEN
-      if (fenParts[1] === currentColor) {
-        // Chercher dans moveEvaluations s'il existe une entrée pour cette position
-        // Logique supplémentaire pour chercher le meilleur coup pour la position actuelle
-        // (Cette partie nécessiterait une autre approche, car votre structure stocke les évaluations par coups joués)
-      }
-    }
-    
-    // Appliquer les flèches avec un léger délai pour s'assurer que l'échiquier est prêt
-    setTimeout(() => {
-      this.chessground.set({
-        drawable: {
-          enabled: true,
-          visible: true,
-          autoShapes: [],
-          shapes: shapes
-        }
-      });
-      console.log("Flèches appliquées:", shapes);
-    }, 50);
-  }
 
   private findNextNode(currentNode: MoveNode): MoveNode | null {
     if (!currentNode) return null;
@@ -2117,4 +2069,158 @@ export class ChessboardComponent implements AfterViewInit, OnChanges {
       }
     }
   }
+
+  // Ajouter cette méthode pour identifier les erreurs
+  findMistakes(): void {
+    this.mistakesList = [];
+    
+    if (!this.formattedMoves) return;
+    
+    for (const move of this.formattedMoves) {
+      if (move.white && move.whiteDelta !== undefined && move.whiteDelta > this.mistakeThreshold && move.path) {
+        this.mistakesList.push({
+          index: this.mistakesList.length,
+          path: move.path,
+          color: "white",
+          delta: move.whiteDelta
+        });
+      }
+      
+      if (move.black && move.blackDelta !== undefined && move.blackDelta > this.mistakeThreshold && move.path) {
+        this.mistakesList.push({
+          index: this.mistakesList.length,
+          path: move.path,
+          color: "black",
+          delta: move.blackDelta
+        });
+      }
+    }
+    
+    this.mistakesList.sort((a, b) => b.delta - a.delta); // Trier du plus grand delta au plus petit
+    console.log(`Trouvé ${this.mistakesList.length} erreurs avec delta > ${this.mistakeThreshold}`);
+  }
+
+  // Méthode pour démarrer le mode replay des erreurs
+  startReplayMistakes(): void {
+    this.findMistakes();
+    
+    if (this.mistakesList.length === 0) {
+      alert("Aucune erreur significative n'a été trouvée dans la partie.");
+      return;
+    }
+    
+    this.isReplayingMistakes = true;
+    this.currentMistakeIndex = 0;
+    this.goToMistake(0);
+  }
+
+  // Méthode pour aller à une erreur spécifique
+  goToMistake(index: number): void {
+    if (index < 0 || index >= this.mistakesList.length) return;
+    
+    const mistake = this.mistakesList[index];
+    this.currentMistakeIndex = index;
+    
+    // Aller à la position sans afficher les flèches du meilleur coup
+    this.goToPosition(mistake.path, mistake.color);
+    
+    // Modifier ici: Supprimer les flèches bleues (meilleures coups)
+    setTimeout(() => {
+      if (this.chessground && this.isReplayingMistakes) {
+        const currentShapes = this.chessground.state.drawable.shapes || [];
+        const filteredShapes = currentShapes.filter((shape: { brush: string; }) => shape.brush !== 'blue');
+        
+        this.chessground.set({
+          drawable: {
+            shapes: filteredShapes
+          }
+        });
+      }
+    }, 100);
+  }
+
+  // Aller à l'erreur suivante
+  nextMistake(): void {
+    if (this.currentMistakeIndex < this.mistakesList.length - 1) {
+      this.goToMistake(this.currentMistakeIndex + 1);
+    } else {
+      // Boucler au début si désiré
+      // this.goToMistake(0);
+      alert("C'était la dernière erreur.");
+    }
+  }
+
+  // Aller à l'erreur précédente
+  previousMistake(): void {
+    if (this.currentMistakeIndex > 0) {
+      this.goToMistake(this.currentMistakeIndex - 1);
+    }
+  }
+
+  // Quitter le mode replay des erreurs
+  exitReplayMistakes(): void {
+    this.isReplayingMistakes = false;
+    this.currentMistakeIndex = -1;
+    
+    // Restaurer l'affichage normal des flèches si nécessaire
+    if (this.currentNode) {
+      this.updateArrowsForMove(this.currentNode);
+    }
+  }
+
+  // Modifier la méthode updateArrowsForMove pour prendre en compte le mode replay erreurs
+  private updateArrowsForMove(node: MoveNode): void {
+    console.log("Préparation des flèches pour le nœud:", node);
+    
+    // Créer un tableau de formes vide
+    const shapes: Array<{ orig: string; dest: string; brush: string; shape: string }> = [];
+    
+    // Trouver le PROCHAIN coup dans la même variante pour la flèche rouge
+    const nextNode = this.findNextNode(node);
+    if (nextNode && nextNode.move.from && nextNode.move.to) {
+      console.log("Coup suivant trouvé:", nextNode.move.from, "→", nextNode.move.to);
+      shapes.push({
+        orig: nextNode.move.from,
+        dest: nextNode.move.to,
+        brush: 'red',
+        shape: 'arrow'
+      });
+      
+      // Flèche bleue pour le meilleur coup suivant (pas celui du coup actuel)
+      // Ne pas montrer la flèche bleue si en mode replay des erreurs
+      if (!this.isReplayingMistakes) {
+        const nextPath = this.getPathToNode(nextNode);
+        if (nextPath) {
+          const nextKey = nextNode.move.color === 'w' ? `w_${nextPath.join('_')}` : `b_${nextPath.join('_')}`;
+          const nextEvalData = this.moveEvaluations.get(nextKey);
+          if (nextEvalData?.bestMove?.length === 4) {
+            shapes.push({
+              orig: nextEvalData.bestMove.substring(0, 2),
+              dest: nextEvalData.bestMove.substring(2, 4),
+              brush: 'blue',
+              shape: 'arrow'
+            });
+            console.log("Meilleur coup alternatif trouvé:", nextEvalData.bestMove.substring(0, 2), "→", nextEvalData.bestMove.substring(2, 4));
+          }
+        }
+      }
+    }
+    
+    // Le reste de la méthode reste identique...
+    
+    // Appliquer les flèches avec un léger délai
+    setTimeout(() => {
+      this.chessground.set({
+        drawable: {
+          enabled: true,
+          visible: true,
+          autoShapes: [],
+          shapes: shapes
+        }
+      });
+      console.log("Flèches appliquées:", shapes);
+    }, 50);
+  }
+
+
 }

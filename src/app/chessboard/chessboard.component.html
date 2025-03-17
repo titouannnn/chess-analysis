@@ -28,7 +28,8 @@
 
     <div class="pgn-input">
       <h3>Importer une partie (format PGN)</h3>
-      <textarea #pgnInput placeholder="Collez votre PGN ici..."></textarea>
+      <!-- textarea modifié pour utiliser une propriété du composant -->
+      <textarea #pgnInput [value]="defaultPgn"></textarea>
       <div class="button-row">
         <button (click)="loadPgn(pgnInput.value)">Importer PGN</button>
         <button (click)="resetBoard()">Réinitialiser</button>
@@ -113,4 +114,46 @@
       </div>
     </div>
   </div>
+
+  <!-- UI pour Rejouer les erreurs -->
+  <div class="mistakes-replay-controls" *ngIf="analysisResults && analysisResults.length > 0">
+    <!-- Bouton pour lancer le mode replay des erreurs -->
+    <button *ngIf="!isReplayingMistakes" 
+            class="mistakes-button" 
+            (click)="startReplayMistakes()">
+      Rejouer mes erreurs
+    </button>
+    
+    <!-- Contrôles de navigation entre les erreurs -->
+    <div *ngIf="isReplayingMistakes" class="mistakes-navigation">
+      <div class="mistakes-header">
+        <h3>Analyse des erreurs</h3>
+        <span class="mistake-counter">Erreur {{currentMistakeIndex + 1}}/{{mistakesList.length}}</span>
+      </div>
+      
+      <div class="mistakes-info" *ngIf="currentMistakeIndex >= 0 && mistakesList[currentMistakeIndex]">
+        <div class="delta-display">
+          Δ: {{mistakesList[currentMistakeIndex].delta.toFixed(2)}}
+        </div>
+        <div class="mistake-hint">
+          Pouvez-vous trouver un meilleur coup?
+        </div>
+      </div>
+      
+      <div class="mistakes-buttons">
+        <button (click)="previousMistake()" 
+                [disabled]="currentMistakeIndex <= 0">
+          ◀ Erreur précédente
+        </button>
+        <button (click)="nextMistake()" 
+                [disabled]="currentMistakeIndex >= mistakesList.length - 1">
+          Erreur suivante ▶
+        </button>
+        <button (click)="exitReplayMistakes()" class="exit-button">
+          ✕ Quitter
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

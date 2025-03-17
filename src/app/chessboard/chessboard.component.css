@@ -1011,3 +1011,104 @@
   width: 600px;  /* Augmenté de 500px à 600px */
   height: 600px; /* Augmenté de 500px à 600px pour garder le ratio 1:1 */
 }
+
+.board-container {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 20px;
+  width: 640px;       /* 600px + 30px + 10px de marge */
+}
+
+/* Styles pour la fonctionnalité "Rejouer mes erreurs" */
+
+.mistakes-replay-controls {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+.mistakes-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #d64f00;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.mistakes-button:hover {
+  background-color: #b84500;
+}
+
+.mistakes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.mistakes-header h3 {
+  margin: 0;
+  color: #d64f00;
+}
+
+.mistake-counter {
+  font-weight: bold;
+  color: #555;
+}
+
+.mistakes-info {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.delta-display {
+  font-weight: bold;
+  font-size: 16px;
+  color: #d64f00;
+  margin-bottom: 5px;
+}
+
+.mistake-hint {
+  font-style: italic;
+  color: #555;
+}
+
+.mistakes-buttons {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.mistakes-buttons button {
+  flex-grow: 1;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mistakes-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mistakes-buttons button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.mistakes-buttons .exit-button {
+  background-color: #f8d7d7;
+  color: #d64f00;
+}
+
+.mistakes-buttons .exit-button:hover {
+  background-color: #f0c0c0;
+}
