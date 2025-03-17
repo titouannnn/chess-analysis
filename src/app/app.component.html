@@ -177,29 +177,6 @@
   }
 </style>
 
-<main class="main">
-  <div class="chess-container">
-    <h2>Échiquier</h2>
-    
-    <app-chessboard
-      [fen]="currentFen"
-      (positionChanged)="onPositionChanged($event)"
-      (moveHistoryChanged)="onMoveHistoryChanged($event)">
-    </app-chessboard>
-  
-    <!-- Optionnel : Ajoutez un affichage des coups -->
-    <div class="move-list" *ngIf="moveHistory && moveHistory.length > 0">
-      <h3>Historique des coups</h3>
-      <ol>
-        <li *ngFor="let move of moveHistory">
-          {{ move.san }} ({{ move.color === 'w' ? 'Blancs' : 'Noirs' }})
-        </li>
-      </ol>
-    </div>
-  </div>
-</main>
-
-
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * * -->

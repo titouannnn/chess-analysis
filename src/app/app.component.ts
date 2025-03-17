@@ -73,12 +73,12 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     console.log("Initialisation de l'application");
     //this.lichessTests();
-    //this.chess_comTests();
+    this.chess_comTests();
     //this.testPuzzle();
 
     //this.localAnalysisTests();
     //this.localAnalysisTests();
-    this.displayChessboard();
+    //this.displayChessboard();
   }
 
   
@@ -100,12 +100,12 @@ export class AppComponent implements OnInit {
     this.ChesscomApi.getAllGamesOFFLINE();
     console.log("Parties chargées (OFFLINE) :", this.ChesscomApi.allGamesAllTypes.length);
   
-    //this.testApi(this.ChesscomApi.allGamesAllTypes, "titouannnnnn");
+    this.testApi(this.ChesscomApi.allGamesAllTypes, "titouannnnnn");
   
   }
 
   async lichessTests(): Promise<void> {
-    await this.LitchessApi.getIDLichessGames('titouannn', 100);
+    await this.LitchessApi.getIDLichessGames('coffeechessclub2023', 100);
     await this.LitchessApi.getInfoLichessGames();
     console.log(this.LitchessApi.allGames);
     this.LitchessApi.dataFormatage();
@@ -115,7 +115,7 @@ export class AppComponent implements OnInit {
 
     this.api.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
     
-    this.testApi(this.api.allGames, 'titouannn');
+    this.testApi(this.api.allGames, 'coffeechessclub2023');
     
   }
 
