@@ -1,0 +1,19 @@
+/* Cette classe applique les styles à la boîte de dialogue entière */
+.full-screen-dialog .mat-dialog-container  {
+ 
+  
+  
+   /* Supprimer les bords arrondis */
+  z-index: 9999; /* Assurer que le dialogue soit au premier plan */
+  box-sizing: border-box; /* Assurer que les bordures sont prises en compte dans la taille */
+}
+
+/* Style de la barre de progression */
+mat-progress-bar {
+  background-color: #332B26; /* Couleur de la barre */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0; /* Retirer le padding */
+
+}

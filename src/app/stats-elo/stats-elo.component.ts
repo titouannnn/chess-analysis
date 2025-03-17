@@ -5,6 +5,8 @@ import { time } from 'console';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
 import { ActivatedRoute , Params } from '@angular/router'; 
+import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
+import { MatDialog } from '@angular/material/dialog';
 
 
 @Component({
@@ -21,15 +23,31 @@ export class StatsEloComponent implements OnInit {
   typeJeu = Constantes.TypeJeuChessCom;
 
   private api: Api;
-  constructor(private route: ActivatedRoute,chessApi : ChesscomApi, lichessApi : LitchessApi ){ 
-    this.api = chessApi;
-    afterNextRender(()=>{
+  constructor(private route: ActivatedRoute,chessApi : ChesscomApi, lichessApi : LitchessApi, public matDialog:MatDialog ){ 
+    this.api = chessApi;}
+   /* afterNextRender(()=>{
+      const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+        height: '100%',
+        width: '100%',
+        panelClass: 'full-screen-dialog',  // Une classe CSS personnalisée pour prendre tout l'écran
+        hasBackdrop: true,  // Ajoute un fond semi-transparent
+        disableClose: true // Empêche la fermeture de la popup lors d'un clic en dehors
+      });
       this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+      
+      for(let i : number = 0; i < 10; i++){
+        setTimeout(
+          function (){ 
+            dialogRef.componentInstance.increaseProgress(10)
+          }, 10000 * (i + 1)); // Attendre 1 seconde avant de progresser
+        
+      }
+      
     })
-  }
-
+  
+*/
   // Définir correctement ngOnInit
-  ngOnInit(): void {
+  /*ngOnInit(): void {
     // On s'assure que les paramètres sont bien chargés avant de manipuler les données
     this.route.queryParams.subscribe((params: Params) => {
       this.pseudo = params['pseudo'];
@@ -39,6 +57,40 @@ export class StatsEloComponent implements OnInit {
         this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
       }
     });
+  }*/
+    ngOnInit(): void {
+      // Récupérer le pseudo depuis les paramètres de l'URL
+      this.route.queryParams.subscribe((params: Params) => {
+        this.pseudo = params['pseudo'];
+      });
+  
+      // Appeler la méthode de chargement avec la barre de progression
+      this.showEloStatWithLoading();
+    }
+
+    // Méthode pour afficher les stats Elo avec la barre de chargement
+  showEloStatWithLoading() {
+    // Ouvrir le dialog de la barre de progression
+    const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+      height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
+      width: '200vw',
+      maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
+      panelClass: 'full-screen-dialog',  // La classe qui définit les styles
+      hasBackdrop: true,  // Ajoute un fond semi-transparent
+      disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
+    });
+    this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+
+    // Simuler un délai de chargement pour la progression
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      dialogRef.componentInstance.increaseProgress(progress); // Augmenter la progression
+      if (progress >= 100) {
+        clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
+        dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
+      }
+    }, 10000); // Mise à jour toutes les secondes
   }
 
  

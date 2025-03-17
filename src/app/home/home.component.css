@@ -74,6 +74,7 @@ body, html {
   padding: 8px;
   width: 450px;
   margin: 0 auto;
+  position: relative; 
 }
 
 .search-input {
@@ -83,6 +84,8 @@ body, html {
   flex-grow: 1;
   font-size: 1rem;
   background: transparent;
+  width: 100%; /* Initialement à 100% de la largeur */
+  transition: width 0.3s ease-in-out; 
 }
 
 .search-btn {
@@ -93,3 +96,19 @@ body, html {
   color: #332B26;
   
 }
+
+
+/* Barre de chargement */
+.loading-bar {
+  width: 0; /* Initialement vide */
+  height: 4px;
+  background: #00f;
+  position: absolute; /* Positionné dans la même zone que la barre de recherche */
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  border-radius: 5px;
+  transition: width 2s ease-in-out; /* Transition pour animer la barre de chargement */
+}
+
+

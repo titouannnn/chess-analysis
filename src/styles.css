@@ -4,3 +4,9 @@ body {
     margin: 0;
     font-family: Helvetica, Arial, sans-serif;
   }
+
+  p {
+    color: #E0C7B3;
+    font-size: 2rem; 
+    margin-bottom: 20px;
+  }
