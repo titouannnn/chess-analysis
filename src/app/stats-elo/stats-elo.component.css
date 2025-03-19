@@ -1,15 +1,367 @@
-.yearBar{
-    max-height: 60px;
-    max-width: 300px;
-}
-.yearBar > button > img {
-    height: 10px;
-    width: 10px;
-    opacity: 0.5;
-}
-div:not(:has(parent div)){
-    background-color: aquamarine;
+:host {
+    display: block;
+    font-family: 'Roboto', sans-serif;
+    --bg-color: #1e1e2f;
+    --card-bg: #27293d;
+    --primary-color: #4ecbff;
+    --secondary-color: #8181ff;
+    --accent-color: #ff4d4d;
+    --text-color: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --border-radius: 12px;
+    --shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+  }
+  
+  /* Layout et conteneurs principaux */
+  .dashboard-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
     display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  /* Cartes et conteneurs de graphiques */
+  .chart-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+  
+  .chart-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* En-tête des cartes */
+  .card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-color);
+  }
+  
+  .chart-body {
+    padding: 20px;
+    height: 300px;
+    position: relative;
+  }
+  
+  /* Conteneur des contrôles */
+  .controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  /* Groupes de contrôles */
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .control-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  /* Contrôles pour les types de jeu */
+  .time-controls {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 10;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Contrôles pour les périodes */
+  .period-controls, 
+  #period-controls-fixed {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 10;
+    position: relative;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Styles communs des boutons */
+  .control-btn,
+  .period-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex !important;
+    align-items: center;
     justify-content: center;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .control-btn:hover,
+  .period-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  /* Boutons actifs */
+  .control-btn.active {
+    background-color: var(--primary-color);
+    color: #1e1e2f;
+    font-weight: bold;
+  }
+  
+  .period-btn.active {
+    background-color: var(--secondary-color);
+    color: #1e1e2f;
+    font-weight: 500;
+  }
+  
+  /* Sélecteur d'année */
+  .year-selector {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .year-display {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+  
+  .year-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+  }
+  
+  .year-btn:hover {
+    background-color: var(--primary-color);
+    color: #1e1e2f;
+  }
+  
+  /* Résultats par type */
+  .results-container {
+    display: flex;
+    gap: 15px;
+    padding: 0 20px 20px;
+  }
+  
+  .result-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .result-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 15px 0;
     text-align: center;
-}
+  }
+  
+  .win-title {
+    color: #2ed573;
+  }
+  
+  .draw-title {
+    color: #ffb266;
+  }
+  
+  .loss-title {
+    color: #ff4d4d;
+  }
+  
+  .small-chart {
+    height: 200px;
+    width: 100%;
+    position: relative;
+  }
+  
+  /* Toggle pour les pièces noir/blanc */
+  .color-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+  
+  .color-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .piece-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  .black-piece {
+    background-color: #222;
+    box-shadow: 0 0 0 1px #444;
+  }
+  
+  .white-piece {
+    background-color: #fff;
+    box-shadow: 0 0 0 1px #ccc;
+  }
+  
+  /* Animation pour les transitions de graphiques */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .chart-body canvas {
+    animation: fadeIn 0.5s ease-out;
+  }
+  
+  /* Media queries */
+  @media (min-width: 768px) {
+    .card-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .controls-wrapper {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .results-container {
+      flex-direction: column;
+    }
+    
+    .time-controls {
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+  }
+
+
+/* Correction du CSS pour le positionnement des contrôles */
+
+/* En-tête des cartes */
+.card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Conteneur principal des contrôles avec espacement maximum entre les éléments */
+  .controls-wrapper {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    gap: 15px;
+  }
+  
+  /* Forcer l'affichage des contrôles de type de jeu */
+  .time-controls {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 11; /* Plus élevé que les autres éléments */
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Forcer l'affichage des contrôles de période */
+  .period-controls, 
+  #period-controls-fixed {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    z-index: 11; /* Plus élevé que les autres éléments */
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Version desktop - affichage côte à côte */
+  @media (min-width: 768px) {
+    .card-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start; /* Alignement en haut pour éviter le décalage */
+    }
+    
+    .controls-wrapper {
+      flex-direction: row;
+      justify-content: space-between; /* Maximise l'espace entre les deux groupes de contrôles */
+      align-items: center;
+      max-width: 65%; /* Limite la largeur pour éviter le chevauchement avec le titre */
+    }
+    
+    /* Positionnement explicite pour les time-controls (à gauche) */
+    .time-controls {
+      margin-right: auto; /* Pousse à gauche */
+    }
+    
+    /* Positionnement explicite pour les period-controls (à droite) */
+    .period-controls, 
+    #period-controls-fixed {
+      margin-left: auto; /* Pousse à droite */
+    }
+  }
+  
+  /* Version mobile - empilés verticalement */
+  @media (max-width: 767px) {
+    .controls-wrapper {
+      gap: 15px;
+    }
+    
+    .time-controls,
+    .period-controls, 
+    #period-controls-fixed {
+      width: 100%;
+      justify-content: center;
+    }
+  }
