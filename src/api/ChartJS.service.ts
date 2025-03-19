@@ -47,6 +47,37 @@ export class ChartJS {
 
     }
 
+    getStackedLineGraph(labels : string, dataset : {}){
+
+      const data = {
+        labels: labels,
+        datasets: dataset
+      };
+
+      const config = {
+        type: 'bar',
+        data: data,
+        options: {
+          plugins: {
+            title: {
+              display: true,
+              text: 'Chart.js Bar Chart - Stacked'
+            },
+          },
+          responsive: true,
+          scales: {
+            x: {
+              stacked: true,
+            },
+            y: {
+              stacked: true
+            }
+          }
+        }
+      };
+
+    }
+
     getSimpleBarChart( nativeElement : any,  data_o: any, label_data : string, labels_o: any ) : any {
 
         return new Chart(

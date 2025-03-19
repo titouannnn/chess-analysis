@@ -12,6 +12,13 @@ enum W_B {
   W_B = "w/b"
 }
 
+type DeepClone<T> = T extends object ? { 
+  [K in keyof T]: DeepClone<T[K]> } : T;
+
+function clone<T>(obj: T): DeepClone<T> {
+  return JSON.parse(JSON.stringify(obj));
+}
+
 @Component({
   selector: 'app-stats-elo:not(p)',
   imports: [],
@@ -152,18 +159,16 @@ export class StatsEloComponent {
   }
 
   /**
-   * Cette méthode va nous permettre d'afficher un graphe qui nous permet d'analyser le résultat de nos parties
-   * On devrait être capable d'afficher ces informations en fonction du couleur du joueur, ainsi que du type de jeu
    * 
+   * Methode qui permet de reçevoir les donnes correctes en fonctions des paramètres spécifiées
+   * 
+   * @param endgames Donnees du jeu à filtrer
+   * @returns Donnees filtrés en fonction du joueur blanc ou noir.
    */
-  chartGamesBy : any[] = [];
-  showGamesBy(){
-    
-    this.api.initTimeInterval();
-    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
-    const endgames = this.api.getEndgames();
+  getDataGamesBy( endgames: { [key: string]: { [key: string]: number } } ){
 
     let win_data: any, draw_data: any, lose_data :any;
+
     switch(this.w_b){
       case W_B.Black:
         win_data = endgames["blackWin"];
@@ -177,32 +182,62 @@ export class StatsEloComponent {
         break;
     }
 
+    return [win_data, draw_data, lose_data];
+
+  }
+
+  /**
+   * Cette méthode va nous permettre d'afficher un graphe qui nous permet d'analyser le résultat de nos parties
+   * On devrait être capable d'afficher ces informations en fonction du couleur du joueur, ainsi que du type de jeu
+   * 
+   */
+  chartGamesBy : any[] = [];
+  showGamesBy(){
+    
+    this.api.initTimeInterval();
+    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+    const endgames = this.api.getEndgames();
+
+    let data: any = this.getDataGamesBy(endgames);
+    
     if(this.chartGamesBy.length == 3){
       this.chartGamesBy[0].destroy();
       this.chartGamesBy[1].destroy();
       this.chartGamesBy[2].destroy();
     }
 
-    let optionsChart : ChartConfiguration['options'] = { 
+    let options : Array< any > = [];
+
+    let optionsChartTemplate : ChartConfiguration['options'] = { 
       aspectRatio: 2.5, 
       layout: { 
         padding: 
         { left: 0, right: 0, top: 10, bottom: 20} 
-      }, 
+      },
       plugins : {
         title: {
           display: true,
-          text: 'Jeu gagnés par : '
+          text: ''
         }
-      }};
-    
-    
-    this.chartGamesBy[0] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[0], Object.values(win_data), Object.keys(win_data), optionsChart );
-    optionsChart.plugins!.title!.text = 'Match nul par :';
-    this.chartGamesBy[1] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[1], Object.values(draw_data), Object.keys(draw_data), optionsChart );
-    optionsChart.plugins!.title!.text = 'Jeu perdus par :';
-    this.chartGamesBy[2] = this.chartGenerator.getDoughnutGraph( this.gamesByStats.nativeElement.children[2], Object.values(lose_data), Object.keys(lose_data), optionsChart );
+      }
+    };
 
+    options[0] = clone(optionsChartTemplate);
+    options[0].plugins!.title!.text = 'Match gagnant par: ';
+    options[1] = clone(optionsChartTemplate);
+    options[1].plugins!.title!.text = 'Match nul par :'
+    options[2] = clone(optionsChartTemplate);
+    options[2].plugins!.title!.text = 'Jeu perdus par :';
+    
+    
+    for(let i = 0; i < 3; i++){
+      this.chartGamesBy[i] = this.chartGenerator.getDoughnutGraph( 
+        this.gamesByStats.nativeElement.children[i], 
+        Object.values(data[i]), 
+        Object.keys(data[i]), 
+        options[i] 
+      );
+    }
   }
 
   resetgamesBy(){
@@ -218,6 +253,17 @@ export class StatsEloComponent {
         break;
     }
     this.showGamesBy();
+  }
+
+
+  /**
+   * Affichage des statistiques des openings
+   * 
+   */
+  showOpeningsStats(){
+
+    
+
   }
 
 }

@@ -114,7 +114,6 @@ initTimeInterval() {
   this.dateDebut = this.getDateDebut();
   // La dateFin est la date d'aujourd'hui
   this.dateFin = new Date();
-  //console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
 }
 
 /* return le tableau : [winrate, nombre de victoires, nombre de défaites, nombre de matchs nuls] */
@@ -123,7 +122,6 @@ initTimeInterval() {
   let win = 0;
   let lose = 0;
   let draw = 0;
-  console.log("All games :", this.allGames);
   for (const game of this.allGames) {
     const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
     if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
@@ -220,10 +218,8 @@ setTimeTinterval(type : Constantes.Time, debut : Date, fin : Date) {
       this.dateDebut = new Date(this.dateFin.getTime() - 365 * 24 * 60 * 60 * 1000);
       break;
     case Constantes.Time.ALL_TIME:
-      console.log("all time");
       this.dateDebut = this.getDateDebut();
       this.dateFin = new Date();
-      console.log("date fin : ", this.dateFin);
       break;
     default:
       this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
@@ -407,9 +403,6 @@ abstract getElo( time_class ?: Constantes.TypeJeuChessCom): { timestamp: any; ra
   let tab = this.sortOpenings(openingsTab);
   
   tab = this.CleanOpening(tab);
-
-  console.log("tableau des ouvertures");
-  console.log(tab);
   
   return tab;
 }
@@ -573,7 +566,6 @@ getEndgames() : { [key: string]: { [key: string]: number; }; } {
       }
     }
   }
-  console.log(tab);
   return tab;
 }
 
