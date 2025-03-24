@@ -178,14 +178,14 @@
 .filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 400px;
     margin-bottom: 15px;
   }
   
   /* Menu dropdown avec animations */
   .theme-dropdown {
     position: relative;
-    width: 250px;
+    width: 400px;
     font-family: 'Roboto', sans-serif;
   }
   
@@ -515,3 +515,91 @@
     color: #6c757d;
     font-style: italic;
   }
+
+  /* Styles pour la recherche d'ouvertures */
+.opening-search-container {
+  position: relative;
+  width: 356px;;
+}
+
+.opening-search-input {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.opening-search-input input {
+  width: 100%;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.opening-search-input .dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.opening-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.opening-dropdown-menu.open {
+  display: block;
+}
+
+.opening-option {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.opening-option:hover {
+  background-color: #f5f5f5;
+}
+
+.no-openings {
+  padding: 10px;
+  color: #999;
+  text-align: center;
+}
+
+.selected-opening {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.selected-opening span {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.remove-opening {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.opening-search-container.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+

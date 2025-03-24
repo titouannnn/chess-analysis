@@ -7,14 +7,34 @@
       
       <div class="filter-row">
         <div class="filter-group">
-          <label for="opening-select">Ouverture:</label>
-          <select id="opening-select" 
-                  [(ngModel)]="selectedOpening" 
-                  (change)="applyFilters()" 
-                  [disabled]="selectedThemes.length > 0 || winRateFilter !== 'none'">
-            <option value="">Toutes les ouvertures</option>
-            <option *ngFor="let opening of openings" [value]="opening">{{ opening }}</option>
-          </select>
+          
+          <div class="opening-search-container" [class.disabled]="selectedThemes.length > 0 || winRateFilter !== 'none'">
+            <div class="opening-search-input">
+              <input type="text" 
+                     [(ngModel)]="searchOpening" 
+                     placeholder="Rechercher une ouverture..."
+                     (focus)="showOpeningDropdown = true"
+                     (click)="showOpeningDropdown = true"
+                     [disabled]="selectedThemes.length > 0 || winRateFilter !== 'none'">
+              <span class="dropdown-arrow" (click)="toggleOpeningDropdown()">▼</span>
+            </div>
+        
+            <div class="opening-dropdown-menu" [class.open]="showOpeningDropdown">
+              <div *ngIf="filteredOpenings.length > 0">
+                <div *ngFor="let opening of filteredOpenings" class="opening-option" (click)="selectOpening(opening)">
+                  {{ opening }}
+                </div>
+              </div>
+              <div *ngIf="filteredOpenings.length === 0" class="no-openings">
+                Aucune ouverture trouvée
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="selectedOpening" class="selected-opening">
+            Ouverture sélectionnée: <span>{{ selectedOpening }}</span>
+            <button class="remove-opening" (click)="selectOpening('')">×</button>
+          </div>
         </div>
         
         <!-- Sélecteur de thèmes -->
@@ -72,10 +92,10 @@
       <div *ngIf="winRateFilter !== 'none'" class="openings-info">
         <h3>Ouvertures {{ winRateFilter === 'high' ? 'recommandées' : 'à améliorer' }}</h3>
         <div class="openings-list">
-          <div *ngFor="let opening of getOpeningsByWinRate().slice(0, 5)" class="opening-item">
-            <div class="opening-name">{{ opening }}</div>
+          <div *ngFor="let opening of getOpeningsDataByWinRate()" class="opening-item">
+            <div class="opening-name">{{ opening.name }} ({{ opening.winRate | number:'1.0-1' }}%)</div>
           </div>
-          <div *ngIf="getOpeningsByWinRate().length === 0" class="no-openings">
+          <div *ngIf="getOpeningsDataByWinRate().length === 0" class="no-openings">
             Pas assez de données pour recommander des ouvertures
           </div>
         </div>
@@ -128,7 +148,7 @@
           <tbody>
             <tr *ngFor="let puzzle of paginatedPuzzles">
               <td *ngIf="winRateFilter !== 'none'">
-                {{ getOpeningWinRate(puzzle.OpeningTags) | number:'1.0-1' }}%
+                {{ puzzle.calculatedWinRate | number:'1.0-1' }}%
               </td>
               <td>{{ puzzle.Themes }}</td>
               <td>{{ formatOpeningTags(puzzle.OpeningTags) }}</td>
