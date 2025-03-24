@@ -1,29 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { NgIf, CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Ajoutez cette importation
+import { FormsModule } from '@angular/forms';
 import { LitchessApi } from '../api/litchess-api.service';
 import { Api } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
-import { PuzzleScraper } from '../analyse/puzzle.service'
+import { PuzzleScraper } from '../analyse/puzzle.service';
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
-import { ChessboardComponent } from './chessboard/chessboard.component';
 
 @Component({
   selector: 'unique-app-root',
   standalone: true,
   imports: [
     RouterOutlet, 
-    ChessboardComponent, 
+    RouterLink,
     NgIf, 
     CommonModule, 
-    FormsModule // Ajoutez FormsModule ici
+    FormsModule 
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   host: { 'id': 'main-app-component' }
 })
+
 export class AppComponent implements OnInit {
   message: string = '';
   showChessboard: boolean = false; // Propriété pour contrôler l'affichage
