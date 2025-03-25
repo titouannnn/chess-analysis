@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as localData from '../../assets/games.json';
+import * as localData from '../assets/games.json';
 import { get } from 'node:http';
 import { LitchessApi } from './litchess-api.service';
 import { ChesscomApi } from './chesscomapi.service';
