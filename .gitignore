@@ -1,3 +1,6 @@
 .angular/cache/
-/node_modules
+node_modules
 shell.nix
+.DS_Store
+.vscode
+
