@@ -1,4 +1,4 @@
-import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone, OnInit, ActivatedRoute , Params } from '@angular/core';
+import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone, OnInit } from '@angular/core';
 import { Api, Constantes } from '../../api/api.service';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
