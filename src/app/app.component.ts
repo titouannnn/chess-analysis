@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
-import { NgIf, CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LitchessApi } from '../api/litchess-api.service';
 import { Api, Constantes } from '../api/api.service';
@@ -13,9 +13,7 @@ import { LocalAnalysis } from '../analyse/localAnalysis.service';
   selector: 'unique-app-root',
   standalone: true,
   imports: [
-    RouterOutlet, 
-    RouterLink,
-    NgIf, 
+    RouterOutlet,
     CommonModule, 
     FormsModule 
   ],
@@ -73,7 +71,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     console.log("Initialisation de l'application");
     //this.lichessTests();
-    //this.chess_comTests();
+    this.chess_comTests();
     //this.testPuzzle();
 
     //this.localAnalysisTests();

@@ -24,10 +24,15 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
-              {
+              },
+                {
                 "glob": "**/*",
                 "input": "assets",
+                "output": "assets"
+                },
+                {
+                "glob": "**/*",
+                "input": "src/assets",
                 "output": "assets"
               },
               "src/favicon.ico"
