@@ -1,19 +1,39 @@
-/* Cette classe applique les styles à la boîte de dialogue entière */
-.full-screen-dialog .mat-dialog-container  {
- 
-  
-  
-   /* Supprimer les bords arrondis */
-  z-index: 9999; /* Assurer que le dialogue soit au premier plan */
-  box-sizing: border-box; /* Assurer que les bordures sont prises en compte dans la taille */
+
+/* Conteneur principal pour centrer les éléments */
+.loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
+
+
+
+/* Style du texte de chargement */
+.loading-text {
+  color: #E0C7B3; /* Couleur beige pour le texte */
+  font-size: 2rem; /* Taille du texte */
+  margin-bottom: 20px; /* Espacement sous le texte */
+  text-align: center; /* Centrer le texte */
+  
+}
+
 
 /* Style de la barre de progression */
 mat-progress-bar {
-  background-color: #332B26; /* Couleur de la barre */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0; /* Retirer le padding */
+  width: 40%;
+  height: 12px;
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #C4A992;
+  border-radius: 5px;
+}
 
+/* Couleur de la progression à l'intérieur */
+.mat-progress-bar .mat-progress-bar-fill {
+  background-color: #332B26 ; 
+  transition: width 1s ease;
 }

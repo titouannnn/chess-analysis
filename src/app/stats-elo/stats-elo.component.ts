@@ -71,15 +71,20 @@ export class StatsEloComponent implements OnInit {
     // Méthode pour afficher les stats Elo avec la barre de chargement
   showEloStatWithLoading() {
     // Ouvrir le dialog de la barre de progression
+    // Utilisation de 'panelClass: full-screen-dialog' pour appliquer des styles personnalisés
+    // au conteneur global de la boîte de dialogue (mat-mdc-dialog-surface).
+    // Ces styles sont définis dans styles.css car le CSS du composant ne peut pas cibler les éléments
+    // générés en dehors du composant Angular.
+
     const dialogRef  = this.matDialog.open(LoadingBarComponent, {
       height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
-      width: '200vw',
+      width: '100vw',
       maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
       panelClass: 'full-screen-dialog',  // La classe qui définit les styles
       hasBackdrop: true,  // Ajoute un fond semi-transparent
       disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
     });
-    this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+    
 
     // Simuler un délai de chargement pour la progression
     let progress = 0;
@@ -89,8 +94,9 @@ export class StatsEloComponent implements OnInit {
       if (progress >= 100) {
         clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
         dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
+        this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
       }
-    }, 10000); // Mise à jour toutes les secondes
+    }, 1000); // Mise à jour toutes les secondes
   }
 
  
