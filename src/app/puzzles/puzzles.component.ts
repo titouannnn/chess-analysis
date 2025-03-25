@@ -86,19 +86,25 @@ export class PuzzlesComponent implements OnInit {
 
   // Méthode pour initialiser les données utilisateur
   initializeUserData(): void {
-    this.apiService.sortByGameType(this.apiService.ALL_GENRES);
-
-    // Initialiser les intervalles de temps
-    this.apiService.initTimeInterval();
-    this.apiService.setTimeTinterval(
-      this.apiService.ALL_TIME,
-      this.apiService.DATENULL,
-      this.apiService.DATENULL
-    );
-
-    // Récupérer les statistiques d'ouvertures
-    this.openingsStats = this.apiService.getOpenings();
-    console.log("Statistiques d'ouvertures chargées:", this.openingsStats);
+    try {
+      // Utiliser une chaîne vide ou "4" au lieu de l'enum
+      this.apiService.sortByGameType("");
+      
+      // Initialiser les intervalles de temps
+      this.apiService.initTimeInterval();
+      // Utiliser 3 au lieu de l'enum
+      this.apiService.setTimeTinterval(
+        3, // Valeur numérique de ALL_TIME (3)
+        this.apiService.DATENULL,
+        this.apiService.DATENULL
+      );
+      
+      // Récupérer les statistiques d'ouvertures
+      this.openingsStats = this.apiService.getOpenings();
+      console.log("Statistiques d'ouvertures chargées:", this.openingsStats);
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation des données utilisateur:", error);
+    }
   }
 
   loadPuzzles(): void {

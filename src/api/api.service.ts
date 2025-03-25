@@ -1,16 +1,42 @@
 import { Injectable } from '@angular/core';
 import * as localData from '../assets/games.json';
 import { get } from 'node:http';
+import { LitchessApi } from './litchess-api.service';
+import { ChesscomApi } from './chesscomapi.service';
+
+export namespace Constantes
+{
+    export enum CouleurPiece
+    {
+      BLACK = 0,
+      WHITE = 1
+    }
+
+    export enum TypeJeuChessCom {
+      BULLET = "bullet",
+      BLITZ = "blitz",
+      RAPID = "rapid",
+      CLASSIC = "classic",
+      DAILY = "daily",
+      ALL_GENRES = 4
+    }
+
+    export enum Time {
+      NULL = -1,
+      WEEK = 0,
+      MONTH = 1,
+      YEAR = 2,
+      ALL_TIME = 3,
+      CUSTOM = 4,
+    }
+    
+}
 
 @Injectable({
   providedIn: 'root'
 })
-
-
-
 /***************/
-
-export class Api {
+export abstract class Api {
 
 allGames: any[] = []; /* Constante contenant toutes les parties d'un type (ou tous les types), Utiliser APRES avoir appelé sortbytype*/
 allGamesAllTypes: any[] = []; /* Réponse de l'api, ne pas utiliser directement, prendre "allGames" */
@@ -25,30 +51,54 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 
 /* Constantes */
 
- BLACK = 0;
- WHITE = 1;
-
- BULLET = 0;
- BLITZ = 1;
- RAPID = 2;
- CLASSIC = 3;
- ALL_GENRES = 4;
-
- NULL = -1;
- WEEK = 0;
- MONTH = 1;
- YEAR = 2;
- ALL_TIME = 3;
- CUSTOM = 4;
  RegExpDate = /\[UTCDate\s+"([^"]+)"\]/;
  DATENULL = new Date(0);
 
+/**
+ * Initialisation de l'API Chess.com. 
+ * On utilise une méthode intermédiaire qui est 
+ * capable d'initialiser toutes les différentes API
+ */
+// async initializeChesCom(){
+  
+//   console.log(" ============= Chess.com API Initialisation ============ ");
+//   this.ChesscomApi.getAllGamesOFFLINE();
+  
+//   this.initialize( this.ChesscomApi.allGamesAllTypes, 'titouannnnnn' );
+// }
 
+/**
+* Initialisation de l'API LiChess.org. 
+* On utilise une méthode intermédiaire qui est 
+* capable d'initialiser toutes les différentes API
+*/
+// async initializeLichess(){
+//   console.log(" ========= Lichess.org API Initialisation ========== ");
+//   await this.LitchessApi.getIDLichessGames('titouannn', 100);
+//   await this.LitchessApi.getInfoLichessGames();
 
+//   this.LitchessApi.dataFormatage();
+//   this.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
+  
+//   this.initialize( this.allGames, 'titouannn' );
+// }
+
+/**
+ * Méthode permettant d'initialiser tout type d'API
+ * 
+ * @param tab Données RAW a traiter (allGamesAllTypes)
+ * @param username Utilisateur passé en paramètre
+ */
+protected initialize( tab: any[][], username: string ){
+  this.username = username;
+  this.allGamesAllTypes = tab;
+  this.initTimeInterval();
+  this.setTimeTinterval( Constantes.Time.ALL_TIME ,this.DATENULL, this.DATENULL);
+}
 
 /* Initialisation des dates de début et de fin */
 
-getDateDebut(): Date {
+private getDateDebut(): Date {
   const firstGameDate = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
   const lastGameDate = new Date(this.allGames[this.allGames.length - 1].pgn.match(this.RegExpDate)[1]);
   // Choisir la date la plus ancienne, que ce soit le premier ou le dernier élément
@@ -57,6 +107,10 @@ getDateDebut(): Date {
 
 initTimeInterval() {
   // On initialise la dateDebut à la date de la partie la plus ancienne (dernière partie jouée dans l'ordre chronologique)
+  if( !this.allGames[0] ){
+    console.log( "Attention : Variable allGames initialisé par défault (ALL_GENRES)" );
+    this.sortByGameType(  );
+  }
   this.dateDebut = this.getDateDebut();
   // La dateFin est la date d'aujourd'hui
   this.dateFin = new Date();
@@ -73,20 +127,20 @@ initTimeInterval() {
   for (const game of this.allGames) {
     const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
     if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
-        
+      
       const result = game.pgn.match(/\[Result\s+"([^"]+)"\]/)[1];
       let playerColor = -1;
       
       if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
-        playerColor = this.WHITE;
+        playerColor = Constantes.CouleurPiece.WHITE;
       } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
-        playerColor = this.BLACK;
+        playerColor = Constantes.CouleurPiece.WHITE;
       } else {
         console.error("Erreur couleur joueur");
         console.log(game.white.username, game.black.username, this.username);
       }
       if (playerColor === color) {
-        if (color == this.WHITE) {
+        if (color == Constantes.CouleurPiece.WHITE) {
           if (game.white.result == "win") {
         win++;
           } else if (game.black.result == "win") {
@@ -94,7 +148,7 @@ initTimeInterval() {
           } else {
         draw++;
           }
-        } else if (color == this.BLACK) {
+        } else if (color == Constantes.CouleurPiece.WHITE) {
           if (game.black.result == "win") {
         win++;
           } else if (game.white.result == "win") {
@@ -114,32 +168,33 @@ initTimeInterval() {
   };
 }
 
-/* Init le tableau allGames avec les parties du type donné : bullet/blitz/rapide/classic */
- sortByGameType(type : number) {
+
+/* Init le tableau allGames avec les parties du type donné : bullet/blitz/rapide/classic(daily ?) */
+ sortByGameType(type ?: string) {
   switch (type) {
-    case this.BULLET:
+    case Constantes.TypeJeuChessCom.BULLET:
       return (this.allGames = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "bullet"
       ));
-    case this.BLITZ:
+    case Constantes.TypeJeuChessCom.BLITZ:
       return (this.allGames = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "blitz"
       ));
-    case this.RAPID:
+    case Constantes.TypeJeuChessCom.RAPID:
       return (this.allGames = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "rapid"
       ));
-    case this.CLASSIC:
+    case Constantes.TypeJeuChessCom.DAILY:
+      return (this.allGames = this.allGamesAllTypes.filter(
+        (game: any) => game.time_class === "daily"
+      ));
+    case Constantes.TypeJeuChessCom.CLASSIC:
       return (this.allGames = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "classic" || game.time_class === "classical"
       ));
-    case this.ALL_GENRES:
-      return (this.allGames = this.allGamesAllTypes);
     default:
-      console.error("Erreur type de partie");
-      return -1;
+      return (this.allGames = this.allGamesAllTypes);
   }
-  //console.log("All games :", this.allGames);
 }
 
 /*
@@ -149,28 +204,26 @@ initTimeInterval() {
 
   par défaut si aucun argement donné -> all time
 */
-
-setTimeTinterval(type : number, debut : Date, fin : Date) {
+setTimeTinterval(type : Constantes.Time, debut : Date, fin : Date) {
   switch (type) {
-    case this.CUSTOM:
+    case Constantes.Time.CUSTOM:
       this.dateDebut = new Date(debut);
       this.dateFin = new Date(fin);
       break;
-    case this.WEEK:
+    case Constantes.Time.WEEK:
       this.dateDebut = new Date(this.dateFin.getTime() - 7 * 24 * 60 * 60 * 1000);
       break;
-    case this.MONTH:
+    case Constantes.Time.MONTH:
       this.dateDebut = new Date(this.dateFin.getTime() - 30 * 24 * 60 * 60 * 1000);
       break;
-    case this.YEAR:
+    case Constantes.Time.YEAR:
       this.dateDebut = new Date(this.dateFin.getTime() - 365 * 24 * 60 * 60 * 1000);
       break;
-    case this.ALL_TIME:
+    case Constantes.Time.ALL_TIME:
       console.log("all time");
       this.dateDebut = this.getDateDebut();
       this.dateFin = new Date();
       console.log("date fin : ", this.dateFin);
-      
       break;
     default:
       this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
@@ -180,7 +233,7 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
 }
 
 /* Applique les changements de date */
-  applyTimeInterval() {
+  private applyTimeInterval() {
     this.allGames = this.allGames.filter((game: any) => {
       const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
       return gameDate >= this.dateDebut && gameDate <= this.dateFin;
@@ -196,15 +249,15 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
     const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
     if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
       if (game.white.username.toLowerCase() == this.username.toLowerCase()) {
-        playerColor = this.WHITE;
+        playerColor = Constantes.CouleurPiece.WHITE;
       } else if (game.black.username.toLowerCase() == this.username.toLowerCase()) {
-        playerColor = this.BLACK;
+        playerColor = Constantes.CouleurPiece.BLACK;
       } else {
         console.error("Erreur couleur joueur");
       }
       if (game.accuracies) {
         nbGames++;
-        accuracy += game.accuracies[playerColor === this.WHITE ? "white" : "black"];
+        accuracy += game.accuracies[playerColor === Constantes.CouleurPiece.WHITE ? "white" : "black"];
       }
     }
   }
@@ -226,16 +279,16 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
         let playerColor = -1;
         if (game.white.username.toLowerCase() == this.username.toLowerCase()) {
-          playerColor = this.WHITE;
+          playerColor = Constantes.CouleurPiece.WHITE;
         } else if (game.black.username.toLowerCase() == this.username.toLowerCase()) {
-          playerColor = this.BLACK;
+          playerColor = Constantes.CouleurPiece.BLACK;
         } else {
           console.error("Erreur couleur joueur");
         }
         if (game.accuracies) {
           accuracyList.push({
             timestamp: game.end_time,
-            accuracy: game.accuracies[playerColor === this.WHITE ? "white" : "black"],
+            accuracy: game.accuracies[playerColor === Constantes.CouleurPiece.WHITE ? "white" : "black"],
             color : playerColor
           });
         }
@@ -247,37 +300,25 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
 }
 
 
-
-
-/* return tableau contenant les elos du joueur dans la période donnée 
- format : 
- { timestamp: 1703440514, rating: 996 }
+/**
+ * return tableau contenant les elos du joueur dans la période donnée 
+ * format : 
+ * { timestamp: 1703440514, rating: 996 }
+ * Ici on est entrain de melanger tous les différents élos qui existent : Bullet, Blitz, Rapid, Daily
+ * Il convient de créer des fonction pour récuperer chaqun de manière indépendante.
+ * A noter que cette méthode doit être ecrite dans la classe qui l'implémente
+ * 
+ * */ 
+abstract getElo(): { timestamp: any; rating: any; }[] | undefined;
+/**
+ * Fonction adaptée a chess.com
+ * On fait usage du polymorphisme Ad hoc adapté pour typescript pour la réalisation de cette adaptation
+ * Il est essentiel de réaliser la déclaration de ses méthodes pour ensuite les ecrire.
+ * 
+ * @param time_class : variable permettant de selectionner un type de mode jeu spécifique : Options possibles -> bullet, blitz, Rapid, Daily
  */
- getElo() {
-  let eloList = [];
-  for (const game of this.allGames) {
-    const match = game.pgn.match(this.RegExpDate);
-    if (match) {
-      const gameDate = new Date(match[1]);
-      if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
-        if (game.white.username == this.username) {
-          if (game.white.rating) {
-            eloList.push({ timestamp: game.end_time, rating: game.white.rating });
-          }
-        } else if (game.black.username == this.username) {
-          if (game.black.rating) {
-            eloList.push({ timestamp: game.end_time, rating: game.black.rating });
-          }
-        } else {
-          console.error("Erreur couleur joueur");
-        }
-      }
-    }
-  }
+abstract getElo( time_class ?: Constantes.TypeJeuChessCom): { timestamp: any; rating: any; }[] | undefined;
 
-  //console.log(eloList);
-  return eloList;
-}
 
 /*
 * return un tableau contenant les openings joués par le joueur dans la période donnée
@@ -299,7 +340,7 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
     if (gameDate < this.dateDebut || gameDate > this.dateFin) continue;
 
     if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
-      playerColor = this.WHITE;
+      playerColor = Constantes.CouleurPiece.WHITE;
       if (game.white.result === "win") {
         whiteWin++;
       } else if (game.white.result === "draw") {
@@ -308,7 +349,7 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
         whiteLose++;
       }
     } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
-      playerColor = this.BLACK;
+      playerColor = Constantes.CouleurPiece.BLACK;
       if (game.black.result === "win") {
         blackWin++;
       } else if (game.black.result === "draw") {
@@ -323,25 +364,25 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
     let opening = game.eco.substring(game.eco.lastIndexOf("/") + 1);
     let existingOpening = openingsTab.find(o => o.opening === opening);
 
-    let isWin = (playerColor === this.WHITE && game.white.result === "win")
-             || (playerColor === this.BLACK && game.black.result === "win");
-    let isDraw = (playerColor === this.WHITE && game.white.result === "draw")
-              || (playerColor === this.BLACK && game.black.result === "draw");
+    let isWin = (playerColor === Constantes.CouleurPiece.WHITE && game.white.result === "win")
+             || (playerColor === Constantes.CouleurPiece.BLACK && game.black.result === "win");
+    let isDraw = (playerColor === Constantes.CouleurPiece.WHITE && game.white.result === "draw")
+              || (playerColor === Constantes.CouleurPiece.BLACK && game.black.result === "draw");
 
     if (existingOpening) {
       existingOpening.games.push(game.end_time);
       existingOpening.total++;
       if (isWin) {
         existingOpening.wins++;
-        if (playerColor === this.WHITE) existingOpening.WinAsWhite++;
+        if (playerColor === Constantes.CouleurPiece.WHITE) existingOpening.WinAsWhite++;
         else existingOpening.WinAsBlack++;
       } else if (isDraw) {
         existingOpening.draws++;
-        if (playerColor === this.WHITE) existingOpening.DrawAsWhite++;
+        if (playerColor === Constantes.CouleurPiece.WHITE) existingOpening.DrawAsWhite++;
         else existingOpening.DrawAsBlack++;
       } else {
         existingOpening.losses++;
-        if (playerColor === this.WHITE) existingOpening.LooseAsWhite++;
+        if (playerColor === Constantes.CouleurPiece.WHITE) existingOpening.LooseAsWhite++;
         else existingOpening.LooseAsBlack++;
       }
     } else {
@@ -352,12 +393,12 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
         losses: !isWin && !isDraw ? 1 : 0,
         draws: isDraw ? 1 : 0,
         games: [game.end_time],
-        WinAsBlack: playerColor === this.BLACK && isWin ? 1 : 0,
-        WinAsWhite: playerColor === this.WHITE && isWin ? 1 : 0,
-        LooseAsWhite: playerColor === this.WHITE && !isWin && !isDraw ? 1 : 0,
-        LooseAsBlack: playerColor === this.BLACK && !isWin && !isDraw ? 1 : 0,
-        DrawAsWhite: playerColor === this.WHITE && isDraw ? 1 : 0,
-        DrawAsBlack: playerColor === this.BLACK && isDraw ? 1 : 0,
+        WinAsBlack: playerColor === Constantes.CouleurPiece.BLACK && isWin ? 1 : 0,
+        WinAsWhite: playerColor === Constantes.CouleurPiece.WHITE && isWin ? 1 : 0,
+        LooseAsWhite: playerColor === Constantes.CouleurPiece.WHITE && !isWin && !isDraw ? 1 : 0,
+        LooseAsBlack: playerColor === Constantes.CouleurPiece.BLACK && !isWin && !isDraw ? 1 : 0,
+        DrawAsWhite: playerColor === Constantes.CouleurPiece.WHITE && isDraw ? 1 : 0,
+        DrawAsBlack: playerColor === Constantes.CouleurPiece.BLACK && isDraw ? 1 : 0,
       });
     }
   }
@@ -389,14 +430,10 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       opening.nom = formattedOpening;
     }
   }
-  
-  
-  
+
   //console.log(openingsTab);
   return openingsTab;
 }
-
-
 
  sortOpenings(openingsTab : any[]) {
   // Trier les ouvertures par nom
@@ -463,9 +500,8 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
 }
 
 // Fonction pour récupérer les openings les plus gagnants
- getMostWinningOpenings(openingsTab : any[]) {
+getMostWinningOpenings(openingsTab : any[]) {
   
-
   // On ne prend que les openings joués plus de 3 fois car forcement quand l'ouverture est jouée une seule fois et elle gagne, elle est gagnante a 100%
   let mostWinning = openingsTab.filter(a => a.total > 3).sort((a, b) => (b.wins / b.total) - (a.wins / a.total)).slice(0, 5);
   // renvoie un dictio avec les openings les plus gagnants, la clé opening contient le nom de l'ouverture et la clé winrate contient le winrate de l'ouverture
@@ -481,8 +517,18 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
   let dict = mostLoosing.map(o => ({ opening: o.opening, winrate: ((o.wins / o.total) * 100).toFixed(2) }));
   return dict;
 }
-
-getEndgames() {
+/**
+ * Cette méthode va utiliser la variable allGames afin de savoir les différentes raison de la 
+ * fin d'une partie. On va diviser cette information en fonction des victoires, defaites et egalités
+ * de l'utilisateur si ces pièces étaient blanc ou noir.
+ * 
+ * On aura donc les clés 
+ * 'whiteWin', 'whiteDraw', 'whiteLoose', 'blackWin', 'blackDraw', 'blackLoose' stockés dans un liste.
+ * Ces clés vont a sa fois stocker des clés variables en fonction de si c'est une victoire, perte, ou égalité. 
+ * 
+ * @returns liste contenant les informations correspondant au résultat des parties.
+ */
+getEndgames() : { [key: string]: { [key: string]: number; }; } {
   let tab: { [key: string]: { [key: string]: number } } = {};
   let whiteWin = 'whiteWin', whiteLoose = 'whiteLoose', whiteDraw = 'whiteDraw';
   let blackWin = 'blackWin', blackLoose = 'blackLoose', blackDraw = 'blackDraw';
@@ -500,7 +546,7 @@ getEndgames() {
       if (gameDate >= this.dateDebut && gameDate <= this.dateFin) {
         let playerColor = -1;
         if (game.white.username.toLowerCase() === this.username.toLowerCase()) {
-          playerColor = this.WHITE;
+          playerColor = Constantes.CouleurPiece.WHITE;
           if (game.white.result === "win") {
             tab[whiteWin][game.black.result] = (tab[whiteWin][game.black.result] || 0) + 1;
           }
@@ -511,7 +557,7 @@ getEndgames() {
             tab[whiteDraw][game.white.result] = (tab[whiteDraw][game.white.result] || 0) + 1;
           }
         } else if (game.black.username.toLowerCase() === this.username.toLowerCase()) {
-          playerColor = this.BLACK;
+          playerColor = Constantes.CouleurPiece.BLACK;
           if (game.black.result === "win") {
             tab[blackWin][game.white.result] = (tab[blackWin][game.white.result] || 0) + 1;
           }

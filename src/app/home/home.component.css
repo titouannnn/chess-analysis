@@ -1,0 +1,95 @@
+/* Centrage du contenu */
+body, html {
+  height: 100%;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #332B26; 
+}
+
+/* Conteneur principal */
+.container {
+  text-align: center;
+  color: #E0C7B3; 
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding-top: 60px;
+}
+
+/* Logo */
+.logo {
+  width: 350px; 
+  margin-bottom: 20px;
+}
+
+/* Boutons */
+.button-group {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center; 
+  gap: 1px;  /* Espacement entre les boutons */
+}
+
+/* Initial styles */
+.btn {
+  background-color: #332B26; 
+  color: #E0C7B3; 
+  border: 2px solid transparent;
+  padding: 15px 30px;
+  margin: 3px;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.1s ease; /* Animation de transition */
+}
+
+.btn:hover {
+  background-color: #E0C7B3; 
+  color: #332B26;
+}
+
+.btn.selected {
+  background-color: #E0C7B3;  /* Changer la couleur lorsque sélectionné */
+  color: #332B26;
+}
+
+.selected:hover {
+  background-color: #C4A992; /* Couleur hover pour le bouton sélectionné */
+}
+
+/* Barre de recherche */
+.search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #E0C7B3;
+  border-radius: 5px;
+  padding: 8px;
+  width: 450px;
+  margin: 0 auto;
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  padding: 10px;
+  flex-grow: 1;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.search-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #332B26;
+  
+}

@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
-import { NgIf, CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LitchessApi } from '../api/litchess-api.service';
-import { Api } from '../api/api.service';
+import { Api, Constantes } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { PuzzleScraper } from '../analyse/puzzle.service';
 import { AnalysisApi } from '../api/analysisApi.service';
@@ -13,9 +13,7 @@ import { LocalAnalysis } from '../analyse/localAnalysis.service';
   selector: 'unique-app-root',
   standalone: true,
   imports: [
-    RouterOutlet, 
-    RouterLink,
-    NgIf, 
+    RouterOutlet,
     CommonModule, 
     FormsModule 
   ],
@@ -95,13 +93,12 @@ export class AppComponent implements OnInit {
   async chess_comTests(): Promise<void> {
 
     console.log("======== Chess.com API =========");
-
     // Chargement des parties hors ligne
     this.ChesscomApi.getAllGamesOFFLINE();
     console.log("Parties chargées (OFFLINE) :", this.ChesscomApi.allGamesAllTypes.length);
   
     this.testApi(this.ChesscomApi.allGamesAllTypes, "titouannnnnn");
-  
+
   }
 
   async lichessTests(): Promise<void> {
@@ -126,13 +123,12 @@ export class AppComponent implements OnInit {
     console.log("Parties passées en parametre à la fonction test :", tab.slice(0, 10));
     this.api.allGamesAllTypes = tab;
     console.log("Parties chargées :", this.api.allGamesAllTypes.slice(0, 10));
-    // Tri par type de jeu (ALL GENRES)
-    this.api.sortByGameType(this.api.ALL_GENRES);
-    console.log("Parties triées (ALL GENRES) :", this.api.allGames.slice(0, 10));
-
+    // Tri par type de jeu (ALL GENparse
     // Initialisation de l'intervalle de temps
+
     this.api.initTimeInterval();
-    this.api.setTimeTinterval(this.api.ALL_TIME,this.api.DATENULL, this.api.DATENULL);
+    
+    this.api.setTimeTinterval(Constantes.Time.ALL_TIME,this.api.DATENULL, this.api.DATENULL);
     
     console.log("Date de début :", this.api.dateDebut);
     console.log("Date de fin :", this.api.dateFin);
@@ -141,14 +137,13 @@ export class AppComponent implements OnInit {
     console.log("Nombre total de parties dans l'intervalle :", this.api.allGames.length);
 
     // Winrate par couleur (WHITE)
-    const winrateWhite = this.api.WinrateByColor(this.api.WHITE);
+    const winrateWhite = this.api.WinrateByColor(Constantes.CouleurPiece.WHITE);
     console.log("Statistiques pour les blancs :", winrateWhite);
 
     // Winrate par couleur (BLACK)
-    const winrateBlack = this.api.WinrateByColor(this.api.BLACK);
+    const winrateBlack = this.api.WinrateByColor(Constantes.CouleurPiece.BLACK);
     console.log("Statistiques pour les noirs :", winrateBlack);
 
-    
     // Liste des accuracies
     const accuracyList = this.api.getAccuracyList();
     console.log("Liste des accuracies :", accuracyList);
@@ -158,7 +153,7 @@ export class AppComponent implements OnInit {
     console.log("Accuracy moyenne :", averageAccuracy);
 
     // Liste des ELOs
-    const eloList = this.api.getElo();
+    const eloList = this.api.getElo(Constantes.TypeJeuChessCom.RAPID);
     console.log("Liste des ELOs :", eloList);
 
     // Liste des ouvertures
@@ -173,6 +168,7 @@ export class AppComponent implements OnInit {
     console.log("Tableau des parties :", this.api.allGames.slice(0, 10));
     
     console.log("===== Fin des tests =====");
+  
   }
 
   async testPuzzle() {
@@ -203,7 +199,6 @@ export class AppComponent implements OnInit {
     console.log(this.PuzzleScraper.sortJsonKeepOpenings());
     */
     
-
   }
 
   // Méthode appelée quand la position de l'échiquier change
@@ -218,3 +213,4 @@ export class AppComponent implements OnInit {
     this.moveHistory = moves;
   }
 }
+
