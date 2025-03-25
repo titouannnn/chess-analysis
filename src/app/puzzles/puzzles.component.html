@@ -1,0 +1,175 @@
+<div class="puzzles-container">
+    <h1>Puzzles d'échecs</h1>
+    
+    <!-- Filtres -->
+    <div class="filters-container">
+      <h2>Filtres</h2>
+      
+      <div class="filter-row">
+        <div class="filter-group">
+          
+          <div class="opening-search-container" [class.disabled]="selectedThemes.length > 0 || winRateFilter !== 'none'">
+            <div class="opening-search-input">
+              <input type="text" 
+                     [(ngModel)]="searchOpening" 
+                     placeholder="Rechercher une ouverture..."
+                     (focus)="showOpeningDropdown = true"
+                     (click)="showOpeningDropdown = true"
+                     [disabled]="selectedThemes.length > 0 || winRateFilter !== 'none'">
+              <span class="dropdown-arrow" (click)="toggleOpeningDropdown()">▼</span>
+            </div>
+        
+            <div class="opening-dropdown-menu" [class.open]="showOpeningDropdown">
+              <div *ngIf="filteredOpenings.length > 0">
+                <div *ngFor="let opening of filteredOpenings" class="opening-option" (click)="selectOpening(opening)">
+                  {{ opening }}
+                </div>
+              </div>
+              <div *ngIf="filteredOpenings.length === 0" class="no-openings">
+                Aucune ouverture trouvée
+              </div>
+            </div>
+          </div>
+          
+          <div *ngIf="selectedOpening" class="selected-opening">
+            Ouverture sélectionnée: <span>{{ selectedOpening }}</span>
+            <button class="remove-opening" (click)="selectOpening('')">×</button>
+          </div>
+        </div>
+        
+        <!-- Sélecteur de thèmes -->
+        <div class="theme-dropdown" [class.open]="showThemeDropdown" [class.disabled]="winRateFilter !== 'none'">
+          <div class="theme-dropdown-toggle" 
+               (click)="winRateFilter === 'none' && toggleThemeDropdown()" 
+               [class.disabled]="winRateFilter !== 'none'">
+            <span *ngIf="selectedThemes.length === 0">Sélectionner des thèmes</span>
+            <span *ngIf="selectedThemes.length === 1">{{ selectedThemes[0] }}</span>
+            <span *ngIf="selectedThemes.length > 1">{{ selectedThemes.length }} thèmes sélectionnés</span>
+            <span class="dropdown-arrow">▼</span>
+          </div>
+            
+            <div class="theme-dropdown-menu" [class.open]="showThemeDropdown">
+            <div class="theme-search">
+                <input type="text" [(ngModel)]="searchTheme" placeholder="Rechercher un thème...">
+            </div>
+            
+            <div class="theme-options">
+                <div *ngFor="let theme of filteredThemes" class="theme-option">
+                <label>
+                    <input type="checkbox" 
+                        [checked]="selectedThemes.includes(theme)"
+                        (change)="toggleTheme(theme)"> 
+                    {{ theme }}
+                </label>
+                </div>
+                
+                <div *ngIf="filteredThemes.length === 0" class="no-themes">
+                Aucun thème trouvé
+                </div>
+            </div>
+            </div>
+        </div>
+      </div>
+      
+      <!-- Nouveau filtre par taux de victoire -->
+      <div class="filter-row">
+        <div class="filter-group winrate-filter">
+          <label>Filtrer par taux de victoire:</label>
+          <div class="radio-group">
+            <div *ngFor="let option of winRateOptions" class="radio-option">
+              <input type="radio" 
+                     [id]="'winrate-' + option.value" 
+                     [value]="option.value" 
+                     [(ngModel)]="winRateFilter" 
+                     (change)="onWinRateFilterChange()" 
+                     [disabled]="selectedThemes.length > 0">
+              <label [for]="'winrate-' + option.value">{{ option.label }}</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="winRateFilter !== 'none'" class="openings-info">
+        <h3>Ouvertures {{ winRateFilter === 'high' ? 'recommandées' : 'à améliorer' }}</h3>
+        <div class="openings-list">
+          <div *ngFor="let opening of getOpeningsDataByWinRate()" class="opening-item">
+            <div class="opening-name">{{ opening.name }} ({{ opening.winRate | number:'1.0-1' }}%)</div>
+          </div>
+          <div *ngIf="getOpeningsDataByWinRate().length === 0" class="no-openings">
+            Pas assez de données pour recommander des ouvertures
+          </div>
+        </div>
+      </div>
+      
+      <div class="selected-themes" *ngIf="selectedThemes.length > 0">
+        <p>Thèmes sélectionnés :</p>
+        <div class="theme-tags">
+          <span *ngFor="let theme of selectedThemes" class="theme-tag">
+            {{ theme }}
+            <button class="remove-theme" (click)="toggleTheme(theme)">×</button>
+          </span>
+        </div>
+      </div>
+      
+      <button class="reset-button" (click)="resetFilters()">Réinitialiser les filtres</button>
+    </div>
+    
+    <!-- Loading indicator -->
+    <div *ngIf="isLoading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Chargement des puzzles...</p>
+    </div>
+    
+    <!-- Error message -->
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <!-- Results -->
+    <div *ngIf="!isLoading && !errorMessage" class="results-container">
+      <h3>Résultats ({{ filteredPuzzles.length }} puzzles trouvés)</h3>
+      
+      <!-- Empty results -->
+      <div *ngIf="filteredPuzzles.length === 0" class="no-results">
+        Aucun puzzle ne correspond à vos critères de recherche.
+      </div>
+      
+      <!-- Puzzles list -->
+      <div *ngIf="filteredPuzzles.length > 0" class="puzzles-list">
+        <table>
+          <thead>
+            <tr>
+              <th *ngIf="winRateFilter !== 'none'">Taux de victoire</th>
+              <th>Thèmes</th>
+              <th>Ouverture</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let puzzle of paginatedPuzzles">
+              <td *ngIf="winRateFilter !== 'none'">
+                {{ puzzle.calculatedWinRate | number:'1.0-1' }}%
+              </td>
+              <td>{{ puzzle.Themes }}</td>
+              <td>{{ formatOpeningTags(puzzle.OpeningTags) }}</td>
+              <td class="actions">
+                <a [href]="getPuzzleUrl(puzzle.PuzzleId)" target="_blank" class="puzzle-link">Résoudre sur Lichess</a>
+                <a *ngIf="puzzle.GameUrl" [href]="getGameUrl(puzzle.GameUrl)" target="_blank" class="game-link">Voir la partie</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="pagination">
+          <button [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">&laquo;</button>
+          <button *ngFor="let page of getPages()" 
+                  [class.active]="page === currentPage"
+                  (click)="changePage(page)">
+            {{ page }}
+          </button>
+          <button [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">&raquo;</button>
+        </div>
+      </div>
+    </div>
+  </div>

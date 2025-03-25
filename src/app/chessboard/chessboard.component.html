@@ -1,0 +1,174 @@
+<div class="chess-main-container">
+  <!-- Colonne gauche: échiquier -->
+  <div class="chess-board-column">
+    <div class="board-container">
+      <!-- Barre d'évaluation -->
+      <div class="eval-bar">
+        <div class="black-bar" [style.height]="getBlackBarHeight()"></div>
+        <div class="zero-line"></div>
+        <div class="eval-number" [class]="getEvaluationClass(currentEvaluation)">
+          {{ formatEvaluation(currentEvaluation) }}
+        </div>
+        <div *ngIf="currentPrecision !== undefined" class="precision-indicator" 
+             [class]="getPrecisionClass(currentPrecision)">
+          {{ (currentPrecision * 100).toFixed(0) }}%
+        </div>
+      </div>
+      
+      <!-- UN SEUL échiquier -->
+      <div #board class="chessboard"></div>
+    </div>
+    
+    <!-- Message de feedback positionné près de l'échiquier -->
+    <div *ngIf="showFeedback" [ngClass]="['feedback-container', feedbackClass]">
+      {{ feedbackMessage }}
+    </div>
+    
+    <div class="navigation-controls">
+      <button (click)="goToStart()" [disabled]="isAtStart()">⏮</button>
+      <button (click)="goToPreviousMove()" [disabled]="isAtStart()">⏪</button>
+      <button (click)="goToNextMove()" [disabled]="isAtEnd()">⏩</button>
+      <button (click)="goToEnd()" [disabled]="isAtEnd()">⏭</button>
+    </div>
+
+    <div class="pgn-input">
+      <h3>Importer une partie (format PGN)</h3>
+      <!-- textarea modifié pour utiliser une propriété du composant -->
+      <textarea #pgnInput [value]="defaultPgn"></textarea>
+      <div class="button-row">
+        <button (click)="loadPgn(pgnInput.value)">Importer PGN</button>
+        <button (click)="resetBoard()">Réinitialiser</button>
+      </div>
+    </div>
+
+    <div class="analysis-controls">
+      <button
+        [disabled]="!hasPgn || isAnalyzing"
+        (click)="analyzePgn()"
+        class="analyze-button"
+      >
+        {{ isAnalyzing ? "Analyse en cours..." : "Analyser la partie" }}
+      </button>
+
+      <div class="progress-bar" *ngIf="isAnalyzing || analysisProgress > 0">
+        <div class="progress" [style.width.%]="analysisProgress"></div>
+        <span class="progress-text">{{ analysisProgressText }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne droite: coups -->
+  <div class="moves-column">
+
+    <!-- Affichage en grand de l'évaluation du coup actuel -->
+    <div class="current-evaluation" *ngIf="currentEvaluation">
+      <div class="evaluation-label">Évaluation</div>
+      <div
+        class="evaluation-value"
+        [ngClass]="getEvaluationClass(currentEvaluation)"
+      >
+        {{ currentEvaluation }}
+      </div>
+    </div>
+
+    <!-- Message d'attente -->
+    <div
+      class="empty-history-message"
+      *ngIf="!formattedMoves || formattedMoves.length === 0"
+    >
+      L'historique des coups s'affichera ici après que des coups soient joués ou
+      qu'un PGN soit importé.
+    </div>
+
+    <!-- Liste des coups avec mise en surbrillance -->
+    <div class="moves-container" *ngIf="groupedMoves && groupedMoves.length > 0">
+      <div class="moves-list">
+        <ng-container *ngFor="let group of groupedMoves; let i=index">
+          <div class="move-row">
+            <!-- Numéro de coup -->
+            <span class="move-number">
+              {{ group.moveNumber }}.
+            </span>
+            
+            <!-- Coup blanc -->
+            <span *ngIf="group.white" 
+                  class="move-white" 
+                  [class.active-move]="isActiveMoveInList(group.whitePath, 'white')"
+                  (click)="goToPosition(group.whitePath, 'white')">
+              {{ group.white }}
+              <span *ngIf="group.whiteEvaluation" class="move-evaluation">
+                <span [class]="getPrecisionClass(group.whitePrecision || 0)">●</span>
+                {{ group.whiteEvaluation }}
+              </span>
+            </span>
+            
+            <!-- Coup noir -->
+            <span *ngIf="group.black" 
+                  class="move-black" 
+                  [class.active-move]="isActiveMoveInList(group.blackPath, 'black')"
+                  (click)="goToPosition(group.blackPath, 'black')">
+              {{ group.black }}
+              <span *ngIf="group.blackEvaluation" class="move-evaluation">
+                <span [class]="getPrecisionClass(group.blackPrecision || 0)">●</span>
+                {{ group.blackEvaluation }}
+              </span>
+            </span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    
+    <!-- UI pour Rejouer les erreurs - MODIFIÉ AVEC CHOIX DE COULEUR -->
+    <div class="mistakes-replay-controls" *ngIf="analysisResults && analysisResults.length > 0">
+      <!-- Options pour choisir la couleur des erreurs à rejouer -->
+      <div *ngIf="!isReplayingMistakes" class="color-selection">
+        <h3>Rejouer mes erreurs</h3>
+        <div class="color-buttons">
+          <button class="color-btn both-btn" (click)="startReplayMistakes('both')">
+            Toutes les erreurs
+          </button>
+          <button class="color-btn white-btn" (click)="startReplayMistakes('white')">
+            Erreurs des Blancs
+          </button>
+          <button class="color-btn black-btn" (click)="startReplayMistakes('black')">
+            Erreurs des Noirs
+          </button>
+        </div>
+      </div>
+      
+      <!-- Interface pendant le mode replay des erreurs -->
+      <div *ngIf="isReplayingMistakes" class="mistakes-navigation">
+        <div class="mistakes-header">
+          <h3>Rejouer vos erreurs</h3>
+          <span class="mistake-counter">Erreur {{currentMistakeIndex + 1}}/{{mistakesList.length}}</span>
+        </div>
+        
+        <div class="mistakes-info" *ngIf="currentMistakeIndex >= 0 && mistakesList[currentMistakeIndex]">
+          <div class="move-display">
+            <span class="move-number">Coup {{mistakesList[currentMistakeIndex].moveNumber}}</span>
+            <span class="move-color" [ngClass]="{'white-turn': chess.turn() === 'w', 'black-turn': chess.turn() === 'b'}">
+              {{chess.turn() === 'w' ? 'Trait aux blancs' : 'Trait aux noirs'}}
+            </span>
+          </div>
+          <div class="mistake-hint">
+            Essayez de trouver un meilleur coup que celui joué dans la partie
+          </div>
+        </div>
+        
+        <div class="mistakes-buttons">
+          <button (click)="previousMistake()" 
+                  [disabled]="currentMistakeIndex <= 0">
+            ◀ Erreur précédente
+          </button>
+          <button (click)="nextMistake()" 
+                  [disabled]="currentMistakeIndex >= mistakesList.length - 1">
+            Erreur suivante ▶
+          </button>
+          <button (click)="exitReplayMistakes()" class="exit-button">
+            ✕ Quitter
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
