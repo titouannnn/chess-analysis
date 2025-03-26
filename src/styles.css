@@ -12,10 +12,27 @@ body {
     margin-bottom: 20px;
   }
 
+<<<<<<< HEAD
 
   .full-screen-dialog .mat-mdc-dialog-surface {
     background-color: #1e1e2f !important; /* ton fond marron */
     color: #4ecbff !important; /* texte clair */
+=======
+  /* 
+  ⚠️ Ce style est placé ici (dans styles.css) car il cible .mat-mdc-dialog-surface,
+  une classe générée par Angular Material en dehors du composant Angular.
+
+  Le fichier loading-bar.component.css est scoped (limité au composant),
+  donc il ne peut pas modifier les éléments comme mat-mdc-dialog-surface ou mat-dialog-container.
+
+  On utilise la classe 'full-screen-dialog' passée via panelClass lors de l'ouverture du dialog,
+  pour cibler et personnaliser l'apparence du conteneur global de la boîte de dialogue.
+*/
+
+  .full-screen-dialog .mat-mdc-dialog-surface {
+    background-color: #332B26 !important; /* ton fond marron */
+    color: #E0C7B3 !important; /* texte clair */
+>>>>>>> c3286106 (travail sur bare de recharge)
     width: 100vw !important;
     height: 100vh !important;
     display: flex !important;
@@ -26,3 +43,7 @@ body {
     box-sizing: border-box;
   }
   
+<<<<<<< HEAD
+=======
+  
+>>>>>>> c3286106 (travail sur bare de recharge)

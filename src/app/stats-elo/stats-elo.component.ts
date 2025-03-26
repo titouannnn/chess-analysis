@@ -92,6 +92,7 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
 
+<<<<<<< HEAD
     // Pré-initialiser l'API et les données avec ALL_TIME par défaut
     this.api.initTimeInterval();
     this.api.setTimeTinterval(
@@ -99,6 +100,37 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
       this.api.DATENULL,
       this.api.DATENULL
     );
+=======
+    // Méthode pour afficher les stats Elo avec la barre de chargement
+  showEloStatWithLoading() {
+    // Ouvrir le dialog de la barre de progression
+    // Utilisation de 'panelClass: full-screen-dialog' pour appliquer des styles personnalisés
+    // au conteneur global de la boîte de dialogue (mat-mdc-dialog-surface).
+    // Ces styles sont définis dans styles.css car le CSS du composant ne peut pas cibler les éléments
+    // générés en dehors du composant Angular.
+
+    const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+      height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
+      width: '100vw',
+      maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
+      panelClass: 'full-screen-dialog',  // La classe qui définit les styles
+      hasBackdrop: true,  // Ajoute un fond semi-transparent
+      disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
+    });
+    
+
+    // Simuler un délai de chargement pour la progression
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      dialogRef.componentInstance.increaseProgress(progress); // Augmenter la progression
+      if (progress >= 100) {
+        clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
+        dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
+        this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+      }
+    }, 1000); // Mise à jour toutes les secondes
+>>>>>>> c3286106 (travail sur bare de recharge)
   }
 
   ngOnInit(): void {
