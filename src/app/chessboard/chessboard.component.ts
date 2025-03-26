@@ -15,6 +15,8 @@ import { Chess, Square } from "chess.js";
 import { Chessground } from "chessground";
 import { Key } from "chessground/types";
 import { LocalAnalysis } from "../../analyse/localAnalysis.service"; // Import du service d'analyse
+import { RouterLink, RouterLinkActive } from "@angular/router";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
 
 // Interfaces pour le système de variantes
 interface MoveNode {
@@ -84,13 +86,12 @@ interface MoveTree {
   selector: "app-chessboard",
   templateUrl: "./chessboard.component.html",
   styleUrls: ["./chessboard.component.css"],
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, NavBarComponent],
   standalone: true,
 })
 export class ChessboardComponent implements AfterViewInit, OnChanges {
   @ViewChild("board", { static: true }) boardElement: ElementRef | undefined;
-  @Input() fen: string =
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+  @Input() fen: string = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
   @Output() positionChanged = new EventEmitter<string>();
   @Output() moveHistoryChanged = new EventEmitter<any[]>();
 
