@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as localData from '../../assets/games.json';
+import * as localData from '../assets/games.json';
 import { Api, Constantes } from './api.service';
 
 @Injectable({

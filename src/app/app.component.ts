@@ -1,17 +1,21 @@
 import { LitchessApi } from '../api/litchess-api.service';
 import { Component, OnInit } from '@angular/core';
-import { Api, Constantes } from '../api/api.service';
-import { ChesscomApi} from '../api/chesscomapi.service';
+import { HomeComponent } from './home/home.component';
 import { PuzzleScraper } from '../analyse/puzzle'
 import { StatsEloComponent } from './stats-elo/stats-elo.component';
-import { AnalysisApi } from '../api/analysisApi.service';
 import { NgModule } from '@angular/core';
 import { Chess } from 'chess.js';
+import { Api, Constantes } from '../api/api.service';
+import { ChesscomApi} from '../api/chesscomapi.service';
+import { AnalysisApi } from '../api/analysisApi.service';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
-  selector: 'app-root:not(p)',
-  imports: [StatsEloComponent],
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterModule ,FormsModule ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })

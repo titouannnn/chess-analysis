@@ -1,4 +1,5 @@
 /* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+
 {
   "compileOnSave": false,
   "compilerOptions": {
@@ -21,6 +22,10 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "strictTemplates": true
   }
+  
+
 }
