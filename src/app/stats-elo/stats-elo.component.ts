@@ -2,6 +2,10 @@ import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterVie
 import { Api, Constantes } from '../../api/api.service';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
+import { ActivatedRoute , Params } from '@angular/router'; 
+import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
+import { MatDialog } from '@angular/material/dialog';
+
 import { ChartJS } from '../../api/ChartJS.service';
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
@@ -74,63 +78,80 @@ export class StatsEloComponent implements AfterViewInit {
   customEndDate: Date | null = null;
 
   private api: Api;
-  private chartGenerator: ChartJS;
-  
-  constructor(
-    chessApi: ChesscomApi, 
-    lichessApi: LitchessApi, 
-    chartGenerator: ChartJS,
-    private zone: NgZone,
-    private cdr: ChangeDetectorRef
-  ) { 
-    this.api = chessApi;
-    this.chartGenerator = chartGenerator;
-    
-    // Pré-initialiser l'API et les données avec ALL_TIME par défaut
-    this.api.initTimeInterval();
-    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
-  }
-  
-  // Cette méthode est déclenchée après l'initialisation de la vue et garantit que les références au DOM sont disponibles
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      console.log('Initialisation des graphiques');
-      this.initializeCharts();
-      // Supprimez les modifications programmatiques de style ici
-      this.cdr.detectChanges();
-    }, 100);
-  }
-  
-  // Méthode d'initialisation des graphiques
-  private initializeCharts(): void {
-    if (this.initialized) return;
-    
-    // Exécuter les opérations de graphiques en dehors de la zone
-    this.zone.runOutsideAngular(() => {
-      try {
-        // Initialiser tous les graphiques dans l'ordre
-        this.showEloStat(this.activeTimeClass, this.activePeriod);
-        this.showPlayFrequency();
-        this.showGamesBy();
+  constructor(private route: ActivatedRoute,chessApi : ChesscomApi, lichessApi : LitchessApi, public matDialog:MatDialog ){ 
+    this.api = chessApi;}
+   /* afterNextRender(()=>{
+      const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+        height: '100%',
+        width: '100%',
+        panelClass: 'full-screen-dialog',  // Une classe CSS personnalisée pour prendre tout l'écran
+        hasBackdrop: true,  // Ajoute un fond semi-transparent
+        disableClose: true // Empêche la fermeture de la popup lors d'un clic en dehors
+      });
+      this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+      
+      for(let i : number = 0; i < 10; i++){
+        setTimeout(
+          function (){ 
+            dialogRef.componentInstance.increaseProgress(10)
+          }, 10000 * (i + 1)); // Attendre 1 seconde avant de progresser
         
-        // Marquer comme initialisé
-        this.initialized = true;
-        
-        // Revenir dans la zone Angular pour déclencher la détection des changements
-        this.zone.run(() => {
-          // S'assurer que l'interface utilisateur est mise à jour
-          this.cdr.detectChanges();
-        });
-      } catch (error) {
-        console.error('Erreur lors de l\'initialisation des graphiques:', error);
-        
-        // Nouvelle tentative si l'initialisation échoue
-        setTimeout(() => {
-          this.initialized = false;
-          this.initializeCharts();
-        }, 500);
+      }
+      
+    })
+  
+*/
+  // Définir correctement ngOnInit
+  /*ngOnInit(): void {
+    // On s'assure que les paramètres sont bien chargés avant de manipuler les données
+    this.route.queryParams.subscribe((params: Params) => {
+      this.pseudo = params['pseudo'];
+
+      // Après avoir récupéré le pseudo, on affiche les stats ELO
+      if (this.eloStats) {
+        this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
       }
     });
+  }*/
+    ngOnInit(): void {
+      // Récupérer le pseudo depuis les paramètres de l'URL
+      this.route.queryParams.subscribe((params: Params) => {
+        this.pseudo = params['pseudo'];
+      });
+  
+      // Appeler la méthode de chargement avec la barre de progression
+      this.showEloStatWithLoading();
+    }
+
+    // Méthode pour afficher les stats Elo avec la barre de chargement
+  showEloStatWithLoading() {
+    // Ouvrir le dialog de la barre de progression
+    // Utilisation de 'panelClass: full-screen-dialog' pour appliquer des styles personnalisés
+    // au conteneur global de la boîte de dialogue (mat-mdc-dialog-surface).
+    // Ces styles sont définis dans styles.css car le CSS du composant ne peut pas cibler les éléments
+    // générés en dehors du composant Angular.
+
+    const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+      height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
+      width: '100vw',
+      maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
+      panelClass: 'full-screen-dialog',  // La classe qui définit les styles
+      hasBackdrop: true,  // Ajoute un fond semi-transparent
+      disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
+    });
+    
+
+    // Simuler un délai de chargement pour la progression
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      dialogRef.componentInstance.increaseProgress(progress); // Augmenter la progression
+      if (progress >= 100) {
+        clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
+        dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
+        this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+      }
+    }, 1000); // Mise à jour toutes les secondes
   }
 
   // Fonction pour formater les timestamps en dates lisibles

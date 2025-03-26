@@ -1,0 +1,36 @@
+
+/* Conteneur principal pour centrer les éléments */
+.loading-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+
+
+
+/* Style du texte de chargement */
+.loading-text {
+  color: #4ecbff; 
+  font-size: 2rem; /* Taille du texte */
+  margin-bottom: 20px; /* Espacement sous le texte */
+  text-align: center; /* Centrer le texte */
+  
+}
+
+
+/* Style de la barre de progression */
+mat-progress-bar {
+  width: 40%;
+  height: 12px;
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #1e1e2f !important;
+  border-radius: 5px;
+}
+
+
