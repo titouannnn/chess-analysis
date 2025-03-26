@@ -8,6 +8,8 @@ import { ChesscomApi} from '../api/chesscomapi.service';
 import { PuzzleScraper } from '../analyse/puzzle.service';
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
+import { NavbarComponent } from './navbar/navbar.component';
+
 
 @Component({
   selector: 'unique-app-root',
@@ -15,7 +17,8 @@ import { LocalAnalysis } from '../analyse/localAnalysis.service';
   imports: [
     RouterOutlet,
     CommonModule, 
-    FormsModule 
+    FormsModule,
+    NavbarComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
