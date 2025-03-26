@@ -14,6 +14,8 @@ export class HomeComponent {
 
   selectedButton: string = '';  // Variable pour stocker le bouton sélectionné
   pseudo: string = '';
+    // Propriété pour contrôler la barre de recharge
+
 
   constructor(private router: Router) {}
   selectButton(button: string) {
