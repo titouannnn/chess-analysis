@@ -8,17 +8,12 @@ import { Chart } from 'chart.js/auto';
 import { platform } from 'os';
 import { MatDialog } from '@angular/material/dialog';
 import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
+import { NavBarComponent } from '../nav-bar/nav-bar.component';
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
   occurences: number;
   mois: string;
-}
-
-// Interface pour les données d'ELO
-interface EloData {
-  rating: number;
-  timestamp: number;
 }
 
 enum W_B {
@@ -30,7 +25,7 @@ enum W_B {
 @Component({
   selector: 'app-stats-elo',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, NavBarComponent],
   templateUrl: './stats-elo.component.html',
   styleUrl: './stats-elo.component.css',
   host: { id: 'stats-elo-unique' }
@@ -48,7 +43,6 @@ export class StatsEloComponent implements AfterViewInit {
   typeJeu = Constantes.TypeJeuChessCom;
   annee = new Date().getFullYear();
   w_b : W_B = W_B.Black; // Initialisation avec pièces noires par défaut
-  activeTimeClass: Constantes.TypeJeuChessCom = Constantes.TypeJeuChessCom.RAPID; // Parties rapides par défaut
   
   // Indicateur de chargement initial
   private initialized = false;
@@ -110,7 +104,6 @@ export class StatsEloComponent implements AfterViewInit {
     // Supprimez les modifications programmatiques de style ici
     this.cdr.detectChanges();
 
-
   }
    
   private load() {
@@ -139,10 +132,13 @@ export class StatsEloComponent implements AfterViewInit {
   private initializeCharts(): void {
     if (this.initialized) return;
     
+
     // Exécuter les opérations de graphiques en dehors de la zone
     this.zone.runOutsideAngular(() => {
       try {
         // Initialiser tous les graphiques dans l'ordre
+        if(!this.isBrowser) return;
+
         this.showEloStat(this.activeTimeClass, this.activePeriod);
         this.showPlayFrequency();
         this.showGamesBy();
@@ -159,11 +155,6 @@ export class StatsEloComponent implements AfterViewInit {
       } catch (error) {
         console.error('Erreur lors de l\'initialisation des graphiques:', error);
         
-        // Nouvelle tentative si l'initialisation échoue
-        setTimeout(() => {
-          this.initialized = false;
-          this.initializeCharts();
-        }, 500);
       }
     });
   }
@@ -211,7 +202,8 @@ export class StatsEloComponent implements AfterViewInit {
   }
 
   activePeriod: Constantes.Time = Constantes.Time.ALL_TIME;
-
+  activeTimeClass: Constantes.TypeJeuChessCom = Constantes.TypeJeuChessCom.RAPID; // Parties rapides par défaut
+  
   eloChart: any = null;
   showEloStat(time_class?: Constantes.TypeJeuChessCom, timePeriod?: Constantes.Time) {
     // Vérifier que la référence DOM existe
@@ -224,6 +216,8 @@ export class StatsEloComponent implements AfterViewInit {
     this.activeTimeClass = time_class || this.activeTimeClass || Constantes.TypeJeuChessCom.RAPID;
     this.activePeriod = timePeriod !== undefined ? timePeriod : this.activePeriod;
     
+    console.log("time_class ", this.activeTimeClass);
+
     // Initialiser l'API et définir la période
     this.api.initTimeInterval();
     
@@ -254,7 +248,7 @@ export class StatsEloComponent implements AfterViewInit {
         break;
     }
     
-    const eloList = this.api.getElo(this.activeTimeClass) as EloData[];
+    const eloList = this.api.getElo(this.activeTimeClass);
     if (!eloList || eloList.length === 0) {
       console.warn('Données ELO manquantes');
       return;
@@ -265,29 +259,23 @@ export class StatsEloComponent implements AfterViewInit {
     }
     
     try {
-
-      if(!this.isBrowser) return;
-      // Formater les timestamps en dates
-      const formattedDates = eloList.map((row: EloData) => this.formatDate(row.timestamp));
       
       this.eloChart = this.chartGenerator.getLineGraph(
         this.eloStats.nativeElement, 
-        eloList.map((row: EloData) => row.rating), 
+        eloList.map(row => row.rating), 
         'Elo', 
-        formattedDates
+        eloList.map(row  => this.formatDate(row.timestamp))
       );
       
-      // Personnaliser le graphique après sa création
       this.chartGenerator.extendChartOptions(this.eloChart, {
         colors: {
           borderColor: this.chartColors.elo.borderColor,
           backgroundColor: this.chartColors.elo.backgroundColor,
-          pointRadius: 0, // Rendre les points invisibles
-          pointHoverRadius: 5, // Afficher les points uniquement au survol
-          borderWidth: 3, // Augmenter légèrement l'épaisseur de la ligne pour meilleure visibilité
+          pointRadius: 0, 
+          pointHoverRadius: 5, 
+          borderWidth: 3,
           tension: 0.4
         },
-        // Le reste des options reste inchangé...
       });
     } catch (error) {
       console.error('Erreur lors de la création du graphique ELO:', error);
@@ -309,8 +297,7 @@ export class StatsEloComponent implements AfterViewInit {
     }
 
     try {
-      if(!this.isBrowser) return;
-
+    
       this.playFreqChart = this.chartGenerator.getSimpleBarChart(
         this.frequencyStats.nativeElement, 
         data.map((row: FrequencyData) => row.occurences), 
@@ -429,8 +416,6 @@ export class StatsEloComponent implements AfterViewInit {
     }
 
     try {
-
-      if(!this.isBrowser) return;
 
       // S'assurer que tous les éléments DOM nécessaires sont disponibles
       const canvasElements = this.gamesByStats.nativeElement.querySelectorAll('canvas');
@@ -581,7 +566,7 @@ export class StatsEloComponent implements AfterViewInit {
   showOuvertures() : void {
 
     let data = this.api.getOpenings();
-    console.log("Openings : ", data);
+    console.log("Openings : ");
 
     let datasets : any = null;
     if(this.w_b == W_B.Black){
@@ -624,7 +609,7 @@ export class StatsEloComponent implements AfterViewInit {
       datasets
     );
 
-    
+
 
   }
   

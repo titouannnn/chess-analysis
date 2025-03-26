@@ -1,98 +1,106 @@
+<app-nav-bar></app-nav-bar>
 <div class="dashboard-container">
-    <!-- Statistiques ELO -->
-    <!-- Dans la section de l'en-tête du graphique ELO -->
-    <div class="chart-card">
-        <div class="card-header">
-            <h2 class="card-title">Évolution de l'ELO</h2>
-            <div class="controls-wrapper">
-              <!-- Boutons de type de jeu à gauche -->
-              <div class="time-controls">
-                <button class="control-btn" (click)="showEloStat(typeJeu.BULLET)">BULLET</button>
-                <button class="control-btn" (click)="showEloStat(typeJeu.BLITZ)">BLITZ</button>
-                <button class="control-btn" (click)="showEloStat(typeJeu.RAPID)">RAPID</button>
-                <button class="control-btn" (click)="showEloStat(typeJeu.DAILY)">DAILY</button>
-              </div>
-              <!-- Boutons de période à droite -->
-              <div class="period-controls" id="period-controls-fixed">
-                <button class="period-btn" [class.active]="activePeriod === timePeriod.WEEK" (click)="setPeriod(timePeriod.WEEK)">7 jours</button>
-                <button class="period-btn" [class.active]="activePeriod === timePeriod.MONTH" (click)="setPeriod(timePeriod.MONTH)">30 jours</button>
-                <button class="period-btn" [class.active]="activePeriod === timePeriod.YEAR" (click)="setPeriod(timePeriod.YEAR)">1 an</button>
-                <button class="period-btn" [class.active]="activePeriod === timePeriod.ALL_TIME" (click)="setPeriod(timePeriod.ALL_TIME)">Tout</button>
-              </div>
-            </div>
-          </div>
-        
-        <div class="chart-body">
-          <canvas #eloStats></canvas>
+
+  <!-- Statistiques ELO -->
+  <!-- Dans la section de l'en-tête du graphique ELO -->
+  <div class="chart-card">
+    <div class="card-header">
+      <h2 class="card-title">Évolution de l'ELO</h2>
+      <div class="controls-wrapper">
+        <!-- Boutons de type de jeu à gauche -->
+        <div class="time-controls">
+          <button class="control-btn" (click)="showEloStat(typeJeu.BULLET)">BULLET</button>
+          <button class="control-btn" (click)="showEloStat(typeJeu.BLITZ)">BLITZ</button>
+          <button class="control-btn" (click)="showEloStat(typeJeu.RAPID)">RAPID</button>
+          <button class="control-btn" (click)="showEloStat(typeJeu.DAILY)">DAILY</button>
         </div>
-      </div>
-  
-    <!-- Statistiques de fréquence de jeu -->
-    <div class="chart-card">
-      <div class="card-header">
-        <h2 class="card-title">Fréquence de jeu</h2>
-        <div class="year-selector">
-          <button class="year-btn" (click)="frequencyLeftArrowClick()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-            </svg>
-          </button>
-          <span class="year-display">{{ annee }}</span>
-          <button class="year-btn" (click)="frequencyRightArrowClick()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="chart-body">
-        <canvas #playFrequencyStats></canvas>
-      </div>
-    </div>
-    
-    <!-- Statistiques de parties par type de fin -->
-    <div class="chart-card">
-      <div class="card-header">
-        <h2 class="card-title">Résultats par type</h2>
-        <button class="color-toggle" (click)="resetgamesBy()">
-          <span class="piece-indicator" [class]="w_b === 'black' ? 'black-piece' : 'white-piece'"></span>
-          {{ w_b === 'black' ? 'Pièces noires' : 'Pièces blanches' }}
-        </button>
-      </div>
-      <div class="results-container" #gamesBy>
-        <div class="result-column">
-          <h3 class="result-title win-title">Victoires</h3>
-          <div class="chart-container small-chart">
-            <canvas></canvas>
-          </div>
-        </div>
-        <div class="result-column">
-          <h3 class="result-title draw-title">Nulles</h3>
-          <div class="chart-container small-chart">
-            <canvas></canvas>
-          </div>
-        </div>
-        <div class="result-column">
-          <h3 class="result-title loss-title">Défaites</h3>
-          <div class="chart-container small-chart">
-            <canvas></canvas>
-          </div>
+        <!-- Boutons de période à droite -->
+        <div class="period-controls" id="period-controls-fixed">
+          <button class="period-btn" [class.active]="activePeriod === timePeriod.WEEK"
+            (click)="setPeriod(timePeriod.WEEK)">7 jours</button>
+          <button class="period-btn" [class.active]="activePeriod === timePeriod.MONTH"
+            (click)="setPeriod(timePeriod.MONTH)">30 jours</button>
+          <button class="period-btn" [class.active]="activePeriod === timePeriod.YEAR"
+            (click)="setPeriod(timePeriod.YEAR)">1 an</button>
+          <button class="period-btn" [class.active]="activePeriod === timePeriod.ALL_TIME"
+            (click)="setPeriod(timePeriod.ALL_TIME)">Tout</button>
         </div>
       </div>
     </div>
 
-    <div class="chart-card">
-      <div class="card-header">
-        <h2 class="card-title"> Ouvertures par Type </h2>
-        <button class="color-toggle" (click)="resetOuvertures()">
-          <span class="piece-indicator" [class]="w_b === 'black' ? 'black-piece' : 'white-piece'"></span>
-          {{ w_b === 'black' ? 'Pièces noires' : 'Pièces blanches' }}
-        </button>
-      </div>
-      
-      <div class="chart-body">
-        <canvas #ouvertures ></canvas>
-      </div>
+    <div class="chart-body">
+      <canvas #eloStats></canvas>
     </div>
-
   </div>
+
+  <!-- Statistiques de fréquence de jeu -->
+  <div class="chart-card">
+    <div class="card-header">
+      <h2 class="card-title">Fréquence de jeu</h2>
+      <div class="year-selector">
+        <button class="year-btn" (click)="frequencyLeftArrowClick()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+          </svg>
+        </button>
+        <span class="year-display">{{ annee }}</span>
+        <button class="year-btn" (click)="frequencyRightArrowClick()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path
+              d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <canvas #playFrequencyStats></canvas>
+    </div>
+  </div>
+
+  <!-- Statistiques de parties par type de fin -->
+  <div class="chart-card">
+    <div class="card-header">
+      <h2 class="card-title">Résultats par type</h2>
+      <button class="color-toggle" (click)="resetgamesBy()">
+        <span class="piece-indicator" [class]="w_b === 'black' ? 'black-piece' : 'white-piece'"></span>
+        {{ w_b === 'black' ? 'Pièces noires' : 'Pièces blanches' }}
+      </button>
+    </div>
+    <div class="results-container" #gamesBy>
+      <div class="result-column">
+        <h3 class="result-title win-title">Victoires</h3>
+        <div class="chart-container small-chart">
+          <canvas></canvas>
+        </div>
+      </div>
+      <div class="result-column">
+        <h3 class="result-title draw-title">Nulles</h3>
+        <div class="chart-container small-chart">
+          <canvas></canvas>
+        </div>
+      </div>
+      <div class="result-column">
+        <h3 class="result-title loss-title">Défaites</h3>
+        <div class="chart-container small-chart">
+          <canvas></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="card-header">
+      <h2 class="card-title"> Ouvertures par Type </h2>
+      <button class="color-toggle" (click)="resetOuvertures()">
+        <span class="piece-indicator" [class]="w_b === 'black' ? 'black-piece' : 'white-piece'"></span>
+        {{ w_b === 'black' ? 'Pièces noires' : 'Pièces blanches' }}
+      </button>
+    </div>
+
+    <div class="chart-body">
+      <canvas #ouvertures></canvas>
+    </div>
+  </div>
+
+</div>

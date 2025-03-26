@@ -8,7 +8,7 @@ import { Chess } from 'chess.js';
 import { Api, Constantes } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { AnalysisApi } from '../api/analysisApi.service';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 
@@ -22,7 +22,14 @@ import { FormsModule } from '@angular/forms';
 export class AppComponent implements OnInit {
   private message: string = ''; // Variable pour afficher le résultat
   private api: Api;
-  constructor( private LitchessApi: LitchessApi, private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper, private AnalysisApi: AnalysisApi, private statsComponent : StatsEloComponent) {
+  constructor( 
+    private LitchessApi: LitchessApi,
+    private ChesscomApi: ChesscomApi, 
+    private PuzzleScraper: PuzzleScraper, 
+    private AnalysisApi: AnalysisApi, 
+    private statsComponent : StatsEloComponent,
+  ) 
+  {
     this.api = ChesscomApi;
   } // Injection du service
 
@@ -32,11 +39,13 @@ export class AppComponent implements OnInit {
     
     //console.log("Initialisation de l'application");
     //this.lichessTests();
-    this.chess_comTests();
+    //this.chess_comTests();
     //this.testPuzzle();
     //this.analysisApiTests();
 
   }
+
+  
 
   async analysisApiTests(): Promise<void> {
     console.log("======== Analysis API =========");
