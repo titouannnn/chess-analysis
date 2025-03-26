@@ -1,10 +1,11 @@
-import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone, Inject, PLATFORM_ID } from '@angular/core';
 import { Api, Constantes } from '../../api/api.service';
 import { LitchessApi } from '../../api/litchess-api.service';
 import { ChesscomApi } from '../../api/chesscomapi.service';
 import { ChartJS } from '../../api/ChartJS.service';
-import { CommonModule } from '@angular/common';
-import Chart from 'chart.js/auto';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Chart } from 'chart.js/auto';
+import { platform } from 'os';
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
@@ -30,7 +31,7 @@ enum W_B {
   imports: [CommonModule],
   templateUrl: './stats-elo.component.html',
   styleUrl: './stats-elo.component.css',
-  host: { id: 'stats-elo-unique' } // Ajout d'un ID unique pour éviter les collisions
+  host: { id: 'stats-elo-unique' }
 })
 @Injectable({ providedIn: 'root'})
 export class StatsEloComponent implements AfterViewInit {  
@@ -75,14 +76,17 @@ export class StatsEloComponent implements AfterViewInit {
 
   private api: Api;
   private chartGenerator: ChartJS;
-  
+  public isBrowser : Boolean;
+
   constructor(
     chessApi: ChesscomApi, 
     lichessApi: LitchessApi, 
     chartGenerator: ChartJS,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) platformId : Object
   ) { 
+    this.isBrowser = isPlatformBrowser(platformId);
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
     
@@ -93,12 +97,12 @@ export class StatsEloComponent implements AfterViewInit {
   
   // Cette méthode est déclenchée après l'initialisation de la vue et garantit que les références au DOM sont disponibles
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      console.log('Initialisation des graphiques');
-      this.initializeCharts();
-      // Supprimez les modifications programmatiques de style ici
-      this.cdr.detectChanges();
-    }, 100);
+    
+    console.log('Initialisation des graphiques');
+    this.initializeCharts();
+    // Supprimez les modifications programmatiques de style ici
+    this.cdr.detectChanges();
+  
   }
   
   // Méthode d'initialisation des graphiques
@@ -265,9 +269,13 @@ export class StatsEloComponent implements AfterViewInit {
     }
     
     try {
+
+      if(!this.isBrowser) return;
       // Formater les timestamps en dates
       const formattedDates = eloList.map((row: EloData) => this.formatDate(row.timestamp));
       
+      
+
       this.eloChart = this.chartGenerator.getLineGraph(
         this.eloStats.nativeElement, 
         eloList.map((row: EloData) => row.rating), 
@@ -292,6 +300,8 @@ export class StatsEloComponent implements AfterViewInit {
     }
   }
 
+
+
   playFreqChart: any = null;
   showPlayFrequency() {
     // Vérifier que la référence DOM existe
@@ -299,7 +309,6 @@ export class StatsEloComponent implements AfterViewInit {
       console.warn('Référence DOM manquante pour le graphique de fréquence');
       return;
     }
-
     const data = this.getPlayFrequency(this.annee);
 
     if (this.playFreqChart != null) {
@@ -307,6 +316,8 @@ export class StatsEloComponent implements AfterViewInit {
     }
 
     try {
+      if(!this.isBrowser) return;
+
       this.playFreqChart = this.chartGenerator.getSimpleBarChart(
         this.frequencyStats.nativeElement, 
         data.map((row: FrequencyData) => row.occurences), 
@@ -350,6 +361,10 @@ export class StatsEloComponent implements AfterViewInit {
     } catch (error) {
       console.error('Erreur lors de la création du graphique de fréquence:', error);
     }
+
+    this.api.initTimeInterval();
+    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+
   }
 
   frequencyRightArrowClick(): void {
@@ -360,8 +375,13 @@ export class StatsEloComponent implements AfterViewInit {
   }
 
   frequencyLeftArrowClick(): void {
-    this.annee--;
-    this.showPlayFrequency();
+    console.log("======================== Méthode frequencyLeftArrow appellée ======================      ");
+    this.api.initTimeInterval()
+    
+    if(this.annee >= this.api.dateDebut.getFullYear()){
+      this.annee--;
+      this.showPlayFrequency();
+    }
   }
 
   setPeriod(period: Constantes.Time): void {
@@ -416,6 +436,9 @@ export class StatsEloComponent implements AfterViewInit {
     }
 
     try {
+
+      if(!this.isBrowser) return;
+
       // S'assurer que tous les éléments DOM nécessaires sont disponibles
       const canvasElements = this.gamesByStats.nativeElement.querySelectorAll('canvas');
       if (canvasElements.length < 3) {
@@ -429,7 +452,7 @@ export class StatsEloComponent implements AfterViewInit {
         Object.values(win_data), 
         Object.keys(win_data)
       );
-      
+
       // Appliquer des couleurs différentes pour chaque segment
       this.extendChartOptions(this.chartGamesBy[0], {
         colors: this.chartColors.games[0].map((color: string) => ({ backgroundColor: color })),
