@@ -4,35 +4,3 @@ body {
     margin: 0;
     font-family: Helvetica, Arial, sans-serif;
   }
-
-  p {
-    color: #4ecbff;
-    font-size: 2rem; 
-    margin-bottom: 20px;
-  }
-
-  /* 
-  ⚠️ Ce style est placé ici (dans styles.css) car il cible .mat-mdc-dialog-surface,
-  une classe générée par Angular Material en dehors du composant Angular.
-
-  Le fichier loading-bar.component.css est scoped (limité au composant),
-  donc il ne peut pas modifier les éléments comme mat-mdc-dialog-surface ou mat-dialog-container.
-
-  On utilise la classe 'full-screen-dialog' passée via panelClass lors de l'ouverture du dialog,
-  pour cibler et personnaliser l'apparence du conteneur global de la boîte de dialogue.
-*/
-
-  .full-screen-dialog .mat-mdc-dialog-surface {
-    background-color: #1e1e2f !important; /* ton fond marron */
-    color: #4ecbff !important; /* texte clair */
-    width: 100vw !important;
-    height: 100vh !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 0 !important;
-    box-sizing: border-box;
-  }
-  
-  
