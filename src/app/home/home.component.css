@@ -5,13 +5,13 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #332B26; 
+  background-color: #1e1e2f !important;   
 }
 
 /* Conteneur principal */
 .container {
   text-align: center;
-  color: #E0C7B3; 
+  color: #4ecbff; 
   font-family: 'Arial', sans-serif;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@ body, html {
 
 /* Logo */
 .logo {
-  width: 350px; 
+  width: 400px; 
   margin-bottom: 20px;
 }
 
@@ -38,8 +38,8 @@ body, html {
 
 /* Initial styles */
 .btn {
-  background-color: #332B26; 
-  color: #E0C7B3; 
+  background-color: #1e1e2f; 
+  color: #4ecbff; 
   border: 2px solid transparent;
   padding: 15px 30px;
   margin: 3px;
@@ -51,17 +51,17 @@ body, html {
 }
 
 .btn:hover {
-  background-color: #E0C7B3; 
-  color: #332B26;
+  background-color: #4ecbff; 
+  color: #1e1e2f;
 }
 
 .btn.selected {
-  background-color: #E0C7B3;  /* Changer la couleur lorsque sélectionné */
-  color: #332B26;
+  background-color: #4ecbff;  /* Changer la couleur lorsque sélectionné */
+  color: #1e1e2f;
 }
 
 .selected:hover {
-  background-color: #C4A992; /* Couleur hover pour le bouton sélectionné */
+  background-color: #4ecbff; /* Couleur hover pour le bouton sélectionné */
 }
 
 /* Barre de recherche */
@@ -69,7 +69,7 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #E0C7B3;
+  background-color: #4ecbff;
   border-radius: 5px;
   padding: 8px;
   width: 450px;
@@ -93,9 +93,10 @@ body, html {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #332B26;
+  color: #1e1e2f;
   
 }
+
 
 
 
