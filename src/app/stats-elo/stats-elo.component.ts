@@ -1,14 +1,24 @@
-import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone, OnInit } from '@angular/core';
-import { Api, Constantes } from '../../api/api.service';
-import { LitchessApi } from '../../api/litchess-api.service';
-import { ChesscomApi } from '../../api/chesscomapi.service';
-import { ChartJS } from '../../api/ChartJS.service';
-import { CommonModule } from '@angular/common';
-import Chart from 'chart.js/auto';
+import {
+  afterNextRender,
+  Component,
+  ElementRef,
+  Injectable,
+  ViewChild,
+  AfterViewInit,
+  ChangeDetectorRef,
+  NgZone,
+  OnInit,
+} from "@angular/core";
+import { Api, Constantes } from "../../api/api.service";
+import { LitchessApi } from "../../api/litchess-api.service";
+import { ChesscomApi } from "../../api/chesscomapi.service";
+import { ChartJS } from "../../api/ChartJS.service";
+import { CommonModule } from "@angular/common";
+import Chart from "chart.js/auto";
 import * as Plot from "@observablehq/plot";
-import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
-import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Params } from '@angular/router'; 
+import { LoadingBarComponent } from "../loading-bar/loading-bar.component";
+import { MatDialog } from "@angular/material/dialog";
+import { ActivatedRoute, Params } from "@angular/router";
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
@@ -25,55 +35,56 @@ interface EloData {
 enum W_B {
   Black = "black",
   White = "white",
-  W_B = "w/b"
+  W_B = "w/b",
 }
 
 @Component({
-  selector: 'app-stats-elo',
+  selector: "app-stats-elo",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './stats-elo.component.html',
-  styleUrl: './stats-elo.component.css',
-  host: { id: 'stats-elo-unique' } // Ajout d'un ID unique pour éviter les collisions
+  templateUrl: "./stats-elo.component.html",
+  styleUrl: "./stats-elo.component.css",
+  host: { id: "stats-elo-unique" }, // Ajout d'un ID unique pour éviter les collisions
 })
-@Injectable({ providedIn: 'root'})
-export class StatsEloComponent implements OnInit, AfterViewInit {  
-  @ViewChild('eloStats') eloStats !: ElementRef;
-  @ViewChild('playFrequencyStats') frequencyStats !: ElementRef;
-  @ViewChild('gamesBy') gamesByStats !: ElementRef;
+@Injectable({ providedIn: "root" })
+export class StatsEloComponent implements OnInit, AfterViewInit {
+  @ViewChild("eloStats") eloStats!: ElementRef;
+  @ViewChild("playFrequencyStats") frequencyStats!: ElementRef;
+  @ViewChild("gamesBy") gamesByStats!: ElementRef;
 
-  pseudo: string = ''; // Récupération du pseudo de la route
-  
+  pseudo: string = ""; // Récupération du pseudo de la route
+
   // Variables utilisées pour le HTML
-  timePeriod = Constantes.Time; 
+  timePeriod = Constantes.Time;
   typeJeu = Constantes.TypeJeuChessCom;
   annee = new Date().getFullYear();
-  w_b : W_B = W_B.Black; // Initialisation avec pièces noires par défaut
-  activeTimeClass: Constantes.TypeJeuChessCom = Constantes.TypeJeuChessCom.RAPID; // Parties rapides par défaut
-  
+  w_b: W_B = W_B.Black; // Initialisation avec pièces noires par défaut
+  activeTimeClass: Constantes.TypeJeuChessCom =
+    Constantes.TypeJeuChessCom.RAPID; // Parties rapides par défaut
+
   // Indicateur de chargement initial
   private initialized = false;
 
   // Palettes de couleurs enrichies pour les graphiques d'échecs
   chartColors = {
     elo: {
-      borderColor: 'rgba(78, 203, 255, 1)',
-      backgroundColor: 'rgba(78, 203, 255, 0.1)',
-      pointBackgroundColor: 'rgba(78, 203, 255, 1)',
-      pointBorderColor: '#1e1e2f',
+      borderColor: "rgba(78, 203, 255, 1)",
+      backgroundColor: "rgba(78, 203, 255, 0.1)",
+      pointBackgroundColor: "rgba(78, 203, 255, 1)",
+      pointBorderColor: "#1e1e2f",
     },
     frequency: {
-      backgroundColor: 'rgba(129, 129, 255, 0.5)',
-      hoverBackgroundColor: 'rgba(129, 129, 255, 0.75)',
+      backgroundColor: "rgba(129, 129, 255, 0.5)",
+      hoverBackgroundColor: "rgba(129, 129, 255, 0.75)",
     },
     games: [
       // Palette de couleurs distinctes pour les victoires
-      ['#2ed573', '#1abc9c', '#3498db', '#3742fa'],
+      ["#2ed573", "#1abc9c", "#3498db", "#3742fa"],
       // Palette de couleurs distinctes pour les nulles
-      ['#ffb266', '#ffa502', '#ff9f43', '#f6b93b'],
+      ["#ffb266", "#ffa502", "#ff9f43", "#f6b93b"],
       // Palette de couleurs distinctes pour les défaites
-      ['#ff6b81', '#ff4757', '#ff5252', '#ff3838']
-    ]
+      ["#ff6b81", "#ff4757", "#ff5252", "#ff3838"],
+    ],
   };
 
   customStartDate: Date | null = null;
@@ -81,105 +92,138 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
 
   private api: Api;
   private chartGenerator: ChartJS;
-  
+
   constructor(
     private route: ActivatedRoute,
-    chessApi: ChesscomApi, 
-    lichessApi: LitchessApi, 
+    chessApi: ChesscomApi,
+    lichessApi: LitchessApi,
     chartGenerator: ChartJS,
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
     public matDialog: MatDialog
-  ) { 
+  ) {
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
-    
+
     // Pré-initialiser l'API et les données avec ALL_TIME par défaut
     this.api.initTimeInterval();
-    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+    this.api.setTimeTinterval(
+      Constantes.Time.ALL_TIME,
+      this.api.DATENULL,
+      this.api.DATENULL
+    );
   }
-  
+
   ngOnInit(): void {
     // Récupérer le pseudo depuis les paramètres de l'URL
     this.route.queryParams.subscribe((params: Params) => {
-      this.pseudo = params['pseudo'];
+      this.pseudo = params["pseudo"];
     });
 
     // Afficher la barre de chargement
     this.showEloStatWithLoading();
   }
-  
-  // Méthode pour afficher les stats Elo avec la barre de chargement
-// Méthode pour afficher les stats Elo avec la barre de chargement
-showEloStatWithLoading() {
-  try {
-    console.log("Initialisation du chargement des graphiques...");
-    
-    // Ouvrir le dialog avec gestion d'erreurs
-    const dialogRef = this.matDialog.open(LoadingBarComponent, {
-      height: '100vh',
-      width: '100vw',
-      maxWidth: '100vw',
-      panelClass: 'full-screen-dialog',
-      hasBackdrop: true,
-      disableClose: true
-    });
-    
-    // Simuler un délai de chargement pour la progression
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      
-      // Vérifier si componentInstance existe avant d'y accéder
-      if (dialogRef && dialogRef.componentInstance) {
-        try {
-          dialogRef.componentInstance.increaseProgress(progress);
-        } catch (e) {
-          console.warn("Erreur lors de la mise à jour de la progression:", e);
-        }
-      }
-      
-      if (progress >= 100) {
-        clearInterval(interval);
-        
-        try {
-          if (dialogRef) {
-            dialogRef.close();
-          }
-        } catch (e) {
-          console.warn("Erreur lors de la fermeture du dialog:", e);
-        }
-        
-        // IMPORTANT: Initialiser TOUS les graphiques, pas seulement ELO
-        setTimeout(() => {
-          console.log("Initialisation de tous les graphiques après fermeture du dialog");
-          this.initializeCharts();
-        }, 500); // Délai plus long pour s'assurer que le dialog est complètement fermé
-      }
-    }, 500);
-  } catch (error) {
-    console.error("Erreur dans showEloStatWithLoading:", error);
-    // Fallback - initialiser les graphiques directement
-    this.initializeCharts();
+  // Ajoutez cette méthode dans votre StatsEloComponent
+  private cleanupCharts(): void {
+    // Nettoyer proprement le graphique d'ELO
+    if (this.eloChart) {
+      this.eloChart.destroy();
+      this.eloChart = null;
+    }
+
+    // Nettoyer proprement le graphique de fréquence
+    if (this.playFreqChart) {
+      this.playFreqChart.destroy();
+      this.playFreqChart = null;
+    }
+
+    // Nettoyer proprement les graphiques de résultats
+    if (this.chartGamesBy && this.chartGamesBy.length > 0) {
+      this.chartGamesBy.forEach((chart) => {
+        if (chart) chart.destroy();
+      });
+      this.chartGamesBy = [];
+    }
   }
-}
-  
+
+  ngOnDestroy(): void {
+    // Nettoyer les graphiques lors de la destruction du composant
+    this.cleanupCharts();
+  }
+
+  // Méthode pour afficher les stats Elo avec la barre de chargement
+  // Méthode pour afficher les stats Elo avec la barre de chargement
+  showEloStatWithLoading() {
+    try {
+      console.log("Initialisation du chargement des graphiques...");
+
+      // Ouvrir le dialog avec gestion d'erreurs
+      const dialogRef = this.matDialog.open(LoadingBarComponent, {
+        height: "100vh",
+        width: "100vw",
+        maxWidth: "100vw",
+        panelClass: "full-screen-dialog",
+        hasBackdrop: true,
+        disableClose: true,
+      });
+
+      // Simuler un délai de chargement pour la progression
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 10;
+
+        // Vérifier si componentInstance existe avant d'y accéder
+        if (dialogRef && dialogRef.componentInstance) {
+          try {
+            dialogRef.componentInstance.increaseProgress(progress);
+          } catch (e) {
+            console.warn("Erreur lors de la mise à jour de la progression:", e);
+          }
+        }
+
+        if (progress >= 100) {
+          clearInterval(interval);
+
+          try {
+            if (dialogRef) {
+              dialogRef.close();
+            }
+          } catch (e) {
+            console.warn("Erreur lors de la fermeture du dialog:", e);
+          }
+
+          // IMPORTANT: Initialiser TOUS les graphiques, pas seulement ELO
+          setTimeout(() => {
+            console.log(
+              "Initialisation de tous les graphiques après fermeture du dialog"
+            );
+            this.initializeCharts();
+          }, 500); // Délai plus long pour s'assurer que le dialog est complètement fermé
+        }
+      }, 500);
+    } catch (error) {
+      console.error("Erreur dans showEloStatWithLoading:", error);
+      // Fallback - initialiser les graphiques directement
+      this.initializeCharts();
+    }
+  }
+
   // Cette méthode est déclenchée après l'initialisation de la vue
   ngAfterViewInit(): void {
     setTimeout(() => {
-      console.log('Préparation des références DOM pour les graphiques');
+      console.log("Préparation des références DOM pour les graphiques");
       // Ne pas initialiser ici - nous le faisons après le chargement
       this.initializeCharts();
       this.cdr.detectChanges();
     }, 100);
   }
-  
+
   // Méthode d'initialisation des graphiques
   private initializeCharts(): void {
     if (this.initialized) return;
-    
-    console.log('Initialisation des graphiques');
-    
+
+    console.log("Initialisation des graphiques");
+
     // Exécuter les opérations de graphiques en dehors de la zone
     this.zone.runOutsideAngular(() => {
       try {
@@ -187,18 +231,18 @@ showEloStatWithLoading() {
         this.showEloStat(this.activeTimeClass, this.activePeriod);
         this.showPlayFrequency();
         this.showGamesBy();
-        
+
         // Marquer comme initialisé
         this.initialized = true;
-        
+
         // Revenir dans la zone Angular pour déclencher la détection des changements
         this.zone.run(() => {
           // S'assurer que l'interface utilisateur est mise à jour
           this.cdr.detectChanges();
         });
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation des graphiques:', error);
-        
+        console.error("Erreur lors de l'initialisation des graphiques:", error);
+
         // Nouvelle tentative si l'initialisation échoue
         setTimeout(() => {
           this.initialized = false;
@@ -211,28 +255,30 @@ showEloStatWithLoading() {
   // Fonction pour formater les timestamps en dates lisibles
   formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: 'short',
-      year: '2-digit'
+    return date.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+      year: "2-digit",
     });
   }
 
   // Cette fonction va étendre le graphique avec des options avancées
   extendChartOptions(chart: any, options: any): void {
     if (!chart || !chart.options) return;
-    
+
     // Appliquer des animations
     chart.options.animation = {
       duration: 800,
-      easing: 'easeOutCubic'
+      easing: "easeOutCubic",
     };
-    
+
     // Appliquer d'autres options
     if (options.colors) {
       if (Array.isArray(options.colors)) {
         // Pour les camemberts avec des couleurs différentes par segment
-        const backgroundColors = options.colors.map((color: any) => color.backgroundColor);
+        const backgroundColors = options.colors.map(
+          (color: any) => color.backgroundColor
+        );
         chart.data.datasets[0].backgroundColor = backgroundColors;
       } else {
         // Pour les autres types de graphiques
@@ -243,38 +289,51 @@ showEloStatWithLoading() {
         }
       }
     }
-    
+
     if (options.plugins) {
       chart.options.plugins = {
         ...chart.options.plugins,
-        ...options.plugins
+        ...options.plugins,
       };
     }
-    
+
     // Mettre à jour le graphique
     chart.update();
   }
 
   // Récupère les dates de début et de fin pour un mois donné
-  getMonthDates(year: number, month: number): { firstDay: Date; lastDay: Date } {
-    const firstDay = new Date(year, month - 1, 1); 
-    const lastDay = new Date(year, month, 0); 
+  getMonthDates(
+    year: number,
+    month: number
+  ): { firstDay: Date; lastDay: Date } {
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
     return { firstDay, lastDay };
   }
 
   // Récupère les données de fréquence de jeu pour une année donnée
   getPlayFrequency(year: number): FrequencyData[] {
     const months = [
-      "Jan", "Fév", "Mar", "Avr", "Mai", "Juin",
-      "Juil", "Août", "Sept", "Oct", "Nov", "Déc"
+      "Jan",
+      "Fév",
+      "Mar",
+      "Avr",
+      "Mai",
+      "Juin",
+      "Juil",
+      "Août",
+      "Sept",
+      "Oct",
+      "Nov",
+      "Déc",
     ];
-    
+
     const data: FrequencyData[] = [];
     for (let i = 1; i <= 12; i++) {
       const { firstDay, lastDay } = this.getMonthDates(year, i);
       this.api.initTimeInterval();
       this.api.setTimeTinterval(Constantes.Time.CUSTOM, firstDay, lastDay);
-      data.push({ occurences: this.api.allGames.length, mois: months[i-1] });
+      data.push({ occurences: this.api.allGames.length, mois: months[i - 1] });
     }
     return data;
   }
@@ -288,68 +347,99 @@ showEloStatWithLoading() {
   activePeriod: Constantes.Time = Constantes.Time.ALL_TIME;
 
   eloChart: any = null;
-  showEloStat(time_class?: Constantes.TypeJeuChessCom, timePeriod?: Constantes.Time) {
+  showEloStat(
+    time_class?: Constantes.TypeJeuChessCom,
+    timePeriod?: Constantes.Time
+  ) {
     // Vérifier que la référence DOM existe
     if (!this.eloStats?.nativeElement) {
-      console.warn('Référence DOM manquante pour le graphique ELO');
+      console.warn("Référence DOM manquante pour le graphique ELO");
       return;
     }
 
     // Mettre à jour les classes actives
-    this.activeTimeClass = time_class || this.activeTimeClass || Constantes.TypeJeuChessCom.RAPID;
-    this.activePeriod = timePeriod !== undefined ? timePeriod : this.activePeriod;
-    
+    this.activeTimeClass =
+      time_class || this.activeTimeClass || Constantes.TypeJeuChessCom.RAPID;
+    this.activePeriod =
+      timePeriod !== undefined ? timePeriod : this.activePeriod;
+
     // Initialiser l'API et définir la période
     this.api.initTimeInterval();
-    
+
     // Définir la période selon le paramètre
     switch (this.activePeriod) {
       case Constantes.Time.WEEK:
-        this.api.setTimeTinterval(Constantes.Time.WEEK, this.api.DATENULL, this.api.DATENULL);
+        this.api.setTimeTinterval(
+          Constantes.Time.WEEK,
+          this.api.DATENULL,
+          this.api.DATENULL
+        );
         break;
       case Constantes.Time.MONTH:
-        this.api.setTimeTinterval(Constantes.Time.MONTH, this.api.DATENULL, this.api.DATENULL);
+        this.api.setTimeTinterval(
+          Constantes.Time.MONTH,
+          this.api.DATENULL,
+          this.api.DATENULL
+        );
         break;
       case Constantes.Time.YEAR:
-        this.api.setTimeTinterval(Constantes.Time.YEAR, this.api.DATENULL, this.api.DATENULL);
+        this.api.setTimeTinterval(
+          Constantes.Time.YEAR,
+          this.api.DATENULL,
+          this.api.DATENULL
+        );
         break;
       case Constantes.Time.CUSTOM:
         // Pour le mode personnalisé, utilisez les dates stockées dans le composant
         if (this.customStartDate && this.customEndDate) {
-          this.api.setTimeTinterval(Constantes.Time.CUSTOM, this.customStartDate, this.customEndDate);
+          this.api.setTimeTinterval(
+            Constantes.Time.CUSTOM,
+            this.customStartDate,
+            this.customEndDate
+          );
         } else {
           // Si pas de dates personnalisées, revenir à ALL_TIME
           this.activePeriod = Constantes.Time.ALL_TIME;
-          this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+          this.api.setTimeTinterval(
+            Constantes.Time.ALL_TIME,
+            this.api.DATENULL,
+            this.api.DATENULL
+          );
         }
         break;
       case Constantes.Time.ALL_TIME:
       default:
-        this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+        this.api.setTimeTinterval(
+          Constantes.Time.ALL_TIME,
+          this.api.DATENULL,
+          this.api.DATENULL
+        );
         break;
     }
-    
+
     const eloList = this.api.getElo(this.activeTimeClass) as EloData[];
     if (!eloList || eloList.length === 0) {
-      console.warn('Données ELO manquantes');
+      console.warn("Données ELO manquantes");
       return;
     }
-    
+
     if (this.eloChart != null) {
       this.eloChart.destroy();
     }
-    
+
     try {
       // Formater les timestamps en dates
-      const formattedDates = eloList.map((row: EloData) => this.formatDate(row.timestamp));
-      
+      const formattedDates = eloList.map((row: EloData) =>
+        this.formatDate(row.timestamp)
+      );
+
       this.eloChart = this.chartGenerator.getLineGraph(
-        this.eloStats.nativeElement, 
-        eloList.map((row: EloData) => row.rating), 
-        'Elo', 
+        this.eloStats.nativeElement,
+        eloList.map((row: EloData) => row.rating),
+        "Elo",
         formattedDates
       );
-      
+
       // Personnaliser le graphique après sa création
       this.extendChartOptions(this.eloChart, {
         colors: {
@@ -358,11 +448,11 @@ showEloStatWithLoading() {
           pointRadius: 0, // Rendre les points invisibles
           pointHoverRadius: 5, // Afficher les points uniquement au survol
           borderWidth: 3, // Augmenter légèrement l'épaisseur de la ligne pour meilleure visibilité
-          tension: 0.4
-        }
+          tension: 0.4,
+        },
       });
     } catch (error) {
-      console.error('Erreur lors de la création du graphique ELO:', error);
+      console.error("Erreur lors de la création du graphique ELO:", error);
     }
   }
 
@@ -370,7 +460,7 @@ showEloStatWithLoading() {
   showPlayFrequency() {
     // Vérifier que la référence DOM existe
     if (!this.frequencyStats?.nativeElement) {
-      console.warn('Référence DOM manquante pour le graphique de fréquence');
+      console.warn("Référence DOM manquante pour le graphique de fréquence");
       return;
     }
 
@@ -382,12 +472,12 @@ showEloStatWithLoading() {
 
     try {
       this.playFreqChart = this.chartGenerator.getSimpleBarChart(
-        this.frequencyStats.nativeElement, 
-        data.map((row: FrequencyData) => row.occurences), 
-        'Parties jouées', 
+        this.frequencyStats.nativeElement,
+        data.map((row: FrequencyData) => row.occurences),
+        "Parties jouées",
         data.map((row: FrequencyData) => row.mois)
       );
-      
+
       // Personnaliser le graphique après sa création
       this.extendChartOptions(this.playFreqChart, {
         colors: {
@@ -395,34 +485,37 @@ showEloStatWithLoading() {
           hoverBackgroundColor: this.chartColors.frequency.hoverBackgroundColor,
           borderRadius: 6,
           borderWidth: 0,
-          maxBarThickness: 40
+          maxBarThickness: 40,
         },
         plugins: {
           tooltip: {
-            backgroundColor: 'rgba(22, 22, 31, 0.9)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: 'rgba(129, 129, 255, 0.3)',
+            backgroundColor: "rgba(22, 22, 31, 0.9)",
+            titleColor: "#ffffff",
+            bodyColor: "#ffffff",
+            borderColor: "rgba(129, 129, 255, 0.3)",
             borderWidth: 1,
             padding: 10,
             bodyFont: {
               size: 14,
-              weight: 'bold'
-            }
+              weight: "bold",
+            },
           },
           legend: {
             labels: {
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: "rgba(255, 255, 255, 0.8)",
               font: {
                 family: "'Roboto', sans-serif",
-                size: 13
-              }
-            }
-          }
-        }
+                size: 13,
+              },
+            },
+          },
+        },
       });
     } catch (error) {
-      console.error('Erreur lors de la création du graphique de fréquence:', error);
+      console.error(
+        "Erreur lors de la création du graphique de fréquence:",
+        error
+      );
     }
   }
 
@@ -439,10 +532,10 @@ showEloStatWithLoading() {
   }
 
   setPeriod(period: Constantes.Time): void {
-    console.log('Modification de la période à:', period);
+    console.log("Modification de la période à:", period);
     // Appliquer la période directement et s'assurer que le changement est détecté
     this.activePeriod = period;
-    
+
     // Utiliser setTimeout pour garantir que l'UI est mise à jour avant les opérations lourdes
     setTimeout(() => {
       this.zone.run(() => {
@@ -457,12 +550,16 @@ showEloStatWithLoading() {
   showGamesBy(): void {
     // Vérifier que la référence DOM existe
     if (!this.gamesByStats?.nativeElement) {
-      console.warn('Référence DOM manquante pour les graphiques par type');
+      console.warn("Référence DOM manquante pour les graphiques par type");
       return;
     }
 
     this.api.initTimeInterval();
-    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+    this.api.setTimeTinterval(
+      Constantes.Time.ALL_TIME,
+      this.api.DATENULL,
+      this.api.DATENULL
+    );
     const endgames = this.api.getEndgames();
 
     let win_data: any, draw_data: any, lose_data: any;
@@ -481,138 +578,150 @@ showEloStatWithLoading() {
 
     // Assurer que les données existent
     if (!win_data || !draw_data || !lose_data) {
-      console.warn('Données des résultats manquantes');
+      console.warn("Données des résultats manquantes");
       return;
     }
 
     if (this.chartGamesBy.length == 3) {
-      this.chartGamesBy.forEach(chart => chart?.destroy());
+      this.chartGamesBy.forEach((chart) => chart?.destroy());
     }
 
     try {
       // S'assurer que tous les éléments DOM nécessaires sont disponibles
-      const canvasElements = this.gamesByStats.nativeElement.querySelectorAll('canvas');
+      const canvasElements =
+        this.gamesByStats.nativeElement.querySelectorAll("canvas");
       if (canvasElements.length < 3) {
-        console.warn('Éléments canvas manquants pour les graphiques de résultats');
+        console.warn(
+          "Éléments canvas manquants pour les graphiques de résultats"
+        );
         return;
       }
 
       // Créer les camemberts avec des couleurs distinctes
       this.chartGamesBy[0] = this.chartGenerator.getDoughnutGraph(
-        canvasElements[0], 
-        Object.values(win_data), 
+        canvasElements[0],
+        Object.values(win_data),
         Object.keys(win_data)
       );
-      
+
       // Appliquer des couleurs différentes pour chaque segment
       this.extendChartOptions(this.chartGamesBy[0], {
-        colors: this.chartColors.games[0].map((color: string) => ({ backgroundColor: color })),
+        colors: this.chartColors.games[0].map((color: string) => ({
+          backgroundColor: color,
+        })),
         plugins: {
           tooltip: {
-            backgroundColor: 'rgba(22, 22, 31, 0.9)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: 'rgba(46, 213, 115, 0.3)',
+            backgroundColor: "rgba(22, 22, 31, 0.9)",
+            titleColor: "#ffffff",
+            bodyColor: "#ffffff",
+            borderColor: "rgba(46, 213, 115, 0.3)",
             borderWidth: 1,
             padding: 10,
             bodyFont: {
               size: 14,
-              weight: 'bold'
-            }
+              weight: "bold",
+            },
           },
           legend: {
-            position: 'bottom',
+            position: "bottom",
             labels: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: "rgba(255, 255, 255, 0.7)",
               boxWidth: 10,
               padding: 10,
               font: {
                 family: "'Roboto', sans-serif",
-                size: 11
-              }
-            }
-          }
-        }
+                size: 11,
+              },
+            },
+          },
+        },
       });
 
       this.chartGamesBy[1] = this.chartGenerator.getDoughnutGraph(
-        canvasElements[1], 
-        Object.values(draw_data), 
+        canvasElements[1],
+        Object.values(draw_data),
         Object.keys(draw_data)
       );
-      
+
       this.extendChartOptions(this.chartGamesBy[1], {
-        colors: this.chartColors.games[1].map((color: string) => ({ backgroundColor: color })),
+        colors: this.chartColors.games[1].map((color: string) => ({
+          backgroundColor: color,
+        })),
         plugins: {
           tooltip: {
-            backgroundColor: 'rgba(22, 22, 31, 0.9)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: 'rgba(255, 178, 102, 0.3)',
+            backgroundColor: "rgba(22, 22, 31, 0.9)",
+            titleColor: "#ffffff",
+            bodyColor: "#ffffff",
+            borderColor: "rgba(255, 178, 102, 0.3)",
             borderWidth: 1,
             padding: 10,
             bodyFont: {
               size: 14,
-              weight: 'bold'
-            }
+              weight: "bold",
+            },
           },
           legend: {
-            position: 'bottom',
+            position: "bottom",
             labels: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: "rgba(255, 255, 255, 0.7)",
               boxWidth: 10,
               padding: 10,
               font: {
                 family: "'Roboto', sans-serif",
-                size: 11
-              }
-            }
-          }
-        }
+                size: 11,
+              },
+            },
+          },
+        },
       });
 
       this.chartGamesBy[2] = this.chartGenerator.getDoughnutGraph(
-        canvasElements[2], 
-        Object.values(lose_data), 
+        canvasElements[2],
+        Object.values(lose_data),
         Object.keys(lose_data)
       );
-      
+
       this.extendChartOptions(this.chartGamesBy[2], {
-        colors: this.chartColors.games[2].map((color: string) => ({ backgroundColor: color })),
+        colors: this.chartColors.games[2].map((color: string) => ({
+          backgroundColor: color,
+        })),
         plugins: {
           tooltip: {
-            backgroundColor: 'rgba(22, 22, 31, 0.9)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff',
-            borderColor: 'rgba(255, 107, 129, 0.3)',
+            backgroundColor: "rgba(22, 22, 31, 0.9)",
+            titleColor: "#ffffff",
+            bodyColor: "#ffffff",
+            borderColor: "rgba(255, 107, 129, 0.3)",
             borderWidth: 1,
             padding: 10,
             bodyFont: {
               size: 14,
-              weight: 'bold'
-            }
+              weight: "bold",
+            },
           },
           legend: {
-            position: 'bottom',
+            position: "bottom",
             labels: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: "rgba(255, 255, 255, 0.7)",
               boxWidth: 10,
               padding: 10,
               font: {
                 family: "'Roboto', sans-serif",
-                size: 11
-              }
-            }
-          }
-        }
+                size: 11,
+              },
+            },
+          },
+        },
       });
     } catch (error) {
-      console.error('Erreur lors de la création des graphiques de résultats:', error);
+      console.error(
+        "Erreur lors de la création des graphiques de résultats:",
+        error
+      );
     }
   }
 
   resetgamesBy(): void {
-    switch(this.w_b) {
+    switch (this.w_b) {
       case W_B.Black:
         this.w_b = W_B.White;
         break;
