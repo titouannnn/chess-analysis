@@ -1,35 +1,19 @@
-import {
-  afterNextRender,
-  Component,
-  ElementRef,
-  Injectable,
-  ViewChild,
-  AfterViewInit,
-  ChangeDetectorRef,
-  NgZone,
-  OnInit,
-} from "@angular/core";
-import { Api, Constantes } from "../../api/api.service";
-import { LitchessApi } from "../../api/litchess-api.service";
-import { ChesscomApi } from "../../api/chesscomapi.service";
-import { ChartJS } from "../../api/ChartJS.service";
-import { CommonModule } from "@angular/common";
-import Chart from "chart.js/auto";
-import * as Plot from "@observablehq/plot";
 import { LoadingBarComponent } from "../loading-bar/loading-bar.component";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Params } from "@angular/router";
+import { afterNextRender, Component, ElementRef, Injectable, ViewChild, AfterViewInit, ChangeDetectorRef, NgZone, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { Api, Constantes } from '../../api/api.service';
+import { LitchessApi } from '../../api/litchess-api.service';
+import { ChesscomApi } from '../../api/chesscomapi.service';
+import { ChartJS } from '../../api/ChartJS.service';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Chart } from 'chart.js/auto';
+import { platform } from 'os';
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
   occurences: number;
   mois: string;
-}
-
-// Interface pour les données d'ELO
-interface EloData {
-  rating: number;
-  timestamp: number;
 }
 
 enum W_B {
@@ -42,9 +26,9 @@ enum W_B {
   selector: "app-stats-elo",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: "./stats-elo.component.html",
-  styleUrl: "./stats-elo.component.css",
-  host: { id: "stats-elo-unique" }, // Ajout d'un ID unique pour éviter les collisions
+  templateUrl: './stats-elo.component.html',
+  styleUrl: './stats-elo.component.css',
+  host: { id: 'stats-elo-unique' }
 })
 @Injectable({ providedIn: "root" })
 export class StatsEloComponent implements OnInit, AfterViewInit {
@@ -92,6 +76,7 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
 
   private api: Api;
   private chartGenerator: ChartJS;
+  public isBrowser : Boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -100,8 +85,10 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
     chartGenerator: ChartJS,
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
-    public matDialog: MatDialog
-  ) {
+    public matDialog: MatDialog,
+    @Inject(PLATFORM_ID) platformId : Object
+  ) { 
+    this.isBrowser = isPlatformBrowser(platformId);
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
 
@@ -210,12 +197,17 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
 
   // Cette méthode est déclenchée après l'initialisation de la vue
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      console.log("Préparation des références DOM pour les graphiques");
-      // Ne pas initialiser ici - nous le faisons après le chargement
-      this.initializeCharts();
-      this.cdr.detectChanges();
-    }, 100);
+    
+    console.log("Préparation des références DOM pour les graphiques");
+    // Ne pas initialiser ici - nous le faisons après le chargement
+    this.initializeCharts();
+    this.cdr.detectChanges();
+  
+    console.log('Initialisation des graphiques');
+    this.initializeCharts();
+    // Supprimez les modifications programmatiques de style ici
+    this.cdr.detectChanges();
+  
   }
 
   // Méthode d'initialisation des graphiques
@@ -417,7 +409,7 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
         break;
     }
 
-    const eloList = this.api.getElo(this.activeTimeClass) as EloData[];
+    const eloList = this.api.getElo(this.activeTimeClass);
     if (!eloList || eloList.length === 0) {
       console.warn("Données ELO manquantes");
       return;
@@ -428,14 +420,16 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
     }
 
     try {
-      // Formater les timestamps en dates
-      const formattedDates = eloList.map((row: EloData) =>
-        this.formatDate(row.timestamp)
-      );
+
+      if(!this.isBrowser) return;
+      
+      const formattedDates = eloList.map(row => this.formatDate(row.timestamp));
+      
+      
 
       this.eloChart = this.chartGenerator.getLineGraph(
         this.eloStats.nativeElement,
-        eloList.map((row: EloData) => row.rating),
+        eloList.map(row => row.rating),
         "Elo",
         formattedDates
       );
@@ -456,6 +450,8 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
     }
   }
 
+
+
   playFreqChart: any = null;
   showPlayFrequency() {
     // Vérifier que la référence DOM existe
@@ -463,7 +459,6 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
       console.warn("Référence DOM manquante pour le graphique de fréquence");
       return;
     }
-
     const data = this.getPlayFrequency(this.annee);
 
     if (this.playFreqChart != null) {
@@ -471,6 +466,8 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
     }
 
     try {
+      if(!this.isBrowser) return;
+
       this.playFreqChart = this.chartGenerator.getSimpleBarChart(
         this.frequencyStats.nativeElement,
         data.map((row: FrequencyData) => row.occurences),
@@ -517,6 +514,10 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
         error
       );
     }
+
+    this.api.initTimeInterval();
+    this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
+
   }
 
   frequencyRightArrowClick(): void {
@@ -527,8 +528,13 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
   }
 
   frequencyLeftArrowClick(): void {
-    this.annee--;
-    this.showPlayFrequency();
+    console.log("======================== Méthode frequencyLeftArrow appellée ======================      ");
+    this.api.initTimeInterval()
+    
+    if(this.annee >= this.api.dateDebut.getFullYear()){
+      this.annee--;
+      this.showPlayFrequency();
+    }
   }
 
   setPeriod(period: Constantes.Time): void {
@@ -587,6 +593,9 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
     }
 
     try {
+
+      if(!this.isBrowser) return;
+
       // S'assurer que tous les éléments DOM nécessaires sont disponibles
       const canvasElements =
         this.gamesByStats.nativeElement.querySelectorAll("canvas");

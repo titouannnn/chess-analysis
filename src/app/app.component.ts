@@ -72,7 +72,7 @@ export class AppComponent implements OnInit {
                                                                                               Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
 
   ngOnInit(): void {
-    console.log("Initialisation de l'application");
+    //console.log("Initialisation de l'application");
     //this.lichessTests();
     this.chess_comTests();
     //this.testPuzzle();
