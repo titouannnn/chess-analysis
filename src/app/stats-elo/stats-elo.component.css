@@ -1,367 +1,347 @@
+/* Variables et styles de base */
 :host {
-    display: block;
-    font-family: 'Roboto', sans-serif;
-    --bg-color: #1e1e2f;
-    --card-bg: #27293d;
-    --primary-color: #4ecbff;
-    --secondary-color: #8181ff;
-    --accent-color: #ff4d4d;
-    --text-color: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --border-radius: 12px;
-    --shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-    background-color: var(--bg-color);
-    color: var(--text-color);
-  }
-  
-  /* Layout et conteneurs principaux */
-  .dashboard-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  
-  /* Cartes et conteneurs de graphiques */
-  .chart-card {
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    backdrop-filter: blur(10px);
-  }
-  
-  .chart-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  }
-  
-  /* En-tête des cartes */
-  .card-header {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  
-  .card-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-color);
-  }
-  
-  .chart-body {
-    padding: 20px;
-    height: 300px;
-    position: relative;
-  }
-  
-  /* Conteneur des contrôles */
-  .controls-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-  }
-  
-  /* Groupes de contrôles */
-  .control-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .control-label {
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-  }
-  
-  /* Contrôles pour les types de jeu */
-  .time-controls {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 8px;
-    z-index: 10;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* Contrôles pour les périodes */
-  .period-controls, 
-  #period-controls-fixed {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 8px;
-    z-index: 10;
-    position: relative;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* Styles communs des boutons */
-  .control-btn,
-  .period-btn {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 12px;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  .control-btn:hover,
-  .period-btn:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-  }
-  
-  /* Boutons actifs */
-  .control-btn.active {
-    background-color: var(--primary-color);
-    color: #1e1e2f;
-    font-weight: bold;
-  }
-  
-  .period-btn.active {
-    background-color: var(--secondary-color);
-    color: #1e1e2f;
-    font-weight: 500;
-  }
-  
-  /* Sélecteur d'année */
-  .year-selector {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-  
-  .year-display {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-color);
-  }
-  
-  .year-btn {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--text-color);
-    transition: all 0.2s ease;
-  }
-  
-  .year-btn:hover {
-    background-color: var(--primary-color);
-    color: #1e1e2f;
-  }
-  
-  /* Résultats par type */
-  .results-container {
-    display: flex;
-    gap: 15px;
-    padding: 0 20px 20px;
-  }
-  
-  .result-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .result-title {
-    font-size: 16px;
-    font-weight: 500;
-    margin: 15px 0;
-    text-align: center;
-  }
-  
-  .win-title {
-    color: #2ed573;
-  }
-  
-  .draw-title {
-    color: #ffb266;
-  }
-  
-  .loss-title {
-    color: #ff4d4d;
-  }
-  
-  .small-chart {
-    height: 200px;
-    width: 100%;
-    position: relative;
-  }
-  
-  /* Toggle pour les pièces noir/blanc */
-  .color-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 20px;
-    padding: 6px 14px;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
-  }
-  
-  .color-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.15);
-  }
-  
-  .piece-indicator {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  
-  .black-piece {
-    background-color: #222;
-    box-shadow: 0 0 0 1px #444;
-  }
-  
-  .white-piece {
-    background-color: #fff;
-    box-shadow: 0 0 0 1px #ccc;
-  }
-  
-  /* Animation pour les transitions de graphiques */
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  .chart-body canvas {
-    animation: fadeIn 0.5s ease-out;
-  }
-  
-  /* Media queries */
-  @media (min-width: 768px) {
-    .card-header {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .controls-wrapper {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .results-container {
-      flex-direction: column;
-    }
-    
-    .time-controls {
-      width: 100%;
-      overflow-x: auto;
-      padding-bottom: 5px;
-    }
-  }
+  display: block;
+  font-family: 'Roboto', sans-serif;
+  --bg-color: #1e1e2f;
+  --card-bg: #27293d;
+  --primary-color: #4ecbff;
+  --secondary-color: #8181ff;
+  --accent-color: #ff4d4d;
+  --text-color: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --border-radius: 12px;
+  --shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  --win-color: #2ed573;
+  --draw-color: #ffb266;
+  --loss-color: #ff5252;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
 
+/* Animation pour les transitions de graphiques */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
-/* Correction du CSS pour le positionnement des contrôles */
+/* Layout et conteneurs principaux */
+.dashboard-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Cartes et conteneurs de graphiques */
+.chart-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.chart-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
 
 /* En-tête des cartes */
 .card-header {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+/* Corps des graphiques */
+.chart-body {
+  padding: 20px;
+  height: 300px;
+  width: 100%;
+  position: relative;
+}
+
+.chart-body canvas {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Style pour le conteneur scrollable du graphique */
+.chart-body-scrollable {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 20px;
+  padding-bottom: 15px;
+  height: auto;
+  min-height: 320px;
+  width: 100%;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.1);
+}
+
+.chart-body-scrollable canvas {
+  display: block;
+  min-height: 250px;
+  min-width: 100%;
+  max-width: 1200px; /* Limiter la largeur maximale pour éviter l'étirement */
+}
+
+/* Styles de la barre de défilement */
+.chart-body-scrollable::-webkit-scrollbar {
+  height: 6px;
+}
+
+.chart-body-scrollable::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.chart-body-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.chart-body-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Indicateur de défilement */
+.chart-body-scrollable::after {
+  content: '';
+  position: absolute;
+  right: 10px;
+  bottom: 15px;
+  width: 30px;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='rgba(255,255,255,0.3)'%3E%3Cpath d='M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.chart-body-scrollable:hover::after {
+  opacity: 0.8;
+}
+
+/* Conteneur des contrôles */
+.controls-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+/* Groupes de contrôles */
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.control-label {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Contrôles pour les types de jeu */
+.time-controls,
+.period-controls,
+#period-controls-fixed,
+.color-controls,
+.sort-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  z-index: 10;
+}
+
+/* Styles communs des boutons */
+.control-btn,
+.period-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 5px;
+}
+
+.control-btn:hover,
+.period-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* États actifs des boutons */
+.control-btn.active {
+  background-color: var(--primary-color);
+  color: #1e1e2f;
+  font-weight: 500;
+}
+
+.period-btn.active {
+  background-color: var(--secondary-color);
+  color: #1e1e2f;
+  font-weight: 500;
+}
+
+/* Sélecteur d'année */
+.year-selector {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.year-display {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.year-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+
+.year-btn:hover {
+  background-color: var(--primary-color);
+  color: #1e1e2f;
+}
+
+/* Indicateurs de pièces */
+.piece-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.white-piece {
+  background-color: #fff;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.black-piece {
+  background-color: #222;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+/* Résultats par type */
+.results-container {
+  display: flex;
+  gap: 15px;
+  padding: 0 20px 20px;
+}
+
+.result-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.result-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 15px 0;
+  text-align: center;
+}
+
+.win-title {
+  color: var(--win-color);
+}
+
+.draw-title {
+  color: var(--draw-color);
+}
+
+.loss-title {
+  color: var(--loss-color);
+}
+
+.small-chart {
+  height: 200px;
+  width: 100%;
+  position: relative;
+}
+
+/* Media queries */
+@media (min-width: 768px) {
+  .card-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
   
-  /* Conteneur principal des contrôles avec espacement maximum entre les éléments */
   .controls-wrapper {
-    display: flex !important;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 65%;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .time-controls,
+  .color-controls {
+    margin-right: auto;
+  }
+  
+  .period-controls,
+  #period-controls-fixed,
+  .sort-controls {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .results-container {
     flex-direction: column;
-    width: 100%;
+  }
+  
+  .controls-wrapper {
+    flex-direction: column;
     gap: 15px;
   }
   
-  /* Forcer l'affichage des contrôles de type de jeu */
-  .time-controls {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 8px;
-    z-index: 11; /* Plus élevé que les autres éléments */
-    visibility: visible !important;
-    opacity: 1 !important;
+  .time-controls,
+  .period-controls,
+  #period-controls-fixed,
+  .color-controls,
+  .sort-controls {
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    padding-bottom: 5px;
   }
-  
-  /* Forcer l'affichage des contrôles de période */
-  .period-controls, 
-  #period-controls-fixed {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 8px;
-    z-index: 11; /* Plus élevé que les autres éléments */
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* Version desktop - affichage côte à côte */
-  @media (min-width: 768px) {
-    .card-header {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start; /* Alignement en haut pour éviter le décalage */
-    }
-    
-    .controls-wrapper {
-      flex-direction: row;
-      justify-content: space-between; /* Maximise l'espace entre les deux groupes de contrôles */
-      align-items: center;
-      max-width: 65%; /* Limite la largeur pour éviter le chevauchement avec le titre */
-    }
-    
-    /* Positionnement explicite pour les time-controls (à gauche) */
-    .time-controls {
-      margin-right: auto; /* Pousse à gauche */
-    }
-    
-    /* Positionnement explicite pour les period-controls (à droite) */
-    .period-controls, 
-    #period-controls-fixed {
-      margin-left: auto; /* Pousse à droite */
-    }
-  }
-  
-  /* Version mobile - empilés verticalement */
-  @media (max-width: 767px) {
-    .controls-wrapper {
-      gap: 15px;
-    }
-    
-    .time-controls,
-    .period-controls, 
-    #period-controls-fixed {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+}

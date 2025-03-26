@@ -8,5 +8,5 @@ export const routes: Routes = [
     {path:'puzzles', component: PuzzlesComponent},
     { path: 'chessboard', component: ChessboardComponent },
     {path:'', component:HomeComponent},
-    {path: 'stats', component: StatsEloComponent }
+    {path: 'stats-elo', component: StatsEloComponent }
 ];

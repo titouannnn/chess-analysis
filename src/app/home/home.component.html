@@ -1,27 +1,36 @@
 <div class="container">
-    <img src="../../assets/logo.png" alt="Chess Analysis Logo" class="logo" />
-    
+  <img src="../../assets/logo.png" alt="Chess Analysis Logo" class="logo" />
   
-    
-    <div class="button-group">
-      <button 
-        class="btn" 
-        [ngClass]="{'selected': selectedButton === 'chess'}"
-        (click)="selectButton('chess')">
-        Chess.com
-      </button>
-      <button 
-        class="btn" 
-        [ngClass]="{'selected': selectedButton === 'lichess'}"
-        (click)="selectButton('lichess')">
-        Lichess.org
-      </button>
-    </div>
-  
-    <div class="search-bar">
-      <input type="text" [(ngModel)]="pseudo" placeholder="Entrez votre pseudo" class="search-input" (keyup.enter)="searchStats()"/>
+  <div class="button-group">
+    <button 
+      class="btn" 
+      [ngClass]="{'selected': selectedButton === 'chess.com'}"
+      (click)="selectButton('chess.com')">
+      Chess.com
+    </button>
+    <button 
+      class="btn" 
+      [ngClass]="{'selected': selectedButton === 'lichess'}"
+      (click)="selectButton('lichess')">
+      Lichess.org
+    </button>
+  </div>
 
-      <button class="search-btn"(click)="searchStats()">🔍</button>
-    </div>
-</div>
+  <div class="search-bar">
+    <input type="text" [(ngModel)]="username" placeholder="Entrez votre pseudo" class="search-input" (keyup.enter)="submitUsername()"/>
+    <button class="search-btn" (click)="submitUsername()">🔍</button>
+  </div>
   
+  <!-- Nouvelle barre de progression simplifiée (visible uniquement pendant le chargement) -->
+  <div *ngIf="isLoading" class="simple-progress">
+    <div class="progress-bar-container">
+      <div class="progress-bar" [style.width.%]="loadingProgress"></div>
+    </div>
+    <div class="progress-percentage">{{ loadingProgress }}%</div>
+  </div>
+  
+  <!-- Message d'erreur -->
+  <div *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </div>
+</div>

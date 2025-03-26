@@ -26,7 +26,7 @@ export class ChartJS {
 
     }
 
-    getLineGraph( nativeElement : any,  data_o: any, data_label : string, labels_o: any ) : any{
+    getLineGraph(nativeElement: any, data_o: any, data_label: string, labels_o: any, p0: { responsive: boolean; maintainAspectRatio: boolean; scales: { x: { grid: { display: boolean; }; }; }; }) : any{
         
         return new Chart(
             nativeElement,
@@ -46,7 +46,7 @@ export class ChartJS {
 
     }
 
-    getSimpleBarChart( nativeElement : any,  data_o: any, label_data : string, labels_o: any ) : any {
+    getSimpleBarChart(nativeElement: any, data_o: any, label_data: string, labels_o: any, p0: { responsive: boolean; maintainAspectRatio: boolean; scales: { x: { grid: { display: boolean; }; }; }; }) : any {
 
         return new Chart(
             nativeElement,

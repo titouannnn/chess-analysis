@@ -53,35 +53,42 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 
  RegExpDate = /\[UTCDate\s+"([^"]+)"\]/;
  DATENULL = new Date(0);
+  LitchessApi: any;
+  ChesscomApi: any;
 
 /**
  * Initialisation de l'API Chess.com. 
  * On utilise une méthode intermédiaire qui est 
  * capable d'initialiser toutes les différentes API
  */
-// async initializeChesCom(){
+
+private datesInitialized = false;
+
+
+async initializeChesCom(){
   
-//   console.log(" ============= Chess.com API Initialisation ============ ");
-//   this.ChesscomApi.getAllGamesOFFLINE();
+   console.log(" ============= Chess.com API Initialisation (api service) ============ ");
+   this.ChesscomApi.getAllGamesONLINE();
   
-//   this.initialize( this.ChesscomApi.allGamesAllTypes, 'titouannnnnn' );
-// }
+   this.initialize( this.ChesscomApi.allGamesAllTypes, 'titouannnnnn' );
+   console.log("NOmbre de parties : ", this.ChesscomApi.allGamesAllTypes.length);
+ }
 
 /**
 * Initialisation de l'API LiChess.org. 
 * On utilise une méthode intermédiaire qui est 
 * capable d'initialiser toutes les différentes API
 */
-// async initializeLichess(){
-//   console.log(" ========= Lichess.org API Initialisation ========== ");
-//   await this.LitchessApi.getIDLichessGames('titouannn', 100);
-//   await this.LitchessApi.getInfoLichessGames();
+async initializeLichess(){
+console.log(" ========= Lichess.org API Initialisation ========== ");
+  await this.LitchessApi.getIDLichessGames('titouannn', 100);
+   await this.LitchessApi.getInfoLichessGames();
 
-//   this.LitchessApi.dataFormatage();
-//   this.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
+   this.LitchessApi.dataFormatage();
+   this.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
   
-//   this.initialize( this.allGames, 'titouannn' );
-// }
+   this.initialize( this.allGames, 'titouannn' );
+ }
 
 /**
  * Méthode permettant d'initialiser tout type d'API
@@ -89,32 +96,93 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
  * @param tab Données RAW a traiter (allGamesAllTypes)
  * @param username Utilisateur passé en paramètre
  */
-protected initialize( tab: any[][], username: string ){
+protected initialize(tab: any[][], username: string) {
   this.username = username;
   this.allGamesAllTypes = tab;
-  this.initTimeInterval();
-  this.setTimeTinterval( Constantes.Time.ALL_TIME ,this.DATENULL, this.DATENULL);
+  
+  // Initialiser les dates une seule fois
+  if (!this.datesInitialized) {
+    this.initTimeInterval();
+    this.setTimeTinterval(Constantes.Time.ALL_TIME, this.DATENULL, this.DATENULL);
+    this.datesInitialized = true;
+  } else {
+    console.log("Dates déjà initialisées, réutilisation des valeurs existantes");
+  }
 }
 
 /* Initialisation des dates de début et de fin */
 
 private getDateDebut(): Date {
-  const firstGameDate = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
-  const lastGameDate = new Date(this.allGames[this.allGames.length - 1].pgn.match(this.RegExpDate)[1]);
-  // Choisir la date la plus ancienne, que ce soit le premier ou le dernier élément
-  return firstGameDate < lastGameDate ? firstGameDate : lastGameDate;
+  // Si le tableau est vide, retourner une date par défaut (un an en arrière)
+  if (!this.allGamesAllTypes || this.allGamesAllTypes.length === 0) {
+    const defaultDate = new Date();
+    defaultDate.setFullYear(defaultDate.getFullYear() - 1);
+    console.warn("Tableau de parties vide, utilisation date par défaut:", defaultDate);
+    return defaultDate;
+  }
+
+  // Parcourir toutes les parties pour trouver la date la plus ancienne
+  let oldestDate: Date | null = null;
+  
+  // Utiliser allGamesAllTypes au lieu de allGames pour avoir TOUTES les parties disponibles
+  for (const game of this.allGamesAllTypes) {
+    if (game && game.pgn) {
+      const match = game.pgn.match(this.RegExpDate);
+      if (match && match[1]) {
+        const gameDate = new Date(match[1]);
+        
+        // Vérifier que la date est valide
+        if (isNaN(gameDate.getTime())) {
+          continue;
+        }
+        
+        // Si c'est la première date valide ou si elle est plus ancienne
+        if (oldestDate === null || gameDate < oldestDate) {
+          oldestDate = gameDate;
+        }
+      }
+    }
+  }
+  
+  // Si aucune date valide trouvée, utiliser une date par défaut
+  if (oldestDate === null) {
+    console.warn("Aucune date valide trouvée, utilisation d'une date par défaut");
+    const defaultDate = new Date();
+    defaultDate.setFullYear(defaultDate.getFullYear() - 1);
+    return defaultDate;
+  }
+  
+  console.log("Date la plus ancienne trouvée:", oldestDate);
+  return oldestDate;
 }
 
+
 initTimeInterval() {
-  // On initialise la dateDebut à la date de la partie la plus ancienne (dernière partie jouée dans l'ordre chronologique)
-  if( !this.allGames[0] ){
-    console.log( "Attention : Variable allGames initialisé par défault (ALL_GENRES)" );
-    this.sortByGameType(  );
+  // Ne pas initialiser si déjà fait
+  if (this.datesInitialized) {
+    console.log("Dates déjà initialisées, réutilisation des valeurs existantes");
+    return;
   }
-  this.dateDebut = this.getDateDebut();
-  // La dateFin est la date d'aujourd'hui
-  this.dateFin = new Date();
-  console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
+  
+  // On initialise la dateDebut à la date de la partie la plus ancienne
+  if (!this.allGames || !this.allGames[0]) {
+    console.log("Attention : Variable allGames initialisé par défault (ALL_GENRES)");
+    this.sortByGameType();
+  }
+  
+  try {
+    this.dateDebut = this.getDateDebut();
+    // La dateFin est la date d'aujourd'hui
+    this.dateFin = new Date();
+    console.log("Dates initialisées : ", this.dateDebut, this.dateFin);
+  } catch (error) {
+    console.error("Erreur lors de l'initialisation des dates:", error);
+    // Fallback sur des dates par défaut
+    const defaultDate = new Date();
+    this.dateFin = defaultDate;
+    this.dateDebut = new Date(defaultDate);
+    this.dateDebut.setFullYear(this.dateDebut.getFullYear() - 1);
+  }
 }
 
 /* return le tableau : [winrate, nombre de victoires, nombre de défaites, nombre de matchs nuls] */
@@ -170,31 +238,44 @@ initTimeInterval() {
 
 
 /* Init le tableau allGames avec les parties du type donné : bullet/blitz/rapide/classic(daily ?) */
- sortByGameType(type ?: string) {
+sortByGameType(type?: Constantes.TypeJeuChessCom | string) {
+  // Déclaration d'une variable pour stocker le résultat
+  let result: any[] = [];
+
   switch (type) {
     case Constantes.TypeJeuChessCom.BULLET:
-      return (this.allGames = this.allGamesAllTypes.filter(
+      result = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "bullet"
-      ));
+      );
+      break;
     case Constantes.TypeJeuChessCom.BLITZ:
-      return (this.allGames = this.allGamesAllTypes.filter(
+      result = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "blitz"
-      ));
+      );
+      break;
     case Constantes.TypeJeuChessCom.RAPID:
-      return (this.allGames = this.allGamesAllTypes.filter(
+      result = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "rapid"
-      ));
+      );
+      break;
     case Constantes.TypeJeuChessCom.DAILY:
-      return (this.allGames = this.allGamesAllTypes.filter(
+      result = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "daily"
-      ));
+      );
+      break;
     case Constantes.TypeJeuChessCom.CLASSIC:
-      return (this.allGames = this.allGamesAllTypes.filter(
+      result = this.allGamesAllTypes.filter(
         (game: any) => game.time_class === "classic" || game.time_class === "classical"
-      ));
+      );
+      break;
     default:
-      return (this.allGames = this.allGamesAllTypes);
+      result = [...this.allGamesAllTypes]; // Créer une copie pour éviter les modifications accidentelles
   }
+
+  // Mettre à jour allGames et retourner le résultat
+  this.allGames = result;
+  console.log(`Après filtrage, ${this.allGames.length} parties du type ${type || 'ALL_GENRES'}`);
+  return this.allGames;
 }
 
 /*
@@ -204,32 +285,49 @@ initTimeInterval() {
 
   par défaut si aucun argement donné -> all time
 */
-setTimeTinterval(type : Constantes.Time, debut : Date, fin : Date) {
+setTimeTinterval(type: Constantes.Time, debut: Date, fin: Date) {
+  // Sauvegarder les dates originales avant modification
+  const originalDateDebut = this.dateDebut ? new Date(this.dateDebut) : null;
+  const originalDateFin = this.dateFin ? new Date(this.dateFin) : null;
+  
   switch (type) {
     case Constantes.Time.CUSTOM:
       this.dateDebut = new Date(debut);
       this.dateFin = new Date(fin);
       break;
     case Constantes.Time.WEEK:
-      this.dateDebut = new Date(this.dateFin.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const now = new Date();
+      this.dateDebut = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      this.dateFin = now;
       break;
     case Constantes.Time.MONTH:
-      this.dateDebut = new Date(this.dateFin.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const nowMonth = new Date();
+      this.dateDebut = new Date(nowMonth.getTime() - 30 * 24 * 60 * 60 * 1000);
+      this.dateFin = nowMonth;
       break;
     case Constantes.Time.YEAR:
-      this.dateDebut = new Date(this.dateFin.getTime() - 365 * 24 * 60 * 60 * 1000);
+      const nowYear = new Date();
+      this.dateDebut = new Date(nowYear.getTime() - 365 * 24 * 60 * 60 * 1000);
+      this.dateFin = nowYear;
       break;
     case Constantes.Time.ALL_TIME:
-      console.log("all time");
+      // Pour ALL_TIME, utiliser la date de la première partie comme dateDebut
       this.dateDebut = this.getDateDebut();
       this.dateFin = new Date();
-      console.log("date fin : ", this.dateFin);
       break;
     default:
-      this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
-      console.error("type de temps non défnini, all time par défaut");
+      // Par défaut, utiliser ALL_TIME
+      this.dateDebut = this.getDateDebut();
+      this.dateFin = new Date();
   }
-  this.applyTimeInterval();
+}
+
+/**
+ * Méthode pour réinitialiser le cache de dates si nécessaire (par exemple pour forcer une réinitialisation)
+ */
+resetDatesInitialization() {
+  this.datesInitialized = false;
+  console.log("Cache de dates réinitialisé");
 }
 
 /* Applique les changements de date */

@@ -1,36 +1,86 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; 
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ChesscomApi } from '../../api/chesscomapi.service';
+import { LitchessApi } from '../../api/litchess-api.service';
 
 @Component({
   selector: 'app-home-page-custom',
   standalone: true,
-  imports: [CommonModule,FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
+  selectedButton: string = 'chess.com';
+  username: string = '';
+  isLoading: boolean = false;
+  errorMessage: string = '';
+  loadingProgress: number = 0;
 
-  selectedButton: string = '';  // Variable pour stocker le bouton sélectionné
-  pseudo: string = '';
+  Math = Math;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private chesscomApi: ChesscomApi,
+    private lichessApi: LitchessApi,
+    private cdr: ChangeDetectorRef // Ajout du ChangeDetectorRef
+  ) {}
+
   selectButton(button: string) {
-    // On ne désélectionne pas le bouton si c'est déjà sélectionné, il reste sélectionné
-    if (this.selectedButton === button) {
-      return;  // Si le bouton est déjà sélectionné, on ne fait rien
-    } else {
-      this.selectedButton = button;  // Sélectionne le bouton
-    }
+    this.selectedButton = button;
+    this.errorMessage = '';
   }
-  searchStats() {
-    if (this.pseudo) {
-      this.router.navigate(['/stats'], { queryParams: { pseudo: this.pseudo } });
-    } else {
-      console.log('Le pseudo est vide!');
-    }
-  }
-  
 
+  async submitUsername() {
+    if (!this.username.trim()) {
+      this.errorMessage = 'Veuillez entrer un nom d\'utilisateur';
+      return;
+    }
+  
+    this.isLoading = true;
+    this.loadingProgress = 0;
+    this.errorMessage = '';
+    this.cdr.detectChanges(); // Force la mise à jour de la vue
+  
+    try {
+      if (this.selectedButton === 'chess.com') {
+        this.chesscomApi.getUsername(this.username);
+        
+        // Utiliser la méthode initWithProgress au lieu de initialize
+        await this.chesscomApi.initWithProgress((progress) => {
+          console.log("Progression: ", progress);
+          this.loadingProgress = progress;
+          this.cdr.detectChanges();
+        });
+        
+        console.log("Parties Chess.com chargées pour", this.username);
+      } else if (this.selectedButton === 'lichess') {
+        // Afficher une progression simulée pour Lichess
+        for (let i = 0; i <= 100; i += 10) {
+          this.loadingProgress = i;
+          this.cdr.detectChanges();
+          await new Promise(resolve => setTimeout(resolve, 200)); // Simule un délai
+        }
+        
+        await this.lichessApi.getIDLichessGames(this.username, 100);
+        await this.lichessApi.getInfoLichessGames();
+        this.lichessApi.dataFormatage();
+        console.log("Parties Lichess chargées pour", this.username);
+      } else {
+        throw new Error('Veuillez sélectionner une plateforme d\'échecs');
+      }
+      
+      this.router.navigate(['stats-elo'], {
+        queryParams: { pseudo: this.username, platform: this.selectedButton } 
+      });
+    } catch (error) {
+      console.error("Erreur lors du chargement des données:", error);
+      this.errorMessage = "Erreur lors du chargement des parties. Vérifiez le nom d'utilisateur.";
+    } finally {
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
 }
