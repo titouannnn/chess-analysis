@@ -1,0 +1,120 @@
+:host {
+    --chess-bg: #1e1e2f;
+    --chess-container-bg: #27293d;
+    --chess-text-color: #ffffff;
+    --chess-text-secondary: rgba(255, 255, 255, 0.7);
+    --chess-highlight: #4ecbff;
+    --chess-highlight-bg: rgba(78, 203, 255, 0.2);
+    --chess-border-radius: 8px;
+    --chess-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    
+    margin-bottom: 0;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--chess-bg);
+    color: var(--chess-text-color);
+  }
+  
+  .chess-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--chess-container-bg);
+    padding: 0 20px;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    margin-bottom: 0;
+    box-shadow: var(--chess-shadow);
+    border-bottom: 1px solid rgba(78, 203, 255, 0.2);
+  }
+  
+  .navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .navbar-logo-img {
+    height: 36px;
+    width: auto;
+  }
+  
+  .navbar-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--chess-highlight);
+  }
+  
+  .navbar-links {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .navbar-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: var(--chess-border-radius);
+    text-decoration: none;
+    color: var(--chess-text-secondary);
+    transition: all 0.2s ease;
+    gap: 8px;
+  }
+  
+  .navbar-link:hover {
+    background-color: rgba(78, 203, 255, 0.1);
+    color: var(--chess-text-color);
+    transform: translateY(-2px);
+  }
+  
+  .navbar-link.active {
+    background-color: var(--chess-highlight-bg);
+    color: var(--chess-highlight);
+    font-weight: 500;
+    border: 1px solid rgba(78, 203, 255, 0.3);
+  }
+  
+  .navbar-icon {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .content-container {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  /* Media queries for responsive design */
+  @media (max-width: 768px) {
+    .chess-navbar {
+      flex-direction: column;
+      height: auto;
+      padding: 10px;
+    }
+    
+    .navbar-links {
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    
+    .navbar-link {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+    
+    .navbar-icon {
+      font-size: 16px;
+    }
+  }
+
+  ::ng-deep .content-container {
+    margin-top: 0;
+    padding-top: 15px;
+  }

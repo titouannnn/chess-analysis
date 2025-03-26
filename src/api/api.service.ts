@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as localData from '../assets/games.json';
 import { get } from 'node:http';
-import { ChesscomApi } from './chesscomapi.service';
 import { LitchessApi } from './litchess-api.service';
+import { ChesscomApi } from './chesscomapi.service';
 
 export namespace Constantes
 {
@@ -92,7 +92,6 @@ public username = ""; /* Utiliser après avoir appelé getUsername */
 protected initialize( tab: any[][], username: string ){
   this.username = username;
   this.allGamesAllTypes = tab;
-
   this.initTimeInterval();
   this.setTimeTinterval( Constantes.Time.ALL_TIME ,this.DATENULL, this.DATENULL);
 }
@@ -205,7 +204,7 @@ initTimeInterval() {
 
   par défaut si aucun argement donné -> all time
 */
-setTimeTinterval(type : number, debut : Date, fin : Date) {
+setTimeTinterval(type : Constantes.Time, debut : Date, fin : Date) {
   switch (type) {
     case Constantes.Time.CUSTOM:
       this.dateDebut = new Date(debut);
@@ -225,7 +224,6 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
       this.dateDebut = this.getDateDebut();
       this.dateFin = new Date();
       console.log("date fin : ", this.dateFin);
-      
       break;
     default:
       this.dateDebut = new Date(this.allGames[0].pgn.match(this.RegExpDate)[1]);
@@ -235,7 +233,7 @@ setTimeTinterval(type : number, debut : Date, fin : Date) {
 }
 
 /* Applique les changements de date */
-  applyTimeInterval() {
+  private applyTimeInterval() {
     this.allGames = this.allGames.filter((game: any) => {
       const gameDate = new Date(game.pgn.match(this.RegExpDate)[1]);
       return gameDate >= this.dateDebut && gameDate <= this.dateFin;
@@ -432,9 +430,7 @@ abstract getElo( time_class ?: Constantes.TypeJeuChessCom): { timestamp: any; ra
       opening.nom = formattedOpening;
     }
   }
-  
-  
-  
+
   //console.log(openingsTab);
   return openingsTab;
 }
@@ -521,8 +517,18 @@ getMostWinningOpenings(openingsTab : any[]) {
   let dict = mostLoosing.map(o => ({ opening: o.opening, winrate: ((o.wins / o.total) * 100).toFixed(2) }));
   return dict;
 }
-
-getEndgames() {
+/**
+ * Cette méthode va utiliser la variable allGames afin de savoir les différentes raison de la 
+ * fin d'une partie. On va diviser cette information en fonction des victoires, defaites et egalités
+ * de l'utilisateur si ces pièces étaient blanc ou noir.
+ * 
+ * On aura donc les clés 
+ * 'whiteWin', 'whiteDraw', 'whiteLoose', 'blackWin', 'blackDraw', 'blackLoose' stockés dans un liste.
+ * Ces clés vont a sa fois stocker des clés variables en fonction de si c'est une victoire, perte, ou égalité. 
+ * 
+ * @returns liste contenant les informations correspondant au résultat des parties.
+ */
+getEndgames() : { [key: string]: { [key: string]: number; }; } {
   let tab: { [key: string]: { [key: string]: number } } = {};
   let whiteWin = 'whiteWin', whiteLoose = 'whiteLoose', whiteDraw = 'whiteDraw';
   let blackWin = 'blackWin', blackLoose = 'blackLoose', blackDraw = 'blackDraw';

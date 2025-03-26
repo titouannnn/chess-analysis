@@ -1,0 +1,24 @@
+<nav class="chess-navbar" *ngIf="!isHomePage">
+    <div class="navbar-logo">
+      <img src="assets/logo.png" alt="Chess Analysis" class="navbar-logo-img">
+      <span class="navbar-title">Chess Analysis</span>
+    </div>
+    <div class="navbar-links">
+      <a routerLink="/chessboard" routerLinkActive="active" class="navbar-link">
+        <i class="navbar-icon">♟</i>
+        <span>Chessboard</span>
+      </a>
+      <a routerLink="/puzzles" routerLinkActive="active" class="navbar-link">
+        <i class="navbar-icon">♞</i>
+        <span>Puzzles</span>
+      </a>
+      <a routerLink="/stats" routerLinkActive="active" class="navbar-link">
+        <i class="navbar-icon">📈</i>
+        <span>Statistiques</span>
+      </a>
+      <a routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" class="navbar-link">
+        <i class="navbar-icon">🏠</i>
+        <span>Accueil</span>
+      </a>
+    </div>
+  </nav>
