@@ -2,9 +2,10 @@ import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { PuzzleScraper } from "../../analyse/puzzle.service";
-import { RouterModule } from "@angular/router";
-import { Api } from "../../api/api.service"; // Importer le service API
+import { RouterLink, RouterLinkActive, RouterModule } from "@angular/router";
+import { Api, Constantes } from "../../api/api.service"; // Importer le service API
 import { ChesscomApi } from "../../api/chesscomapi.service";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
 
 interface Puzzle {
   PuzzleId: string;
@@ -25,7 +26,7 @@ enum WinRateFilter {
 @Component({
   selector: "app-puzzles",
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NavBarComponent, RouterLink, RouterLinkActive],
   templateUrl: "./puzzles.component.html",
   styleUrl: "./puzzles.component.css",
 })
@@ -86,16 +87,16 @@ export class PuzzlesComponent implements OnInit {
 
   // Méthode pour initialiser les données utilisateur
   initializeUserData(): void {
-    this.apiService.sortByGameType(this.apiService.ALL_GENRES);
+    this.apiService.sortByGameType();
 
     // Initialiser les intervalles de temps
     this.apiService.initTimeInterval();
     this.apiService.setTimeTinterval(
-      this.apiService.ALL_TIME,
+      Constantes.Time.ALL_TIME,
       this.apiService.DATENULL,
       this.apiService.DATENULL
     );
-
+    
     // Récupérer les statistiques d'ouvertures
     this.openingsStats = this.apiService.getOpenings();
     console.log("Statistiques d'ouvertures chargées:", this.openingsStats);
