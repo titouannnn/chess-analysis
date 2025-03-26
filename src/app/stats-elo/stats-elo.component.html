@@ -7,10 +7,10 @@
             <div class="controls-wrapper">
               <!-- Boutons de type de jeu à gauche -->
               <div class="time-controls">
-                <button class="control-btn" [class.active]="activeTimeClass === typeJeu.BULLET" (click)="showEloStat(typeJeu.BULLET)">BULLET</button>
-                <button class="control-btn" [class.active]="activeTimeClass === typeJeu.BLITZ" (click)="showEloStat(typeJeu.BLITZ)">BLITZ</button>
-                <button class="control-btn" [class.active]="activeTimeClass === typeJeu.RAPID" (click)="showEloStat(typeJeu.RAPID)">RAPID</button>
-                <button class="control-btn" [class.active]="activeTimeClass === typeJeu.DAILY" (click)="showEloStat(typeJeu.DAILY)">DAILY</button>
+                <button class="control-btn" (click)="showEloStat(typeJeu.BULLET)">BULLET</button>
+                <button class="control-btn" (click)="showEloStat(typeJeu.BLITZ)">BLITZ</button>
+                <button class="control-btn" (click)="showEloStat(typeJeu.RAPID)">RAPID</button>
+                <button class="control-btn" (click)="showEloStat(typeJeu.DAILY)">DAILY</button>
               </div>
               <!-- Boutons de période à droite -->
               <div class="period-controls" id="period-controls-fixed">
@@ -80,4 +80,19 @@
         </div>
       </div>
     </div>
+
+    <div class="chart-card">
+      <div class="card-header">
+        <h2 class="card-title"> Ouvertures par Type </h2>
+        <button class="color-toggle" (click)="resetOuvertures()">
+          <span class="piece-indicator" [class]="w_b === 'black' ? 'black-piece' : 'white-piece'"></span>
+          {{ w_b === 'black' ? 'Pièces noires' : 'Pièces blanches' }}
+        </button>
+      </div>
+      
+      <div class="chart-body">
+        <canvas #ouvertures ></canvas>
+      </div>
+    </div>
+
   </div>

@@ -6,6 +6,8 @@ import { ChartJS } from '../../api/ChartJS.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js/auto';
 import { platform } from 'os';
+import { MatDialog } from '@angular/material/dialog';
+import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
@@ -38,7 +40,9 @@ export class StatsEloComponent implements AfterViewInit {
   @ViewChild('eloStats') eloStats !: ElementRef;
   @ViewChild('playFrequencyStats') frequencyStats !: ElementRef;
   @ViewChild('gamesBy') gamesByStats !: ElementRef;
-  
+  @ViewChild('ouvertures') ouverturesStats !: ElementRef;
+
+
   // Variables utilisées pour le HTML
   timePeriod = Constantes.Time; 
   typeJeu = Constantes.TypeJeuChessCom;
@@ -84,12 +88,13 @@ export class StatsEloComponent implements AfterViewInit {
     chartGenerator: ChartJS,
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
-    @Inject(PLATFORM_ID) platformId : Object
+    @Inject(PLATFORM_ID) platformId : Object,
+    public matDialog: MatDialog
   ) { 
     this.isBrowser = isPlatformBrowser(platformId);
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
-    
+  
     // Pré-initialiser l'API et les données avec ALL_TIME par défaut
     this.api.initTimeInterval();
     this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
@@ -98,13 +103,38 @@ export class StatsEloComponent implements AfterViewInit {
   // Cette méthode est déclenchée après l'initialisation de la vue et garantit que les références au DOM sont disponibles
   ngAfterViewInit(): void {
     
+    this.load();
+
     console.log('Initialisation des graphiques');
     this.initializeCharts();
     // Supprimez les modifications programmatiques de style ici
     this.cdr.detectChanges();
-  
+
+
   }
+   
+  private load() {
+    
+    const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+      height: '100vh',    
+      width: '100vw',
+      maxWidth: '100vw',     
+      panelClass: 'full-screen-dialog',  
+      hasBackdrop: true,  
+      disableClose: true  
+    });
+    
+    const interval = setInterval(() => {
+      dialogRef.componentInstance.increaseProgress(20);
+    }, 1000); // Mise à jour toutes les secondes
   
+    dialogRef.afterClosed().subscribe( result => {
+      clearInterval(interval);
+    } );
+
+  }
+
+
   // Méthode d'initialisation des graphiques
   private initializeCharts(): void {
     if (this.initialized) return;
@@ -116,6 +146,7 @@ export class StatsEloComponent implements AfterViewInit {
         this.showEloStat(this.activeTimeClass, this.activePeriod);
         this.showPlayFrequency();
         this.showGamesBy();
+        this.showOuvertures();
         
         // Marquer comme initialisé
         this.initialized = true;
@@ -147,42 +178,7 @@ export class StatsEloComponent implements AfterViewInit {
     });
   }
 
-  // Cette fonction va étendre le graphique avec des options avancées
-  extendChartOptions(chart: any, options: any): void {
-    if (!chart || !chart.options) return;
-    
-    // Appliquer des animations
-    chart.options.animation = {
-      duration: 800,
-      easing: 'easeOutCubic'
-    };
-    
-    // Appliquer d'autres options
-    if (options.colors) {
-      if (Array.isArray(options.colors)) {
-        // Pour les camemberts avec des couleurs différentes par segment
-        const backgroundColors = options.colors.map((color: any) => color.backgroundColor);
-        chart.data.datasets[0].backgroundColor = backgroundColors;
-      } else {
-        // Pour les autres types de graphiques
-        for (const key in options.colors) {
-          if (options.colors.hasOwnProperty(key)) {
-            chart.data.datasets[0][key] = options.colors[key];
-          }
-        }
-      }
-    }
-    
-    if (options.plugins) {
-      chart.options.plugins = {
-        ...chart.options.plugins,
-        ...options.plugins
-      };
-    }
-    
-    // Mettre à jour le graphique
-    chart.update();
-  }
+  
 
   // Récupère les dates de début et de fin pour un mois donné
   getMonthDates(year: number, month: number): { firstDay: Date; lastDay: Date } {
@@ -223,7 +219,7 @@ export class StatsEloComponent implements AfterViewInit {
       console.warn('Référence DOM manquante pour le graphique ELO');
       return;
     }
-
+    
     // Mettre à jour les classes actives
     this.activeTimeClass = time_class || this.activeTimeClass || Constantes.TypeJeuChessCom.RAPID;
     this.activePeriod = timePeriod !== undefined ? timePeriod : this.activePeriod;
@@ -274,8 +270,6 @@ export class StatsEloComponent implements AfterViewInit {
       // Formater les timestamps en dates
       const formattedDates = eloList.map((row: EloData) => this.formatDate(row.timestamp));
       
-      
-
       this.eloChart = this.chartGenerator.getLineGraph(
         this.eloStats.nativeElement, 
         eloList.map((row: EloData) => row.rating), 
@@ -284,7 +278,7 @@ export class StatsEloComponent implements AfterViewInit {
       );
       
       // Personnaliser le graphique après sa création
-      this.extendChartOptions(this.eloChart, {
+      this.chartGenerator.extendChartOptions(this.eloChart, {
         colors: {
           borderColor: this.chartColors.elo.borderColor,
           backgroundColor: this.chartColors.elo.backgroundColor,
@@ -299,7 +293,6 @@ export class StatsEloComponent implements AfterViewInit {
       console.error('Erreur lors de la création du graphique ELO:', error);
     }
   }
-
 
 
   playFreqChart: any = null;
@@ -326,7 +319,7 @@ export class StatsEloComponent implements AfterViewInit {
       );
       
       // Personnaliser le graphique après sa création
-      this.extendChartOptions(this.playFreqChart, {
+      this.chartGenerator.extendChartOptions(this.playFreqChart, {
         colors: {
           backgroundColor: this.chartColors.frequency.backgroundColor,
           hoverBackgroundColor: this.chartColors.frequency.hoverBackgroundColor,
@@ -454,7 +447,7 @@ export class StatsEloComponent implements AfterViewInit {
       );
 
       // Appliquer des couleurs différentes pour chaque segment
-      this.extendChartOptions(this.chartGamesBy[0], {
+      this.chartGenerator.extendChartOptions(this.chartGamesBy[0], {
         colors: this.chartColors.games[0].map((color: string) => ({ backgroundColor: color })),
         plugins: {
           tooltip: {
@@ -490,7 +483,7 @@ export class StatsEloComponent implements AfterViewInit {
         Object.keys(draw_data)
       );
       
-      this.extendChartOptions(this.chartGamesBy[1], {
+      this.chartGenerator.extendChartOptions(this.chartGamesBy[1], {
         colors: this.chartColors.games[1].map((color: string) => ({ backgroundColor: color })),
         plugins: {
           tooltip: {
@@ -526,7 +519,7 @@ export class StatsEloComponent implements AfterViewInit {
         Object.keys(lose_data)
       );
       
-      this.extendChartOptions(this.chartGamesBy[2], {
+      this.chartGenerator.extendChartOptions(this.chartGamesBy[2], {
         colors: this.chartColors.games[2].map((color: string) => ({ backgroundColor: color })),
         plugins: {
           tooltip: {
@@ -560,7 +553,7 @@ export class StatsEloComponent implements AfterViewInit {
     }
   }
 
-  resetgamesBy(): void {
+  switchColor(): void {
     switch(this.w_b) {
       case W_B.Black:
         this.w_b = W_B.White;
@@ -572,6 +565,67 @@ export class StatsEloComponent implements AfterViewInit {
         this.w_b = W_B.Black;
         break;
     }
+  }
+
+  resetgamesBy(): void {
+    this.switchColor();
     this.showGamesBy();
   }
+
+  resetOuvertures(){
+    this.switchColor();
+    this.showOuvertures();
+  }
+
+  ouvertureChart : any = null;
+  showOuvertures() : void {
+
+    let data = this.api.getOpenings();
+    console.log("Openings : ", data);
+
+    let datasets : any = null;
+    if(this.w_b == W_B.Black){
+      datasets = [
+        {
+        label: 'Victoires',
+        data: data.map(row => row.stats.WinAsBlack)
+        },
+        {
+          label: 'Egalités',
+          data: data.map(row => row.stats.DrawAsBlack)
+        },
+        {
+          label: 'Defaites',
+          data: data.map(row => row.stats.LooseAsBlack)
+        }
+      ]
+    } else {
+      datasets = [
+        {
+        label: 'Victoires',
+        data: data.map(row => row.stats.WinAsWhite)
+        },
+        {
+          label: 'Egalités',
+          data: data.map(row => row.stats.DrawAsWhite)
+        },
+        {
+          label: 'Defaites',
+          data: data.map(row => row.stats.LooseAsWhite)
+        }
+      ]
+    }
+    if(this.ouvertureChart){
+      this.ouvertureChart.destroy();
+    }
+    this.ouvertureChart = this.chartGenerator.getStackedBarChart(
+      this.ouverturesStats.nativeElement,
+      data.map(row => row.nom),
+      datasets
+    );
+
+    
+
+  }
+  
 }

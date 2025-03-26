@@ -19,8 +19,8 @@ export class LoadingBarComponent {
     
     this.progress += pourcentage;
     if (this.progress >= 100) {
-      this.progress = 100; // S'assurer que la progression ne dépasse pas 100%
-      this.dialog.close(); // Ferme le dialogue lorsque la progression est terminée
+      this.progress = 100; 
+      this.dialog.close(); 
     }
   }
 
