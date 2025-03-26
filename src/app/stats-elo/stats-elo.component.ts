@@ -110,40 +110,42 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
   }
   
   // Méthode pour afficher les stats Elo avec la barre de chargement
-  showEloStatWithLoading() {
-    const dialogRef = this.matDialog.open(LoadingBarComponent, {
-      height: '100vh',
-      width: '100vw',
-      maxWidth: '100vw',
-      panelClass: 'full-screen-dialog',
-      hasBackdrop: true,
-      disableClose: true
-    });
-    
-    // Simuler un délai de chargement pour la progression
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      dialogRef.componentInstance.increaseProgress(progress);
-      if (progress >= 100) {
-        clearInterval(interval);
-        dialogRef.close();
-        
-        // Attendre un court instant pour s'assurer que le dialog est fermé
-        setTimeout(() => {
-          this.zone.run(() => {
-            this.initializeCharts();
-          });
-        }, 300);
-      }
-    }, 500); // Mise à jour plus rapide
-  }
+showEloStatWithLoading() {
+  // Ouvrir le dialog de la barre de progression
+  // Utilisation de 'panelClass: full-screen-dialog' pour appliquer des styles personnalisés
+  // au conteneur global de la boîte de dialogue (mat-mdc-dialog-surface).
+  // Ces styles sont définis dans styles.css car le CSS du composant ne peut pas cibler les éléments
+  // générés en dehors du composant Angular.
+
+  const dialogRef  = this.matDialog.open(LoadingBarComponent, {
+    height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
+    width: '100vw',
+    maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
+    panelClass: 'full-screen-dialog',  // La classe qui définit les styles
+    hasBackdrop: true,  // Ajoute un fond semi-transparent
+    disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
+  });
+  
+
+  // Simuler un délai de chargement pour la progression
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += 10;
+    dialogRef.componentInstance.increaseProgress(progress); // Augmenter la progression
+    if (progress >= 100) {
+      clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
+      dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
+      this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
+    }
+  }, 1000); // Mise à jour toutes les secondes
+}
   
   // Cette méthode est déclenchée après l'initialisation de la vue
   ngAfterViewInit(): void {
     setTimeout(() => {
       console.log('Préparation des références DOM pour les graphiques');
       // Ne pas initialiser ici - nous le faisons après le chargement
+      this.initializeCharts();
       this.cdr.detectChanges();
     }, 100);
   }
