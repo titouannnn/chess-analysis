@@ -5,6 +5,10 @@ import { ChesscomApi } from '../../api/chesscomapi.service';
 import { ChartJS } from '../../api/ChartJS.service';
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
+import * as Plot from "@observablehq/plot";
+import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, Params } from '@angular/router'; 
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
@@ -33,10 +37,12 @@ enum W_B {
   host: { id: 'stats-elo-unique' } // Ajout d'un ID unique pour éviter les collisions
 })
 @Injectable({ providedIn: 'root'})
-export class StatsEloComponent implements AfterViewInit {  
+export class StatsEloComponent implements OnInit, AfterViewInit {  
   @ViewChild('eloStats') eloStats !: ElementRef;
   @ViewChild('playFrequencyStats') frequencyStats !: ElementRef;
   @ViewChild('gamesBy') gamesByStats !: ElementRef;
+
+  pseudo: string = ''; // Récupération du pseudo de la route
   
   // Variables utilisées pour le HTML
   timePeriod = Constantes.Time; 
@@ -77,11 +83,13 @@ export class StatsEloComponent implements AfterViewInit {
   private chartGenerator: ChartJS;
   
   constructor(
+    private route: ActivatedRoute,
     chessApi: ChesscomApi, 
     lichessApi: LitchessApi, 
     chartGenerator: ChartJS,
     private zone: NgZone,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public matDialog: MatDialog
   ) { 
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
@@ -91,12 +99,51 @@ export class StatsEloComponent implements AfterViewInit {
     this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
   }
   
-  // Cette méthode est déclenchée après l'initialisation de la vue et garantit que les références au DOM sont disponibles
+  ngOnInit(): void {
+    // Récupérer le pseudo depuis les paramètres de l'URL
+    this.route.queryParams.subscribe((params: Params) => {
+      this.pseudo = params['pseudo'];
+    });
+
+    // Afficher la barre de chargement
+    this.showEloStatWithLoading();
+  }
+  
+  // Méthode pour afficher les stats Elo avec la barre de chargement
+  showEloStatWithLoading() {
+    const dialogRef = this.matDialog.open(LoadingBarComponent, {
+      height: '100vh',
+      width: '100vw',
+      maxWidth: '100vw',
+      panelClass: 'full-screen-dialog',
+      hasBackdrop: true,
+      disableClose: true
+    });
+    
+    // Simuler un délai de chargement pour la progression
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      dialogRef.componentInstance.increaseProgress(progress);
+      if (progress >= 100) {
+        clearInterval(interval);
+        dialogRef.close();
+        
+        // Attendre un court instant pour s'assurer que le dialog est fermé
+        setTimeout(() => {
+          this.zone.run(() => {
+            this.initializeCharts();
+          });
+        }, 300);
+      }
+    }, 500); // Mise à jour plus rapide
+  }
+  
+  // Cette méthode est déclenchée après l'initialisation de la vue
   ngAfterViewInit(): void {
     setTimeout(() => {
-      console.log('Initialisation des graphiques');
-      this.initializeCharts();
-      // Supprimez les modifications programmatiques de style ici
+      console.log('Préparation des références DOM pour les graphiques');
+      // Ne pas initialiser ici - nous le faisons après le chargement
       this.cdr.detectChanges();
     }, 100);
   }
@@ -104,6 +151,8 @@ export class StatsEloComponent implements AfterViewInit {
   // Méthode d'initialisation des graphiques
   private initializeCharts(): void {
     if (this.initialized) return;
+    
+    console.log('Initialisation des graphiques');
     
     // Exécuter les opérations de graphiques en dehors de la zone
     this.zone.runOutsideAngular(() => {
@@ -284,8 +333,7 @@ export class StatsEloComponent implements AfterViewInit {
           pointHoverRadius: 5, // Afficher les points uniquement au survol
           borderWidth: 3, // Augmenter légèrement l'épaisseur de la ligne pour meilleure visibilité
           tension: 0.4
-        },
-        // Le reste des options reste inchangé...
+        }
       });
     } catch (error) {
       console.error('Erreur lors de la création du graphique ELO:', error);

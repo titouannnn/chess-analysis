@@ -4,3 +4,25 @@ body {
     margin: 0;
     font-family: Helvetica, Arial, sans-serif;
   }
+
+
+  p {
+    color: #4ecbff;
+    font-size: 2rem; 
+    margin-bottom: 20px;
+  }
+
+
+  .full-screen-dialog .mat-mdc-dialog-surface {
+    background-color: #1e1e2f !important; /* ton fond marron */
+    color: #4ecbff !important; /* texte clair */
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+  }
+  
