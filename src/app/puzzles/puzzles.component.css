@@ -243,23 +243,24 @@ tr:hover {
 }
 
 .puzzle-link {
-  background-color: rgba(46, 213, 115, 0.8);
+  background-color: white;
   color: var(--chess-bg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .puzzle-link:hover {
-  background-color: var(--chess-win);
-  box-shadow: 0 0 10px rgba(46, 213, 115, 0.3);
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .game-link {
-  background-color: rgba(78, 203, 255, 0.8);
+  background-color: var(--chess-win); /* Vert pour indiquer la "correction" */
   color: var(--chess-bg);
 }
 
 .game-link:hover {
-  background-color: var(--chess-highlight);
-  box-shadow: 0 0 10px rgba(78, 203, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
   /* Styles améliorés pour le dropdown des thèmes */

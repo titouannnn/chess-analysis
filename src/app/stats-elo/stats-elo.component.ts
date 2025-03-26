@@ -110,34 +110,58 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
   }
   
   // Méthode pour afficher les stats Elo avec la barre de chargement
+// Méthode pour afficher les stats Elo avec la barre de chargement
 showEloStatWithLoading() {
-  // Ouvrir le dialog de la barre de progression
-  // Utilisation de 'panelClass: full-screen-dialog' pour appliquer des styles personnalisés
-  // au conteneur global de la boîte de dialogue (mat-mdc-dialog-surface).
-  // Ces styles sont définis dans styles.css car le CSS du composant ne peut pas cibler les éléments
-  // générés en dehors du composant Angular.
-
-  const dialogRef  = this.matDialog.open(LoadingBarComponent, {
-    height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
-    width: '100vw',
-    maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
-    panelClass: 'full-screen-dialog',  // La classe qui définit les styles
-    hasBackdrop: true,  // Ajoute un fond semi-transparent
-    disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
-  });
-  
-
-  // Simuler un délai de chargement pour la progression
-  let progress = 0;
-  const interval = setInterval(() => {
-    progress += 10;
-    dialogRef.componentInstance.increaseProgress(progress); // Augmenter la progression
-    if (progress >= 100) {
-      clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
-      dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
-      this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
-    }
-  }, 1000); // Mise à jour toutes les secondes
+  try {
+    console.log("Initialisation du chargement des graphiques...");
+    
+    // Ouvrir le dialog avec gestion d'erreurs
+    const dialogRef = this.matDialog.open(LoadingBarComponent, {
+      height: '100vh',
+      width: '100vw',
+      maxWidth: '100vw',
+      panelClass: 'full-screen-dialog',
+      hasBackdrop: true,
+      disableClose: true
+    });
+    
+    // Simuler un délai de chargement pour la progression
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 10;
+      
+      // Vérifier si componentInstance existe avant d'y accéder
+      if (dialogRef && dialogRef.componentInstance) {
+        try {
+          dialogRef.componentInstance.increaseProgress(progress);
+        } catch (e) {
+          console.warn("Erreur lors de la mise à jour de la progression:", e);
+        }
+      }
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+        
+        try {
+          if (dialogRef) {
+            dialogRef.close();
+          }
+        } catch (e) {
+          console.warn("Erreur lors de la fermeture du dialog:", e);
+        }
+        
+        // IMPORTANT: Initialiser TOUS les graphiques, pas seulement ELO
+        setTimeout(() => {
+          console.log("Initialisation de tous les graphiques après fermeture du dialog");
+          this.initializeCharts();
+        }, 500); // Délai plus long pour s'assurer que le dialog est complètement fermé
+      }
+    }, 500);
+  } catch (error) {
+    console.error("Erreur dans showEloStatWithLoading:", error);
+    // Fallback - initialiser les graphiques directement
+    this.initializeCharts();
+  }
 }
   
   // Cette méthode est déclenchée après l'initialisation de la vue
