@@ -405,12 +405,7 @@ abstract getElo( time_class ?: Constantes.TypeJeuChessCom): { timestamp: any; ra
 
   //console.log(openingsTab);
   let tab = this.sortOpenings(openingsTab);
-  
-  tab = this.CleanOpening(tab);
-
-  console.log("tableau des ouvertures");
-  console.log(tab);
-  
+  tab = this.CleanOpening(tab);  
   return tab;
 }
 
@@ -517,6 +512,7 @@ getMostWinningOpenings(openingsTab : any[]) {
   let dict = mostLoosing.map(o => ({ opening: o.opening, winrate: ((o.wins / o.total) * 100).toFixed(2) }));
   return dict;
 }
+
 /**
  * Cette méthode va utiliser la variable allGames afin de savoir les différentes raison de la 
  * fin d'une partie. On va diviser cette information en fonction des victoires, defaites et egalités

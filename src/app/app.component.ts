@@ -72,6 +72,7 @@ export class AppComponent implements OnInit {
                                                                                               Qxg1+ 42. Kd2 Rxh2+ 43. Kc3 Qe1# 0-1`;
 
   ngOnInit(): void {
+    
     //console.log("Initialisation de l'application");
     //this.lichessTests();
     this.chess_comTests();
@@ -80,6 +81,8 @@ export class AppComponent implements OnInit {
     //this.localAnalysisTests();
     //this.localAnalysisTests();
     //this.displayChessboard();
+    //this.analysisApiTests();
+
   }
 
   
@@ -107,6 +110,7 @@ export class AppComponent implements OnInit {
   async lichessTests(): Promise<void> {
     await this.LitchessApi.getIDLichessGames('coffeechessclub2023', 100);
     await this.LitchessApi.getInfoLichessGames();
+
     console.log(this.LitchessApi.allGames);
     this.LitchessApi.dataFormatage();
     console.log(this.LitchessApi.allGamesJson);
@@ -117,6 +121,9 @@ export class AppComponent implements OnInit {
     
     this.testApi(this.api.allGames, 'coffeechessclub2023');
     
+  
+    this.testApi(this.api.allGames, 'titouannn');
+  
   }
 
   testApi(tab: any[][], username: string) {
