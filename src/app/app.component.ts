@@ -9,6 +9,9 @@ import { PuzzleScraper } from '../analyse/puzzle.service';
 import { AnalysisApi } from '../api/analysisApi.service';
 import { LocalAnalysis } from '../analyse/localAnalysis.service';
 import { NavbarComponent } from './navbar/navbar.component';
+import { Router, RouterModule } from '@angular/router';
+import { StatsEloComponent } from './stats-elo/stats-elo.component';
+
 
 
 @Component({
@@ -24,15 +27,21 @@ import { NavbarComponent } from './navbar/navbar.component';
   styleUrl: './app.component.css',
   host: { 'id': 'main-app-component' }
 })
-
 export class AppComponent implements OnInit {
   message: string = '';
   showChessboard: boolean = false; // Propriété pour contrôler l'affichage
   currentFen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Position initiale par défaut
-
-  constructor(private LocalAnalysis : LocalAnalysis, private api: Api, private LitchessApi: LitchessApi, 
-              private ChesscomApi: ChesscomApi, private PuzzleScraper: PuzzleScraper, 
-              private AnalysisApi: AnalysisApi) {}
+  
+  constructor(
+    private LocalAnalysis : LocalAnalysis, 
+    private api: Api, 
+    private LitchessApi: LitchessApi, 
+    private ChesscomApi: ChesscomApi, 
+    private PuzzleScraper: PuzzleScraper, 
+    private AnalysisApi: AnalysisApi,
+  ) {
+      this.api = ChesscomApi;
+    }
 
   // Ajouter une propriété pour stocker l'historique des coups
   moveHistory: any[] = [];
@@ -75,7 +84,7 @@ export class AppComponent implements OnInit {
     
     //console.log("Initialisation de l'application");
     //this.lichessTests();
-    this.chess_comTests();
+    //this.chess_comTests();
     //this.testPuzzle();
 
     //this.localAnalysisTests();
@@ -85,9 +94,8 @@ export class AppComponent implements OnInit {
 
   }
 
-  
-
-  async localAnalysisTests(): Promise<void> {
+  async analysisApiTests(): Promise<void> {
+    console.log("======== Analysis API =========");
     
     console.log("======== Local Analysis =========");
 

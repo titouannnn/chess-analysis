@@ -26,6 +26,7 @@ export class HomeComponent {
       this.selectedButton = button;  // Sélectionne le bouton
     }
   }
+  
   searchStats() {
     if (this.pseudo) {
       this.router.navigate(['/stats'], { queryParams: { pseudo: this.pseudo } });

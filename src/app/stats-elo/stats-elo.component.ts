@@ -9,8 +9,6 @@ import { ChartJS } from '../../api/ChartJS.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Chart } from 'chart.js/auto';
 import { platform } from 'os';
-import { MatDialog } from '@angular/material/dialog';
-import { LoadingBarComponent } from '../loading-bar/loading-bar.component';
 
 // Interface pour les données de fréquence de jeu
 interface FrequencyData {
@@ -32,7 +30,6 @@ enum W_B {
   styleUrl: './stats-elo.component.css',
   host: { id: 'stats-elo-unique' }
 })
-<<<<<<< HEAD
 @Injectable({ providedIn: "root" })
 export class StatsEloComponent implements OnInit, AfterViewInit {
   @ViewChild("eloStats") eloStats!: ElementRef;
@@ -40,15 +37,6 @@ export class StatsEloComponent implements OnInit, AfterViewInit {
   @ViewChild("gamesBy") gamesByStats!: ElementRef;
 
   pseudo: string = ""; // Récupération du pseudo de la route
-=======
-@Injectable({ providedIn: 'root'})
-export class StatsEloComponent implements AfterViewInit {  
-  @ViewChild('eloStats') eloStats !: ElementRef;
-  @ViewChild('playFrequencyStats') frequencyStats !: ElementRef;
-  @ViewChild('gamesBy') gamesByStats !: ElementRef;
-  @ViewChild('ouvertures') ouverturesStats !: ElementRef;
-
->>>>>>> 1a096b90 (dev: quatrième graph fait)
 
   // Variables utilisées pour le HTML
   timePeriod = Constantes.Time;
@@ -97,23 +85,13 @@ export class StatsEloComponent implements AfterViewInit {
     chartGenerator: ChartJS,
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
-<<<<<<< HEAD
     public matDialog: MatDialog,
     @Inject(PLATFORM_ID) platformId : Object
-=======
-    @Inject(PLATFORM_ID) platformId : Object,
-    public matDialog: MatDialog
->>>>>>> 1a096b90 (dev: quatrième graph fait)
   ) { 
     this.isBrowser = isPlatformBrowser(platformId);
     this.api = chessApi;
     this.chartGenerator = chartGenerator;
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-=======
-  
->>>>>>> 1a096b90 (dev: quatrième graph fait)
     // Pré-initialiser l'API et les données avec ALL_TIME par défaut
     this.api.initTimeInterval();
     this.api.setTimeTinterval(
@@ -121,39 +99,8 @@ export class StatsEloComponent implements AfterViewInit {
       this.api.DATENULL,
       this.api.DATENULL
     );
-=======
-    // Méthode pour afficher les stats Elo avec la barre de chargement
-  showEloStatWithLoading() {
-    // Ouvrir le dialog de la barre de progression
-    // Utilisation de 'panelClass: full-screen-dialog' pour appliquer des styles personnalisés
-    // au conteneur global de la boîte de dialogue (mat-mdc-dialog-surface).
-    // Ces styles sont définis dans styles.css car le CSS du composant ne peut pas cibler les éléments
-    // générés en dehors du composant Angular.
-
-    const dialogRef  = this.matDialog.open(LoadingBarComponent, {
-      height: '100vh',    // Assurez-vous que la boîte de dialogue prend toute la hauteur
-      width: '100vw',
-      maxWidth: '100vw',     // Assurez-vous que la boîte de dialogue prend toute la largeur
-      panelClass: 'full-screen-dialog',  // La classe qui définit les styles
-      hasBackdrop: true,  // Ajoute un fond semi-transparent
-      disableClose: true  // Empêche la fermeture du dialogue en cliquant en dehors
-    });
-    
-
-    // Simuler un délai de chargement pour la progression
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10;
-      dialogRef.componentInstance.increaseProgress(progress); // Augmenter la progression
-      if (progress >= 100) {
-        clearInterval(interval); // Stoppe l'intervalle lorsque la progression atteint 100%
-        dialogRef.close(); // Ferme la barre de progression une fois le chargement terminé
-        this.showEloStat(Constantes.TypeJeuChessCom.RAPID);
-      }
-    }, 1000); // Mise à jour toutes les secondes
->>>>>>> c3286106 (travail sur bare de recharge)
   }
-
+  
   ngOnInit(): void {
     // Récupérer le pseudo depuis les paramètres de l'URL
     this.route.queryParams.subscribe((params: Params) => {
@@ -191,13 +138,12 @@ export class StatsEloComponent implements AfterViewInit {
     this.cleanupCharts();
   }
 
-  // Méthode pour afficher les stats Elo avec la barre de chargement
+
   // Méthode pour afficher les stats Elo avec la barre de chargement
   showEloStatWithLoading() {
     try {
       console.log("Initialisation du chargement des graphiques...");
 
-      // Ouvrir le dialog avec gestion d'erreurs
       const dialogRef = this.matDialog.open(LoadingBarComponent, {
         height: "100vh",
         width: "100vw",
@@ -251,48 +197,17 @@ export class StatsEloComponent implements AfterViewInit {
   // Cette méthode est déclenchée après l'initialisation de la vue
   ngAfterViewInit(): void {
     
-<<<<<<< HEAD
     console.log("Préparation des références DOM pour les graphiques");
     // Ne pas initialiser ici - nous le faisons après le chargement
     this.initializeCharts();
     this.cdr.detectChanges();
   
-=======
-    this.load();
-
->>>>>>> 1a096b90 (dev: quatrième graph fait)
     console.log('Initialisation des graphiques');
     this.initializeCharts();
     // Supprimez les modifications programmatiques de style ici
     this.cdr.detectChanges();
-
-
-  }
-<<<<<<< HEAD
-=======
-   
-  private load() {
-    
-    const dialogRef  = this.matDialog.open(LoadingBarComponent, {
-      height: '100vh',    
-      width: '100vw',
-      maxWidth: '100vw',     
-      panelClass: 'full-screen-dialog',  
-      hasBackdrop: true,  
-      disableClose: true  
-    });
-    
-    const interval = setInterval(() => {
-      dialogRef.componentInstance.increaseProgress(20);
-    }, 1000); // Mise à jour toutes les secondes
   
-    dialogRef.afterClosed().subscribe( result => {
-      clearInterval(interval);
-    } );
-
   }
-
->>>>>>> 1a096b90 (dev: quatrième graph fait)
 
   // Méthode d'initialisation des graphiques
   private initializeCharts(): void {
@@ -307,12 +222,7 @@ export class StatsEloComponent implements AfterViewInit {
         this.showEloStat(this.activeTimeClass, this.activePeriod);
         this.showPlayFrequency();
         this.showGamesBy();
-<<<<<<< HEAD
 
-=======
-        this.showOuvertures();
-        
->>>>>>> 1a096b90 (dev: quatrième graph fait)
         // Marquer comme initialisé
         this.initialized = true;
 
@@ -343,7 +253,6 @@ export class StatsEloComponent implements AfterViewInit {
     });
   }
 
-<<<<<<< HEAD
   // Cette fonction va étendre le graphique avec des options avancées
   extendChartOptions(chart: any, options: any): void {
     if (!chart || !chart.options) return;
@@ -382,9 +291,6 @@ export class StatsEloComponent implements AfterViewInit {
     // Mettre à jour le graphique
     chart.update();
   }
-=======
-  
->>>>>>> 1a096b90 (dev: quatrième graph fait)
 
   // Récupère les dates de début et de fin pour un mois donné
   getMonthDates(
@@ -441,7 +347,7 @@ export class StatsEloComponent implements AfterViewInit {
       console.warn("Référence DOM manquante pour le graphique ELO");
       return;
     }
-    
+
     // Mettre à jour les classes actives
     this.activeTimeClass =
       time_class || this.activeTimeClass || Constantes.TypeJeuChessCom.RAPID;
@@ -518,6 +424,8 @@ export class StatsEloComponent implements AfterViewInit {
       
       const formattedDates = eloList.map(row => this.formatDate(row.timestamp));
       
+      
+
       this.eloChart = this.chartGenerator.getLineGraph(
         this.eloStats.nativeElement,
         eloList.map(row => row.rating),
@@ -526,7 +434,7 @@ export class StatsEloComponent implements AfterViewInit {
       );
 
       // Personnaliser le graphique après sa création
-      this.chartGenerator.extendChartOptions(this.eloChart, {
+      this.extendChartOptions(this.eloChart, {
         colors: {
           borderColor: this.chartColors.elo.borderColor,
           backgroundColor: this.chartColors.elo.backgroundColor,
@@ -540,6 +448,7 @@ export class StatsEloComponent implements AfterViewInit {
       console.error("Erreur lors de la création du graphique ELO:", error);
     }
   }
+
 
 
   playFreqChart: any = null;
@@ -566,7 +475,7 @@ export class StatsEloComponent implements AfterViewInit {
       );
 
       // Personnaliser le graphique après sa création
-      this.chartGenerator.extendChartOptions(this.playFreqChart, {
+      this.extendChartOptions(this.playFreqChart, {
         colors: {
           backgroundColor: this.chartColors.frequency.backgroundColor,
           hoverBackgroundColor: this.chartColors.frequency.hoverBackgroundColor,
@@ -704,15 +613,10 @@ export class StatsEloComponent implements AfterViewInit {
       );
 
       // Appliquer des couleurs différentes pour chaque segment
-<<<<<<< HEAD
       this.extendChartOptions(this.chartGamesBy[0], {
         colors: this.chartColors.games[0].map((color: string) => ({
           backgroundColor: color,
         })),
-=======
-      this.chartGenerator.extendChartOptions(this.chartGamesBy[0], {
-        colors: this.chartColors.games[0].map((color: string) => ({ backgroundColor: color })),
->>>>>>> 1a096b90 (dev: quatrième graph fait)
         plugins: {
           tooltip: {
             backgroundColor: "rgba(22, 22, 31, 0.9)",
@@ -746,17 +650,11 @@ export class StatsEloComponent implements AfterViewInit {
         Object.values(draw_data),
         Object.keys(draw_data)
       );
-<<<<<<< HEAD
 
       this.extendChartOptions(this.chartGamesBy[1], {
         colors: this.chartColors.games[1].map((color: string) => ({
           backgroundColor: color,
         })),
-=======
-      
-      this.chartGenerator.extendChartOptions(this.chartGamesBy[1], {
-        colors: this.chartColors.games[1].map((color: string) => ({ backgroundColor: color })),
->>>>>>> 1a096b90 (dev: quatrième graph fait)
         plugins: {
           tooltip: {
             backgroundColor: "rgba(22, 22, 31, 0.9)",
@@ -790,17 +688,11 @@ export class StatsEloComponent implements AfterViewInit {
         Object.values(lose_data),
         Object.keys(lose_data)
       );
-<<<<<<< HEAD
 
       this.extendChartOptions(this.chartGamesBy[2], {
         colors: this.chartColors.games[2].map((color: string) => ({
           backgroundColor: color,
         })),
-=======
-      
-      this.chartGenerator.extendChartOptions(this.chartGamesBy[2], {
-        colors: this.chartColors.games[2].map((color: string) => ({ backgroundColor: color })),
->>>>>>> 1a096b90 (dev: quatrième graph fait)
         plugins: {
           tooltip: {
             backgroundColor: "rgba(22, 22, 31, 0.9)",
@@ -836,13 +728,8 @@ export class StatsEloComponent implements AfterViewInit {
     }
   }
 
-<<<<<<< HEAD
   resetgamesBy(): void {
     switch (this.w_b) {
-=======
-  switchColor(): void {
-    switch(this.w_b) {
->>>>>>> 1a096b90 (dev: quatrième graph fait)
       case W_B.Black:
         this.w_b = W_B.White;
         break;
@@ -853,67 +740,6 @@ export class StatsEloComponent implements AfterViewInit {
         this.w_b = W_B.Black;
         break;
     }
-  }
-
-  resetgamesBy(): void {
-    this.switchColor();
     this.showGamesBy();
   }
-
-  resetOuvertures(){
-    this.switchColor();
-    this.showOuvertures();
-  }
-
-  ouvertureChart : any = null;
-  showOuvertures() : void {
-
-    let data = this.api.getOpenings();
-    console.log("Openings : ", data);
-
-    let datasets : any = null;
-    if(this.w_b == W_B.Black){
-      datasets = [
-        {
-        label: 'Victoires',
-        data: data.map(row => row.stats.WinAsBlack)
-        },
-        {
-          label: 'Egalités',
-          data: data.map(row => row.stats.DrawAsBlack)
-        },
-        {
-          label: 'Defaites',
-          data: data.map(row => row.stats.LooseAsBlack)
-        }
-      ]
-    } else {
-      datasets = [
-        {
-        label: 'Victoires',
-        data: data.map(row => row.stats.WinAsWhite)
-        },
-        {
-          label: 'Egalités',
-          data: data.map(row => row.stats.DrawAsWhite)
-        },
-        {
-          label: 'Defaites',
-          data: data.map(row => row.stats.LooseAsWhite)
-        }
-      ]
-    }
-    if(this.ouvertureChart){
-      this.ouvertureChart.destroy();
-    }
-    this.ouvertureChart = this.chartGenerator.getStackedBarChart(
-      this.ouverturesStats.nativeElement,
-      data.map(row => row.nom),
-      datasets
-    );
-
-    
-
-  }
-  
 }

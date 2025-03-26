@@ -1,7 +1,6 @@
 :host {
     display: block;
     font-family: 'Roboto', sans-serif;
-    --bg-color: #1e1e2f;
     --card-bg: #27293d;
     --primary-color: #4ecbff;
     --secondary-color: #8181ff;
@@ -59,7 +58,17 @@
     padding: 20px;
     height: 300px;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+
+  .chart-body > canvas{
+    min-width: 80%;
+    min-height: 110%;
+  }
+
+  
   
   /* Conteneur des contrôles */
   .controls-wrapper {
