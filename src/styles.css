@@ -12,12 +12,6 @@ body {
     margin-bottom: 20px;
   }
 
-<<<<<<< HEAD
-
-  .full-screen-dialog .mat-mdc-dialog-surface {
-    background-color: #1e1e2f !important; /* ton fond marron */
-    color: #4ecbff !important; /* texte clair */
-=======
   /* 
   ⚠️ Ce style est placé ici (dans styles.css) car il cible .mat-mdc-dialog-surface,
   une classe générée par Angular Material en dehors du composant Angular.
@@ -32,7 +26,6 @@ body {
   .full-screen-dialog .mat-mdc-dialog-surface {
     background-color: #332B26 !important; /* ton fond marron */
     color: #E0C7B3 !important; /* texte clair */
->>>>>>> c3286106 (travail sur bare de recharge)
     width: 100vw !important;
     height: 100vh !important;
     display: flex !important;
@@ -43,7 +36,4 @@ body {
     box-sizing: border-box;
   }
   
-<<<<<<< HEAD
-=======
   
->>>>>>> c3286106 (travail sur bare de recharge)
