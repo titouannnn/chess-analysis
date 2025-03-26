@@ -1,0 +1,605 @@
+.puzzles-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h1 {
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  h2 {
+    color: #444;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+  }
+  
+  /* Filtres */
+  .filters-container {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  label {
+    font-weight: 500;
+    margin-right: 5px;
+    min-width: 120px;
+  }
+  
+  select, input {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  select {
+    min-width: 200px;
+  }
+  
+  input[type="number"] {
+    width: 100px;
+  }
+  
+  input[type="text"] {
+    width: 200px;
+  }
+  
+  .reset-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  
+  .reset-button:hover {
+    background-color: #5a6268;
+  }
+  
+  /* Loading spinner */
+  .loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 50px 0;
+  }
+  
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Error message */
+  .error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+  }
+  
+  /* Results */
+  .results-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .no-results {
+    padding: 30px;
+    text-align: center;
+    color: #666;
+  }
+  
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+  }
+  
+  tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .puzzle-link, .game-link {
+    display: inline-block;
+    padding: 6px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  
+  .puzzle-link {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .puzzle-link:hover {
+    background-color: #45a049;
+  }
+  
+  .game-link {
+    background-color: #2196F3;
+    color: white;
+  }
+  
+  .game-link:hover {
+    background-color : #1e87dc;
+  }
+
+  /* Styles améliorés pour le dropdown des thèmes */
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 400px;
+    margin-bottom: 15px;
+  }
+  
+  /* Menu dropdown avec animations */
+  .theme-dropdown {
+    position: relative;
+    width: 400px;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  .theme-dropdown-toggle {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+  
+  .theme-dropdown-toggle:hover {
+    border-color: #aaa;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dropdown-arrow {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Animation de la flèche lors de l'ouverture */
+  .theme-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+  
+  /* Animation du menu */
+  .theme-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
+  
+  /* État ouvert du menu */
+  .theme-dropdown-menu.open {
+    max-height: 300px;
+    opacity: 1;
+    transform: translateY(0);
+    overflow-y: auto;
+  }
+  
+  .theme-search {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 2;
+  }
+  
+  .theme-search input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background-color: #f9f9f9;
+  }
+  
+  .theme-search input:focus {
+    border-color: #2196F3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+    background-color: white;
+    outline: none;
+  }
+  
+  .theme-options {
+    padding: 8px;
+    max-height: 240px;
+  }
+  
+  /* Éléments de la liste avec animation */
+  .theme-option {
+    margin-bottom: 6px;
+    opacity: 0;
+    transform: translateX(-10px);
+    animation: slideIn 0.3s ease forwards;
+  }
+  
+  @keyframes slideIn {
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  /* Application de délais différents pour créer un effet cascade */
+  .theme-option:nth-child(1) { animation-delay: 0.05s; }
+  .theme-option:nth-child(2) { animation-delay: 0.1s; }
+  .theme-option:nth-child(3) { animation-delay: 0.15s; }
+  .theme-option:nth-child(4) { animation-delay: 0.2s; }
+  .theme-option:nth-child(5) { animation-delay: 0.25s; }
+  /* Continuer pour plus d'éléments si nécessaire */
+  
+  .theme-option label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  
+  .theme-option label:hover {
+    background-color: #f0f7ff;
+  }
+  
+  /* Checkbox personnalisée */
+  .theme-option input[type="checkbox"] {
+    position: relative;
+    margin-right: 10px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+  }
+  
+  .theme-option input[type="checkbox"]:checked {
+    background-color: #2196F3;
+    border-color: #2196F3;
+  }
+  
+  .theme-option input[type="checkbox"]:checked::after {
+    content: '✓';
+    display: block;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .no-themes {
+    padding: 15px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+  }
+  
+  /* Thèmes sélectionnés avec animation */
+  .selected-themes {
+    margin-top: 15px;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  .theme-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  
+  .theme-tag {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    animation: popIn 0.3s ease;
+    transition: all 0.2s ease;
+  }
+  
+  .theme-tag:hover {
+    background-color: #bbdefb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    70% {
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  .remove-theme {
+    background: none;
+    border: none;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    color: #1565c0;
+    padding: 0 3px;
+    transition: all 0.2s ease;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+  }
+  
+  .remove-theme:hover {
+    background-color: rgba(21, 101, 192, 0.1);
+    color: #0d47a1;
+    transform: scale(1.1);
+  }
+
+  /* Styles pour le filtre par taux de victoire */
+
+.winrate-filter {
+    margin: 15px 0;
+    width: 100%;
+  }
+  
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+  }
+  
+  .radio-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 15px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+  }
+  
+  .radio-option:hover {
+    background-color: #e9ecef;
+    transform: translateY(-1px);
+  }
+  
+  .radio-option input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+  }
+  
+  .radio-option label {
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .radio-option input[type="radio"]:checked + label {
+    font-weight: 600;
+    color: #1565c0;
+  }
+  
+  .radio-option:has(input[type="radio"]:checked) {
+    background-color: #e3f2fd;
+    border-color: #bbdefb;
+  }
+  
+  .radio-option:has(input[type="radio"]:disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .radio-option:has(input[type="radio"]:disabled) label {
+    cursor: not-allowed;
+  }
+
+  /* Styles pour les ouvertures recommandées */
+.openings-info {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .openings-info h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #495057;
+    font-size: 16px;
+  }
+  
+  .openings-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .opening-item {
+    background-color: #e9ecef;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #495057;
+  }
+  
+  .no-openings {
+    color: #6c757d;
+    font-style: italic;
+  }
+
+  /* Styles pour la recherche d'ouvertures */
+.opening-search-container {
+  position: relative;
+  width: 356px;;
+}
+
+.opening-search-input {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.opening-search-input input {
+  width: 100%;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.opening-search-input .dropdown-arrow {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.opening-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.opening-dropdown-menu.open {
+  display: block;
+}
+
+.opening-option {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.opening-option:hover {
+  background-color: #f5f5f5;
+}
+
+.no-openings {
+  padding: 10px;
+  color: #999;
+  text-align: center;
+}
+
+.selected-opening {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.selected-opening span {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.remove-opening {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.opening-search-container.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+

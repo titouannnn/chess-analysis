@@ -1,0 +1,561 @@
+/* Variables globales pour le thème échecs moderne */
+:host {
+  /* Nouvelles variables adaptées au thème bleu foncé */
+  --chess-light-square: #3a3a5c; /* Bleu foncé pour cases claires */
+  --chess-dark-square: #27293d; /* Bleu plus foncé pour cases foncées */
+  --chess-board-border: #4ecbff; /* Bordure de l'échiquier en bleu primaire */
+  --chess-bg: #1e1e2f; /* Fond global */
+  --chess-container-bg: #27293d; /* Fond des conteneurs */
+  --chess-text-color: #ffffff; /* Texte en blanc */
+  --chess-text-secondary: rgba(255, 255, 255, 0.7); /* Texte secondaire */
+  --chess-highlight: #4ecbff; /* Couleur de surbrillance */
+  --chess-highlight-bg: rgba(78, 203, 255, 0.2); /* Version semi-transparente */
+  
+  /* Variables pour différenciation des coups */
+  --chess-white-move-bg: #333345; /* Fond pour les coups blancs */
+  --chess-black-move-bg: #2a2a38; /* Fond pour les coups noirs */
+  --chess-row-alt-bg: #2d2d40; /* Fond alterné pour les lignes */
+  --chess-selected: #4ecbff; /* Sélection */
+  --chess-move-text: #ffffff; /* Texte des coups */
+  --chess-variation-color: rgba(129, 129, 255, 0.15); /* Pour les variantes */
+  
+  --chess-border-radius: 8px;
+  --chess-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  
+  /* Évaluations et couleurs des états */
+  --chess-win: #2ed573; /* Vert pour victoires */
+  --chess-draw: #8181ff; /* Bleu secondaire pour nulles */
+  --chess-loss: #ff4d4d; /* Rouge pour défaites */
+  
+  background-color: var(--chess-bg);
+  color: var(--chess-text-color);
+}
+
+/* Base layout - Deux colonnes côte à côte avec dimensions fixes */
+.chess-main-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Colonne de l'échiquier - taille fixe */
+.chess-board-column {
+  flex: 0 0 700px;
+  width: 700px;
+  max-width: 700px;
+  background-color: var(--chess-container-bg);
+  border-radius: var(--chess-border-radius);
+  box-shadow: var(--chess-shadow);
+  padding: 20px;
+}
+
+/* Colonne des coups - largeur fixe */
+.moves-column {
+  flex: 0 0 350px;
+  width: 350px;
+  min-width: 350px;
+  max-width: 350px;
+  background-color: var(--chess-container-bg);
+  border-radius: var(--chess-border-radius);
+  box-shadow: var(--chess-shadow);
+  padding: 20px;
+}
+
+/* Conteneur de l'échiquier - dimension fixe */
+.chessboard-container {
+  width: 700px;
+  height: 700px;
+  margin-bottom: 15px;
+  border-radius: var(--chess-border-radius);
+  overflow: hidden;
+}
+
+/* Board container et barre d'évaluation */
+.board-container {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 20px;
+  width: 640px;
+  border-radius: var(--chess-border-radius);
+  overflow: hidden;
+  border: 2px solid var(--chess-board-border);
+  box-shadow: 0 0 20px rgba(78, 203, 255, 0.2);
+}
+
+/* Échiquier avec taille fixe */
+.chessboard {
+  flex: 1;
+  width: 600px;
+  height: 600px;
+  position: relative;
+  background-color: var(--chess-container-bg);
+}
+
+/* Barre d'évaluation */
+.eval-bar {
+  width: 30px;
+  position: relative;
+  background-color: var(--chess-container-bg);
+  margin-right: 10px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  height: 600px;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.black-bar {
+  width: 100%;
+  background-color: #4d4d4d;
+  transition: height 0.5s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.zero-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(78, 203, 255, 0.6);
+  z-index: 1;
+}
+
+.eval-number {
+  position: absolute;
+  bottom: 5px;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 2;
+  color: var(--chess-text-color);
+}
+
+/* Container des coups - thème échecs */
+.moves-container {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--chess-border-radius);
+  padding: 12px;
+  height: 500px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: rgba(42, 42, 66, 0.5);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Message quand l'historique est vide */
+.empty-history-message {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--chess-border-radius);
+  padding: 15px;
+  text-align: center;
+  color: var(--chess-text-secondary);
+  font-style: italic;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: rgba(42, 42, 66, 0.5);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Navigation controls */
+.navigation-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.navigation-controls button {
+  font-size: 1.5rem;
+  padding: 5px 15px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--chess-text-color);
+  border-radius: var(--chess-border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navigation-controls button:hover:not(:disabled) {
+  background-color: var(--chess-highlight-bg);
+  box-shadow: 0 0 10px rgba(78, 203, 255, 0.3);
+}
+
+.navigation-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Zone d'importation PGN */
+.pgn-input {
+  margin-top: 20px;
+  background-color: rgba(42, 42, 66, 0.5);
+  padding: 15px;
+  border-radius: var(--chess-border-radius);
+  box-shadow: var(--chess-shadow);
+}
+
+.pgn-input h3 {
+  margin-top: 0;
+  color: var(--chess-text-color);
+  font-size: 16px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.pgn-input textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  border: 1px solid rgba(78, 203, 255, 0.2);
+  border-radius: 4px;
+  font-family: monospace;
+  resize: vertical;
+  box-sizing: border-box;
+  background-color: rgba(30, 30, 47, 0.8);
+  color: var(--chess-text-color);
+}
+
+.pgn-input button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  margin-right: 5px;
+  background-color: rgba(78, 203, 255, 0.2);
+  color: var(--chess-text-color);
+  border: 1px solid rgba(78, 203, 255, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pgn-input button:hover {
+  background-color: rgba(78, 203, 255, 0.3);
+  box-shadow: 0 0 10px rgba(78, 203, 255, 0.2);
+}
+
+/* Styles pour les lignes de coups */
+.move-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease;
+  background-color: rgba(42, 42, 66, 0.7);
+  margin: 2px 0;
+  border-radius: 4px;
+  overflow-x: hidden;
+}
+
+.move-row:nth-child(even) {
+  background-color: rgba(42, 42, 66, 0.5);
+}
+
+.move-row:hover {
+  background-color: rgba(78, 203, 255, 0.1);
+}
+
+/* Numéro de coup plus visible */
+.move-number {
+  color: var(--chess-text-secondary);
+  margin-right: 6px;
+  font-weight: 600;
+  min-width: 32px;
+  font-size: 0.9em;
+  text-align: right;
+  padding: 3px;
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* Coups blancs */
+.move-white {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  font-weight: 500;
+  color: var(--chess-text-color);
+  transition: all 0.15s ease;
+  background-color: var(--chess-white-move-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+/* Coups noirs */
+.move-black {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 3px;
+  margin-right: 8px;
+  font-weight: 500;
+  color: var(--chess-text-color);
+  transition: all 0.15s ease;
+  background-color: var(--chess-black-move-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+/* Coup actif/sélectionné */
+.active-move {
+  background-color: rgba(78, 203, 255, 0.3) !important;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(78, 203, 255, 0.5);
+  font-weight: bold;
+}
+
+/* Analyse et statistiques */
+.analysis-controls {
+  margin: 20px 0;
+  background-color: rgba(42, 42, 66, 0.5);
+  padding: 15px;
+  border-radius: var(--chess-border-radius);
+  box-shadow: var(--chess-shadow);
+}
+
+.analyze-button {
+  background-color: rgba(78, 203, 255, 0.8);
+  color: #1e1e2f;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.analyze-button:hover {
+  background-color: rgba(78, 203, 255, 1);
+  box-shadow: 0 4px 10px rgba(78, 203, 255, 0.3);
+}
+
+.analyze-button:disabled {
+  background-color: rgba(78, 203, 255, 0.3);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  margin: 15px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background-color: rgba(78, 203, 255, 0.8);
+  border-radius: 5px;
+  transition: width 0.5s;
+}
+
+/* Styles pour rejouer les erreurs */
+.mistakes-replay-controls {
+  margin-top: 20px;
+  background-color: rgba(42, 42, 66, 0.5);
+  padding: 15px;
+  border-radius: var(--chess-border-radius);
+  box-shadow: var(--chess-shadow);
+}
+
+.mistakes-replay-controls h3 {
+  margin-top: 0;
+  color: var(--chess-highlight);
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.color-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.color-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--chess-text-color);
+}
+
+.both-btn:hover {
+  background-color: rgba(78, 203, 255, 0.3);
+}
+
+.white-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.black-btn:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Feedbacks et évaluations */
+.feedback-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  max-width: 250px;
+  padding: 12px 15px;
+  border-radius: 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  font-weight: bold;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+
+.feedback-success {
+  background-color: rgba(46, 213, 115, 0.9);
+  color: #1e1e2f;
+}
+
+.feedback-warning {
+  background-color: rgba(255, 152, 0, 0.9);
+  color: #1e1e2f;
+}
+
+.feedback-error {
+  background-color: rgba(255, 77, 77, 0.9);
+  color: #ffffff;
+}
+
+/* Responsive layout */
+@media (max-width: 1100px) {
+  /* ... code responsive existant ... */
+  
+  .chess-main-container {
+    padding: 10px;
+  }
+  
+  .chess-board-column,
+  .moves-column {
+    padding: 15px;
+  }
+}
+
+/* CSS pour les variantes - adapté au nouveau thème */
+.variation {
+  position: relative;
+  margin: 2px 0;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  background-color: rgba(78, 203, 255, 0.08);
+  border-radius: 4px;
+  border-left: 3px solid rgba(78, 203, 255, 0.3);
+}
+
+.active-variation {
+  background-color: rgba(78, 203, 255, 0.15);
+  border-left-color: var(--chess-highlight);
+  border-left-width: 4px;
+}
+
+/* Précision et évaluations */
+.precision-excellent {
+  color: #2ed573;
+}
+
+.precision-good {
+  color: #4ecbff;
+}
+
+.precision-inaccuracy {
+  color: #ffb866;
+}
+
+.precision-mistake {
+  color: #ff9800;
+}
+
+.precision-blunder {
+  color: #ff4d4d;
+}
+
+/* Ajustements pour l'évaluation actuelle */
+.current-evaluation {
+  background-color: var(--chess-container-bg);
+  border-radius: var(--chess-border-radius);
+  padding: 15px;
+  margin-bottom: 15px;
+  text-align: center;
+  box-shadow: var(--chess-shadow);
+  border: 1px solid rgba(78, 203, 255, 0.2);
+}
+
+.evaluation-label {
+  font-size: 14px;
+  color: var(--chess-text-secondary);
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.evaluation-value {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+/* Classes pour différents types d'évaluation */
+.evaluation-positive {
+  color: #2ed573;
+}
+
+.evaluation-negative {
+  color: #ff4d4d;
+}
+
+.evaluation-equal {
+  color: #4ecbff;
+}
+
+/* Scrollbar personnalisée */
+.moves-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.moves-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.moves-container::-webkit-scrollbar-thumb {
+  background: rgba(78, 203, 255, 0.3);
+  border-radius: 4px;
+}
+
+.moves-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(78, 203, 255, 0.5);
+}

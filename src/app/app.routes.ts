@@ -1,9 +1,13 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { StatsEloComponent } from './stats-elo/stats-elo.component';  // Importer StatsEloComponent
-
+import { PuzzlesComponent } from './puzzles/puzzles.component';
+import { ChessboardComponent } from './chessboard/chessboard.component';
 
 export const routes: Routes = [
     {path:'', component:HomeComponent},
     {path: 'stats', component: StatsEloComponent },
+    {path:'puzzles', component: PuzzlesComponent},
+    { path: 'chessboard', component: ChessboardComponent }
 ];
+
