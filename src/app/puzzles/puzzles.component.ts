@@ -5,6 +5,8 @@ import { PuzzleScraper } from "../../analyse/puzzle.service";
 import { RouterModule } from "@angular/router";
 import { Api } from "../../api/api.service"; // Importer le service API
 import { ChesscomApi } from "../../api/chesscomapi.service";
+import { StatsEloComponent } from "../stats-elo/stats-elo.component"; // Import StatsEloComponent
+
 
 interface Puzzle {
   PuzzleId: string;
@@ -38,6 +40,7 @@ export class PuzzlesComponent implements OnInit {
   errorMessage: string = "";
 
   // Filtres
+  openingsStats: any[] = [];
   openings: string[] = [];
   selectedOpening: string = "";
 
@@ -71,12 +74,10 @@ export class PuzzlesComponent implements OnInit {
   // Pagination
   currentPage: number = 1;
   itemsPerPage: number = 10;
-
-  openingsStats: any[] = [];
-
   constructor(
     private puzzleService: PuzzleScraper,
-    private apiService: Api // Ajouter le service API
+    private apiService: Api, // Ajouter le service API
+    private statsEloComponent: StatsEloComponent // Ajouter StatsEloComponent
   ) {}
 
   ngOnInit(): void {
@@ -84,24 +85,22 @@ export class PuzzlesComponent implements OnInit {
     this.initializeUserData();
   }
 
-  // Méthode pour initialiser les données utilisateur
   initializeUserData(): void {
     try {
-      // Utiliser une chaîne vide ou "4" au lieu de l'enum
-      this.apiService.sortByGameType("");
+      // S'assurer que l'API est prête avec les bons filtres
+      this.apiService.sortByGameType("4"); // Utiliser un identifiant explicite pour ALL_GENRES
       
-      // Initialiser les intervalles de temps
+      // Initialiser les intervalles de temps comme dans StatsEloComponent
       this.apiService.initTimeInterval();
-      // Utiliser 3 au lieu de l'enum
       this.apiService.setTimeTinterval(
-        3, // Valeur numérique de ALL_TIME (3)
+        3, // ALL_TIME
         this.apiService.DATENULL,
         this.apiService.DATENULL
       );
       
-      // Récupérer les statistiques d'ouvertures
-      this.openingsStats = this.apiService.getOpenings();
-      console.log("Statistiques d'ouvertures chargées:", this.openingsStats);
+      // Utiliser getSortedOpeningsData de StatsEloComponent pour obtenir les données formatées
+      this.openingsStats = this.statsEloComponent.getSortedOpeningsData();
+      console.log("Statistiques d'ouvertures depuis StatsEloComponent:", this.openingsStats);
     } catch (error) {
       console.error("Erreur lors de l'initialisation des données utilisateur:", error);
     }
@@ -225,14 +224,11 @@ export class PuzzlesComponent implements OnInit {
     // Si une ouverture spécifique est sélectionnée, l'utiliser en priorité
     if (this.selectedOpening) {
       const formattedOpening = this.selectedOpening.replace(/ /g, "_");
-      const puzzles =
-        this.puzzleService.collectPuzzlesByOpening(formattedOpening);
+      const puzzles = this.puzzleService.collectPuzzlesByOpening(formattedOpening);
 
       // Trouver le taux de victoire de cette ouverture spécifique
-      const openingObj = this.openingsStats.find(
-        (o) => o.nom.toLowerCase() === this.selectedOpening.toLowerCase()
-      );
-      const winRate = openingObj ? this.calculateWinRate(openingObj.stats) : 0;
+      const openingObj = this.findOpeningStats(this.selectedOpening);
+      const winRate = openingObj ? openingObj.winRate : 0;
 
       allRecommendedPuzzles = puzzles.map((p) => ({
         ...p,
@@ -245,8 +241,7 @@ export class PuzzlesComponent implements OnInit {
         const opening = openingsData[i].name;
         const winRate = openingsData[i].winRate;
         const formattedOpening = opening.replace(/ /g, "_");
-        const puzzles =
-          this.puzzleService.collectPuzzlesByOpening(formattedOpening);
+        const puzzles = this.puzzleService.collectPuzzlesByOpening(formattedOpening);
 
         // Ajouter l'information d'ouverture à chaque puzzle avec son taux exact
         const puzzlesWithOpening = puzzles.map((p) => ({
@@ -254,28 +249,23 @@ export class PuzzlesComponent implements OnInit {
           opening,
           winRate,
         }));
-        allRecommendedPuzzles = [
-          ...allRecommendedPuzzles,
-          ...puzzlesWithOpening,
-        ];
+        allRecommendedPuzzles = [...allRecommendedPuzzles, ...puzzlesWithOpening];
       }
     }
 
-    // Maintenant, il faut récupérer les informations complètes des puzzles
+    // Le reste de la méthode reste inchangé...
+    // ...
+
     this.filteredPuzzles = allRecommendedPuzzles.map((recPuzzle) => {
       const puzzleId = recPuzzle.URL.split("/").pop() || "";
-
-      // Chercher le puzzle correspondant dans la liste originale
       const originalPuzzle = this.puzzles.find((p) => p.PuzzleId === puzzleId);
 
       if (originalPuzzle) {
-        // Retourner le puzzle original mais en ajoutant le taux précalculé
         return {
           ...originalPuzzle,
           calculatedWinRate: recPuzzle.winRate,
         };
       } else {
-        // Sinon, créer un puzzle avec l'information d'ouverture et son taux
         return {
           PuzzleId: puzzleId,
           Rating: recPuzzle.Rating,
@@ -314,92 +304,60 @@ export class PuzzlesComponent implements OnInit {
       return [];
     }
 
-    // Calculer le taux de victoire pour chaque ouverture
-    const openingsWithWinRate = this.openingsStats.map((opening) => {
-      const stats = opening.stats;
-      const totalGames =
-        stats.WinAsWhite +
-        stats.WinAsBlack +
-        stats.LooseAsWhite +
-        stats.LooseAsBlack +
-        stats.DrawAsWhite +
-        stats.DrawAsBlack;
-
-      const wins = stats.WinAsWhite + stats.WinAsBlack;
-      const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
-
-      return {
-        name: opening.nom,
-        winRate,
-        totalGames,
-      };
-    });
-
-    // Filtrer pour ne garder que les ouvertures avec un nombre minimum de parties
+    // Les données sont déjà triées, il suffit de filtrer par nombre minimum de parties
     const minGames = 3;
-    const validOpenings = openingsWithWinRate.filter(
-      (o) => o.totalGames >= minGames
-    );
+    const validOpenings = this.openingsStats.filter(o => o.totalGames >= minGames);
 
-    // Trier selon le filtre sélectionné
-    if (this.winRateFilter === WinRateFilter.HIGH) {
-      validOpenings.sort((a, b) => b.winRate - a.winRate);
-    } else if (this.winRateFilter === WinRateFilter.LOW) {
-      validOpenings.sort((a, b) => a.winRate - b.winRate);
+    // Si le tri est inversé par rapport à celui de StatsEloComponent, on inverse la liste
+    if ((this.winRateFilter === WinRateFilter.HIGH && this.statsEloComponent.openingsSortOrder === 'asc') ||
+        (this.winRateFilter === WinRateFilter.LOW && this.statsEloComponent.openingsSortOrder === 'desc')) {
+      validOpenings.reverse();
     }
 
     // Prendre les 5 premières ouvertures
-    return validOpenings.slice(0, 5).map((o) => o.name);
+    return validOpenings.slice(0, 5).map(o => o.name);
   }
 
   getOpeningWinRate(openingTags: string): number {
-    if (
-      !openingTags ||
-      !this.openingsStats ||
-      this.openingsStats.length === 0
-    ) {
+    if (!openingTags || !this.openingsStats || this.openingsStats.length === 0) {
       return 0;
     }
-
+    
     // Convertir le format des tags d'ouverture pour correspondre au format dans openingsStats
-    const formattedOpening = openingTags.replace(/_/g, " ");
-
-    // Rechercher l'ouverture dans les statistiques - essayer plusieurs méthodes de correspondance
-    // 1. Chercher correspondance exacte
-    let openingStats = this.openingsStats.find(
-      (opening) => opening.nom.toLowerCase() === formattedOpening.toLowerCase()
-    );
-
-    // 2. Si pas de correspondance exacte, chercher correspondance partielle
+    const formattedOpening = openingTags.replace(/_/g, ' ');
+    
+    // Rechercher l'ouverture dans les statistiques avec différentes méthodes de correspondance
+    let openingStats = this.findOpeningStats(formattedOpening);
+    
     if (!openingStats) {
-      const openingWords = formattedOpening.toLowerCase().split(" ");
-      openingStats = this.openingsStats.find((opening) => {
-        const statsName = opening.nom.toLowerCase();
-        return openingWords.some(
-          (word) => statsName.includes(word) && word.length > 3
-        );
+      return 0;
+    }
+    
+    // Utiliser directement le taux de victoire stocké
+    return openingStats.winRate;
+  }
+
+  // Méthode auxiliaire pour trouver les statistiques d'une ouverture avec différentes stratégies
+  private findOpeningStats(openingName: string): any {
+    // 1. Correspondance exacte (insensible à la casse)
+    let openingStats = this.openingsStats.find(
+      opening => opening.name.toLowerCase() === openingName.toLowerCase()
+    );
+    
+    // 2. Si pas de correspondance exacte, chercher par mots clés significatifs
+    if (!openingStats) {
+      const openingWords = openingName.toLowerCase().split(' ')
+        .filter(word => word.length > 3); // Ignorer les mots courts comme "the", "of", etc.
+      
+      openingStats = this.openingsStats.find(opening => {
+        const statsName = opening.name.toLowerCase();
+        // Vérifier si au moins la moitié des mots significatifs correspondent
+        const matchingWords = openingWords.filter(word => statsName.includes(word));
+        return matchingWords.length > 0 && matchingWords.length >= Math.ceil(openingWords.length / 2);
       });
     }
-
-    if (!openingStats) {
-      return 0;
-    }
-
-    const stats = openingStats.stats;
-    const totalGames =
-      stats.WinAsWhite +
-      stats.WinAsBlack +
-      stats.LooseAsWhite +
-      stats.LooseAsBlack +
-      stats.DrawAsWhite +
-      stats.DrawAsBlack;
-
-    if (totalGames === 0) {
-      return 0;
-    }
-
-    const wins = stats.WinAsWhite + stats.WinAsBlack;
-    return (wins / totalGames) * 100;
+    
+    return openingStats;
   }
 
   resetFilters(): void {
@@ -528,50 +486,23 @@ export class PuzzlesComponent implements OnInit {
   }
 
   // Renommée pour clarifier qu'elle retourne des objets complets, pas juste des noms
-  getOpeningsDataByWinRate(): {
-    name: string;
-    winRate: number;
-    totalGames: number;
-  }[] {
+  getOpeningsDataByWinRate(): any[] {
     if (!this.openingsStats || this.openingsStats.length === 0) {
       return [];
     }
 
-    // Calculer le taux de victoire pour chaque ouverture
-    const openingsWithWinRate = this.openingsStats.map((opening) => {
-      const stats = opening.stats;
-      const totalGames =
-        stats.WinAsWhite +
-        stats.WinAsBlack +
-        stats.LooseAsWhite +
-        stats.LooseAsBlack +
-        stats.DrawAsWhite +
-        stats.DrawAsBlack;
-
-      const wins = stats.WinAsWhite + stats.WinAsBlack;
-      const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
-
-      return {
-        name: opening.nom,
-        winRate,
-        totalGames,
-      };
-    });
-
-    // Filtrer pour ne garder que les ouvertures avec un nombre minimum de parties
+    // Filtrer pour le nombre minimum de parties
     const minGames = 3;
-    const validOpenings = openingsWithWinRate.filter(
-      (o) => o.totalGames >= minGames
-    );
+    const validOpenings = this.openingsStats.filter(o => o.totalGames >= minGames);
 
-    // Trier selon le filtre sélectionné
-    if (this.winRateFilter === WinRateFilter.HIGH) {
-      validOpenings.sort((a, b) => b.winRate - a.winRate);
-    } else if (this.winRateFilter === WinRateFilter.LOW) {
-      validOpenings.sort((a, b) => a.winRate - b.winRate);
+    // Si besoin, inverser le tri pour correspondre au filtre sélectionné
+    let result = [...validOpenings];
+    if ((this.winRateFilter === WinRateFilter.HIGH && this.statsEloComponent.openingsSortOrder === 'asc') ||
+        (this.winRateFilter === WinRateFilter.LOW && this.statsEloComponent.openingsSortOrder === 'desc')) {
+      result.reverse();
     }
 
-    // Prendre les 5 premières ouvertures
-    return validOpenings.slice(0, 5);
+    // Limiter à 5 ouvertures
+    return result.slice(0, 5);
   }
 }

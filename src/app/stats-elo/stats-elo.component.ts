@@ -50,6 +50,8 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
   activeTimeClass: Constantes.TypeJeuChessCom = Constantes.TypeJeuChessCom.RAPID;
   activePeriod: Constantes.Time = Constantes.Time.ALL_TIME;
 
+  openingsForPuzzles: any[] = [];
+
   eloChart: any = null;
   playFreqChart: any = null;
   chartGamesBy: any[] = [];
@@ -767,6 +769,36 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
       console.log(`[${executionId}] Ouvertures triées (${sortedOpenings.length}):`, 
         sortedOpenings.slice(0, 5).map(o => `${o.nom}: ${o.winRate.toFixed(1)}%`));
       
+    
+      // Convertir les données d'ouvertures triées en format JSON pour utilisation future
+      this.openingsForPuzzles = sortedOpenings.map(opening => {
+        let wins = 0, draws = 0, losses = 0;
+        
+        if (this.w_b === W_B.White) {
+          wins = opening.stats.WinAsWhite;
+          draws = opening.stats.DrawAsWhite;
+          losses = opening.stats.LooseAsWhite;
+        } else {
+          wins = opening.stats.WinAsBlack;
+          draws = opening.stats.DrawAsBlack;
+          losses = opening.stats.LooseAsBlack;
+        }
+        
+        const total = wins + draws + losses;
+        
+        return {
+          name: opening.nom,
+          winRate: opening.winRate.toFixed(1),
+          wins: wins,
+          draws: draws,
+          losses: losses,
+          totalGames: total
+        };
+      });
+
+      // Afficher les données en JSON pour débogage
+      console.log(`[${executionId}] Données JSON des ouvertures:`, JSON.stringify(this.openingsForPuzzles));
+      
       // Limiter à 20 ouvertures pour des raisons de performance et lisibilité
       const displayOpenings = sortedOpenings.slice(0, Math.min(sortedOpenings.length, 20));
       
@@ -995,6 +1027,70 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
         this.cdr.detectChanges();
       });
     }, 0);
+  }
+
+  getSortedOpeningsData(): any[] {
+    if (!this.api) {
+      console.warn('API not initialized');
+      return [];
+    }
+    
+    // Get openings data from API
+    const openingsData = this.api.getOpenings();
+    
+    if (!openingsData || openingsData.length === 0) {
+      console.warn('No openings data available');
+      return [];
+    }
+    
+    // Filter to keep only openings played a minimum number of times for the selected color
+    const filteredOpenings = openingsData.filter(opening => {
+      let total = 0;
+      if (this.w_b === W_B.White) {
+        total = opening.stats.WinAsWhite + opening.stats.DrawAsWhite + opening.stats.LooseAsWhite;
+      } else {
+        total = opening.stats.WinAsBlack + opening.stats.DrawAsBlack + opening.stats.LooseAsBlack;
+      }
+      return total >= 5; // You can adjust this minimum threshold
+    });
+    
+    // Calculate win rate for each opening based on the selected color
+    const openingsWithWinRate = filteredOpenings.map(opening => {
+      let wins = 0, draws = 0, losses = 0, total = 0;
+      
+      if (this.w_b === W_B.White) {
+        wins = opening.stats.WinAsWhite;
+        draws = opening.stats.DrawAsWhite;
+        losses = opening.stats.LooseAsWhite;
+        total = wins + draws + losses;
+      } else {
+        wins = opening.stats.WinAsBlack;
+        draws = opening.stats.DrawAsBlack;
+        losses = opening.stats.LooseAsBlack;
+        total = wins + draws + losses;
+      }
+      
+      const winRate = total > 0 ? (wins / total) * 100 : 0;
+      
+      console.log(`Opening: ${opening.nom}, Wins: ${wins}, Draws: ${draws}, Losses: ${losses}, Total: ${total}, Win Rate: ${winRate.toFixed(1)}%`);
+      return {
+        name: opening.nom,
+        winRate: winRate,
+        wins: wins,
+        draws: draws,
+        losses: losses,
+        totalGames: total
+      };
+    });
+    
+    // Sort the openings by win rate according to the current sort order
+    return [...openingsWithWinRate].sort((a, b) => {
+      if (this.openingsSortOrder === 'desc') {
+        return b.winRate - a.winRate; // Highest to lowest
+      } else {
+        return a.winRate - b.winRate; // Lowest to highest
+      }
+    });
   }
 
   
