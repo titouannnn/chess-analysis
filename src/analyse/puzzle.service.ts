@@ -17,7 +17,7 @@ import { Observable, of } from 'rxjs';
 // Tri en fonction de son élo
 export class PuzzleScraper {
 
-    private puzzlesUrl = 'assets/lichess_db_puzzle_reduit.json'; // Adapter selon l'emplacement de vos données
+    public puzzlesUrl = 'assets/lichess_db_puzzle_reduit.json'; // Adapter selon l'emplacement de vos données
 
     constructor(private LocalAnalysis: LocalAnalysis) {}
 

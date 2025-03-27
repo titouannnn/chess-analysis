@@ -1,9 +1,12 @@
+import { HomeComponent } from './home/home.component';
+import { NgModule } from '@angular/core';
+import { Chess } from 'chess.js';
+import { Api, Constantes } from '../api/api.service';
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { RouterOutlet, RouterLink } from '@angular/router';
+import { NgIf, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LitchessApi } from '../api/litchess-api.service';
-import { Api, Constantes } from '../api/api.service';
 import { ChesscomApi} from '../api/chesscomapi.service';
 import { PuzzleScraper } from '../analyse/puzzle.service';
 import { AnalysisApi } from '../api/analysisApi.service';
@@ -15,7 +18,7 @@ import { StatsEloComponent } from './stats-elo/stats-elo.component';
 
 
 @Component({
-  selector: 'unique-app-root',
+  selector: 'app-root',
   standalone: true,
   imports: [
     RouterOutlet,
@@ -31,17 +34,17 @@ export class AppComponent implements OnInit {
   message: string = '';
   showChessboard: boolean = false; // Propriété pour contrôler l'affichage
   currentFen: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'; // Position initiale par défaut
-  
   constructor(
     private LocalAnalysis : LocalAnalysis, 
     private api: Api, 
     private LitchessApi: LitchessApi, 
     private ChesscomApi: ChesscomApi, 
     private PuzzleScraper: PuzzleScraper, 
-    private AnalysisApi: AnalysisApi,
-  ) {
-      this.api = ChesscomApi;
-    }
+    private AnalysisApi: AnalysisApi
+  ) 
+  {
+    this.api = ChesscomApi;
+  }
 
   // Ajouter une propriété pour stocker l'historique des coups
   moveHistory: any[] = [];
@@ -86,6 +89,8 @@ export class AppComponent implements OnInit {
     //this.lichessTests();
     //this.chess_comTests();
     //this.testPuzzle();
+    //this.analysisApiTests();
+
 
     //this.localAnalysisTests();
     //this.localAnalysisTests();
@@ -94,8 +99,13 @@ export class AppComponent implements OnInit {
 
   }
 
+  
+
   async analysisApiTests(): Promise<void> {
     console.log("======== Analysis API =========");
+
+    console.log("======== Tests fen diviser =========");
+    this.AnalysisApi.gameAnalysis(this.pgnEx);
     
     console.log("======== Local Analysis =========");
 
@@ -126,7 +136,9 @@ export class AppComponent implements OnInit {
     console.log("======== Lichess API =========");
 
     this.api.allGames = JSON.parse(JSON.stringify(this.LitchessApi.allGamesJson));
-    
+  
+    this.testApi(this.api.allGames, 'titouannn');
+  
     this.testApi(this.api.allGames, 'coffeechessclub2023');
     
   
@@ -206,6 +218,7 @@ export class AppComponent implements OnInit {
       console.log(url);
     }
       */
+    console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesUrl.length);
       
     console.log("Nombre d'URL : " + this.PuzzleScraper.puzzlesRecommendedByOpening.length);
     await this.PuzzleScraper.detectMostFrequentThemes();
@@ -218,6 +231,7 @@ export class AppComponent implements OnInit {
     */
     
   }
+  
 
   // Méthode appelée quand la position de l'échiquier change
   onPositionChanged(fenPosition: string) {

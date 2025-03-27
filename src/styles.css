@@ -1,10 +1,10 @@
 body {
     background-color: #1e1e2f;
-    color: #E0C7B3;
+    color: #4ecbff;
+    background-color: #03022f; /* Couleur de fond */
     margin: 0;
     font-family: Helvetica, Arial, sans-serif;
   }
-
 
   p {
     color: #4ecbff;
@@ -24,8 +24,8 @@ body {
 */
 
   .full-screen-dialog .mat-mdc-dialog-surface {
-    background-color: #332B26 !important; /* ton fond marron */
-    color: #E0C7B3 !important; /* texte clair */
+    background-color: #1e1e2f !important; /* ton fond marron */
+    color: #4ecbff !important; /* texte clair */
     width: 100vw !important;
     height: 100vh !important;
     display: flex !important;

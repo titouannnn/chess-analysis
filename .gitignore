@@ -41,8 +41,20 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
 
 package-lock.json
 package.json
 node_modules
 
+=======
+
+package-lock.json
+package.json
+.angular/cache/
+node_modules
+shell.nix
+.DS_Store
+.vscode
+
+>>>>>>> main-merge
