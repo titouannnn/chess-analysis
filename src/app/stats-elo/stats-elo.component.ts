@@ -119,6 +119,28 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
     // Déterminer quelle API utiliser
     this.detectAndUseInitializedApi();
   }
+
+  private cleanupCharts(): void {
+    // Nettoyer proprement le graphique d'ELO
+    if (this.eloChart) {
+      this.eloChart.destroy();
+      this.eloChart = null;
+    }
+
+    // Nettoyer proprement le graphique de fréquence
+    if (this.playFreqChart) {
+      this.playFreqChart.destroy();
+      this.playFreqChart = null;
+    }
+
+    // Nettoyer proprement les graphiques de résultats
+    if (this.chartGamesBy && this.chartGamesBy.length > 0) {
+      this.chartGamesBy.forEach((chart) => {
+        if (chart) chart.destroy();
+      });
+      this.chartGamesBy = [];
+    }
+  }
   
   private detectAndUseInitializedApi(): void {
     // Vérifier si des données sont déjà chargées dans l'API Chess.com
@@ -981,10 +1003,9 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
   
 
 // Ajouter une méthode pour nettoyer l'observateur lors de la destruction du composant
-ngOnDestroy() {
-  if (this.openingsChart && this.openingsChart._resizeObserver) {
-    this.openingsChart._resizeObserver.disconnect();
-  }
+ngOnDestroy(): void {
+  // Nettoyer les graphiques lors de la destruction du composant
+  this.cleanupCharts();
 }
 
 
