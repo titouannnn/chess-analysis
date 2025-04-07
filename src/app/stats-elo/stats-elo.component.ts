@@ -45,8 +45,8 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
   // Variables utilisées pour le HTML
   timePeriod = Constantes.Time; 
   typeJeu = Constantes.TypeJeuChessCom;
-  annee = 2024;
-  w_b : W_B = W_B.Black;
+  annee: number | null = null;
+    w_b : W_B = W_B.Black;
   activeTimeClass: Constantes.TypeJeuChessCom = Constantes.TypeJeuChessCom.RAPID;
   activePeriod: Constantes.Time = Constantes.Time.ALL_TIME;
 
@@ -105,19 +105,44 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
     // Récupérer les paramètres d'URL s'ils existent
     this.route.queryParams.subscribe(params => {
       const platform = params['platform'];
-      const username = params['pseudo'];
+      const username = params['pseudo']; // Utiliser la même clé que dans home.component.ts
       
       if (username) {
         console.log(`Paramètres d'URL détectés: platform=${platform}, username=${username}`);
+        
+        // Définir l'API à utiliser en fonction de la plateforme détectée
+        if (platform === 'lichess') {
+          console.log(`Utilisation de l'API Lichess pour ${username}`);
+          
+          // Vérifier si les données sont déjà chargées
+          if (this.lichessApi.allGamesJson && this.lichessApi.allGamesJson.length > 0) {
+            console.log('Utilisation des données Lichess déjà chargées');
+            this.api = this.lichessApi as unknown as Api;
+          } else {
+            console.warn('Aucune donnée Lichess chargée, tentative de chargement');
+            // Tenter de charger les données
+            this.lichessApi.getIDLichessGames(username, 200)
+              .then(() => {
+                this.api = this.lichessApi as unknown as Api;
+                this.initializeCharts();
+              })
+              .catch(error => {
+                console.error('Erreur lors du chargement des données Lichess:', error);
+              });
+          }
+        } else if (platform === 'chess.com') {
+          console.log(`Utilisation de l'API Chess.com pour ${username}`);
+          this.api = this.chessApi;
+        }
         
         // Définir les valeurs par défaut
         this.activeTimeClass = Constantes.TypeJeuChessCom.RAPID;
         this.activePeriod = Constantes.Time.ALL_TIME;
       }
+      
+      // Déterminer quelle API utiliser et initialiser les graphiques
+      this.detectAndUseInitializedApi();
     });
-    
-    // Déterminer quelle API utiliser
-    this.detectAndUseInitializedApi();
   }
   
   private detectAndUseInitializedApi(): void {
@@ -163,35 +188,56 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
     }, 100);
   }
   
-  private initializeCharts(): void {
-    if (this.initialized) return;
-    
-    // Exécuter les opérations de graphiques en dehors de la zone
-    this.zone.runOutsideAngular(() => {
-      try {
-        // Initialiser tous les graphiques dans l'ordre
-        this.showEloStat(this.activeTimeClass, this.activePeriod);
-        this.showPlayFrequency();
-        this.showGamesBy();
-        this.showOpeningsStats(); // Ajout du graphique des ouvertures
-        
-        this.initialized = true;
-        
-        // Revenir dans la zone Angular pour déclencher la détection des changements
-        this.zone.run(() => {
-          this.cdr.detectChanges();
-        });
-      } catch (error) {
-        console.error('Erreur lors de l\'initialisation des graphiques:', error);
-        
-        // Nouvelle tentative si l'initialisation échoue
-        setTimeout(() => {
-          this.initialized = false;
-          this.initializeCharts();
-        }, 500);
-      }
-    });
+  // Dans stats-elo.component.ts, méthode initializeCharts
+private initializeCharts(): void {
+  if (this.initialized) return;
+  
+  console.log("Vérification des données disponibles:");
+  console.log(`- API utilisée: ${this.api?.constructor.name}`);
+  
+  // Vérifier si l'API est correctement initialisée
+  if (!this.api) {
+    console.error("API non disponible, impossible d'initialiser les graphiques");
+    return;
   }
+  
+  // Tester les méthodes clés
+  const eloData = this.api.getElo(this.activeTimeClass);
+  console.log(`- Données ELO: ${eloData?.length || 0} entrées`);
+  
+  const openingsData = this.api.getOpenings();
+  console.log(`- Données Ouvertures: ${openingsData?.length || 0} entrées`);
+  
+  // Exécuter les opérations de graphiques en dehors de la zone
+  this.zone.runOutsideAngular(() => {
+    try {
+      // Initialiser tous les graphiques dans l'ordre
+      this.showEloStat(this.activeTimeClass, this.activePeriod);
+      this.showPlayFrequency();
+      this.showGamesBy();
+      this.showOpeningsStats(); // Ajout du graphique des ouvertures
+      
+      this.initialized = true;
+      
+      // Revenir dans la zone Angular pour déclencher la détection des changements
+      this.zone.run(() => {
+        this.cdr.detectChanges();
+      });
+    } catch (error) {
+      console.error('Erreur lors de l\'initialisation des graphiques:', error);
+      
+      if (error instanceof Error) {
+        console.error('Détails de l\'erreur:', {
+          message: error.message,
+          stack: error.stack,
+          api: this.api?.constructor.name
+        });
+      } else {
+        console.error('Erreur de type inconnu:', error);
+      }
+    }
+  });
+}
 
   formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000);
@@ -256,23 +302,55 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
     const savedDateDebut = this.api.dateDebut ? new Date(this.api.dateDebut) : null;
     const savedDateFin = this.api.dateFin ? new Date(this.api.dateFin) : null;
     const savedTimeClass = this.activeTimeClass;
-    const savedAllGames = [...this.api.allGames]; // Sauvegarder la liste des parties courante
     
     const data: FrequencyData[] = [];
+    
+    // Vérifier si nous utilisons l'API Lichess en testant si this.api est en fait this.lichessApi
+    const isLichess = this.api === this.lichessApi;
+    console.log(`Génération des données de fréquence - API: ${isLichess ? 'Lichess' : 'Chess.com'}`);
+    
+    // Utiliser la source de données appropriée
+    let allGames: any[] = [];
+    
+    if (isLichess) {
+      // Pour Lichess
+      allGames = this.lichessApi.allGamesJson || [];
+      console.log(`Source Lichess: ${allGames.length} parties disponibles`);
+    } else {
+      // Pour Chess.com
+      allGames = this.api.allGamesAllTypes || [];
+      console.log(`Source Chess.com: ${allGames.length} parties disponibles`);
+    }
+    
+    if (!allGames || allGames.length === 0) {
+      console.error("Aucune donnée de jeux disponible");
+      return Array(12).fill(0).map((_, i) => ({ occurences: 0, mois: months[i] }));
+    }
     
     for (let i = 1; i <= 12; i++) {
       const { firstDay, lastDay } = this.getMonthDates(year, i);
       
-      // Filtrer explicitement les parties pour ce mois
-      const partiesForMonth = this.api.allGamesAllTypes.filter((game: any) => {
-        if (!game.pgn) return false;
+      // Filtrer les parties pour ce mois
+      const partiesForMonth = allGames.filter((game: any) => {
+        if (!game) return false;
         
-        const match = game.pgn.match(this.api.RegExpDate);
-        if (!match || !match[1]) return false;
-        
-        const gameDate = new Date(match[1]);
-        return gameDate >= firstDay && gameDate <= lastDay && 
-               (!savedTimeClass || game.time_class === savedTimeClass);
+        // Pour Lichess, utiliser directement end_time
+        if (isLichess) {
+          const gameDate = new Date(game.end_time);
+          return gameDate >= firstDay && gameDate <= lastDay &&
+                 (!savedTimeClass || game.time_class === savedTimeClass);
+        }
+        // Pour Chess.com
+        else {
+          if (!game.pgn) return false;
+          
+          const match = game.pgn.match(this.api.RegExpDate);
+          if (!match || !match[1]) return false;
+          
+          const gameDate = new Date(match[1]);
+          return gameDate >= firstDay && gameDate <= lastDay && 
+                 (!savedTimeClass || game.time_class === savedTimeClass);
+        }
       });
       
       data.push({ 
@@ -281,15 +359,16 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
       });
     }
     
-    // Restaurer les dates et filtres originaux
+    // Restaurer les filtres originaux
     if (savedDateDebut && savedDateFin) {
       this.api.setTimeTinterval(Constantes.Time.CUSTOM, savedDateDebut, savedDateFin);
     } else {
       this.api.setTimeTinterval(Constantes.Time.ALL_TIME, this.api.DATENULL, this.api.DATENULL);
     }
     
-    // Restaurer le filtre de type de jeu
-    this.api.sortByGameType(savedTimeClass);
+    if (savedTimeClass) {
+      this.api.sortByGameType(savedTimeClass);
+    }
     
     return data;
   }
@@ -473,32 +552,50 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
       console.warn('Référence DOM manquante ou API non initialisée');
       return;
     }
-  
-    console.log(`Génération du graphique de fréquence pour l'année: ${this.annee}`);
     
-    const data = this.getPlayFrequency(this.annee);
-  
-    // Vérifier si on a des données
-    if (data.every(item => item.occurences === 0)) {
-      console.warn(`Aucune partie trouvée pour l'année ${this.annee}, essai avec l'année courante`);
-      this.annee = new Date().getFullYear();
-      const currentYearData = this.getPlayFrequency(this.annee);
-      
-      // Si toujours pas de données, essayer avec l'année précédente
-      if (currentYearData.every(item => item.occurences === 0)) {
-        this.annee--;
-        const prevYearData = this.getPlayFrequency(this.annee);
-        data.splice(0, data.length, ...prevYearData);
-      } else {
-        data.splice(0, data.length, ...currentYearData);
-      }
-    }
-  
-    if (this.playFreqChart != null) {
-      this.playFreqChart.destroy();
-    }
-  
     try {
+      // Initialiser l'année avec la dernière partie si pas encore définie
+      if (this.annee === null) {
+        this.annee = this.getLatestGameYear();
+        console.log(`Initialisation automatique à l'année ${this.annee}`);
+      }
+      
+      console.log(`Génération du graphique de fréquence pour l'année: ${this.annee}`);
+      
+      const data = this.getPlayFrequency(this.annee);
+      console.log(`Données générées:`, data);
+      
+      // Vérifier si on a des données
+      if (data.every(item => item.occurences === 0)) {
+        console.warn(`Aucune partie trouvée pour l'année ${this.annee}, essai avec l'année courante`);
+        const currentYear = new Date().getFullYear();
+        this.annee = currentYear;
+        const currentYearData = this.getPlayFrequency(this.annee);
+        
+        // Si toujours pas de données, essayer avec l'année précédente
+        if (currentYearData.every(item => item.occurences === 0)) {
+          this.annee = currentYear - 1;
+          console.warn(`Tentative avec l'année précédente: ${this.annee}`);
+          const prevYearData = this.getPlayFrequency(this.annee);
+          data.splice(0, data.length, ...prevYearData);
+        } else {
+          data.splice(0, data.length, ...currentYearData);
+        }
+        
+        console.log(`Nouvelles données après ajustement:`, data);
+      }
+      
+      // Si on a toujours aucune donnée, créer une année vide
+      if (data.every(item => item.occurences === 0)) {
+        console.warn("Aucune partie trouvée pour aucune année récente");
+      }
+      
+      // Détruire le graphique existant s'il y en a un
+      if (this.playFreqChart != null) {
+        this.playFreqChart.destroy();
+      }
+      
+      // Créer le nouveau graphique
       this.playFreqChart = this.chartGenerator.getSimpleBarChart(
         this.frequencyStats.nativeElement, 
         data.map((row: FrequencyData) => row.occurences), 
@@ -506,35 +603,93 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
         data.map((row: FrequencyData) => row.mois),
         {
           responsive: true,
-          maintainAspectRatio: false,  // Important pour prendre toute la largeur
+          maintainAspectRatio: false,
           scales: {
-            x: {
-              grid: {
-                display: false
-              }
+            x: { grid: { display: false } },
+            y: { 
+              beginAtZero: true,
+              ticks: { precision: 0 } // Pour afficher uniquement des nombres entiers
             }
-          }
+          } as any // Using type assertion to avoid TypeScript error
         }
       );
       
-      // Reste du code inchangé...
+      // Appliquer des styles supplémentaires
+      this.extendChartOptions(this.playFreqChart, {
+        colors: {
+          backgroundColor: this.chartColors.frequency.backgroundColor,
+          hoverBackgroundColor: this.chartColors.frequency.hoverBackgroundColor
+        }
+      });
+      
+      console.log("Graphique de fréquence créé avec succès");
     } catch (error) {
       console.error('Erreur lors de la création du graphique de fréquence:', error);
+      if (error instanceof Error) {
+        console.error('Détails:', error.message, error.stack);
+      }
     }
   }
 
 
 
   frequencyRightArrowClick(): void {
-    if (this.annee < new Date().getFullYear()) {
+    if (this.annee !== null) {
       this.annee++;
+      console.log(`Navigation vers l'année: ${this.annee}`);
+      this.showPlayFrequency();
+    }
+  }
+  
+  frequencyLeftArrowClick(): void {
+    if (this.annee !== null) {
+      this.annee--;
+      console.log(`Navigation vers l'année: ${this.annee}`);
       this.showPlayFrequency();
     }
   }
 
-  frequencyLeftArrowClick(): void {
-    this.annee--;
-    this.showPlayFrequency();
+  private getLatestGameYear(): number {
+    const isLichess = this.api.constructor.name === 'LitchessApi';
+    console.log(`Recherche de l'année la plus récente avec l'API ${isLichess ? 'Lichess' : 'Chess.com'}`);
+    
+    // Utiliser la source de données appropriée
+    const allGames = isLichess 
+      ? (this.api as any).allGamesJson  // Pour Lichess
+      : this.api.allGamesAllTypes;     // Pour Chess.com
+    
+    if (!allGames || allGames.length === 0) {
+      console.warn("Aucune partie disponible, utilisation de l'année courante");
+      return new Date().getFullYear();
+    }
+    
+    let latestDate = new Date(0);
+    
+    for (const game of allGames) {
+      let gameDate: Date;
+      
+      // Pour Lichess, utiliser directement end_time
+      if (isLichess) {
+        gameDate = new Date(game.end_time);
+      } 
+      // Pour Chess.com, extraire la date du PGN
+      else {
+        if (!game.pgn) continue;
+        
+        const match = game.pgn.match(this.api.RegExpDate);
+        if (!match || !match[1]) continue;
+        
+        gameDate = new Date(match[1]);
+      }
+      
+      if (gameDate > latestDate) {
+        latestDate = gameDate;
+      }
+    }
+    
+    const year = latestDate.getFullYear();
+    console.log(`Dernière année de jeu trouvée: ${year}`);
+    return year;
   }
 
   setPeriod(period: Constantes.Time): void {
