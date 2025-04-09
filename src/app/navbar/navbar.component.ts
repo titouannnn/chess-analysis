@@ -15,7 +15,7 @@ export class NavbarComponent implements OnInit {
   navLinks = [
     { path: '/chessboard', label: 'Échiquier', icon: '♟' },
     { path: '/puzzles', label: 'Puzzles', icon: '♞' },
-    { path: '/stats', label: 'Statistiques', icon: '📈' },
+    { path: '/stats-elo', label: 'Statistiques', icon: '📈' },
     { path: '/', label: 'Accueil', icon: '🏠', exact: true }
   ];
 
