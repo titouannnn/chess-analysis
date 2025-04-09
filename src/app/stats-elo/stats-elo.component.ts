@@ -188,56 +188,91 @@ export class StatsEloComponent implements AfterViewInit, OnInit {
     }, 100);
   }
   
-  // Dans stats-elo.component.ts, méthode initializeCharts
-private initializeCharts(): void {
-  if (this.initialized) return;
-  
-  console.log("Vérification des données disponibles:");
-  console.log(`- API utilisée: ${this.api?.constructor.name}`);
-  
-  // Vérifier si l'API est correctement initialisée
-  if (!this.api) {
-    console.error("API non disponible, impossible d'initialiser les graphiques");
-    return;
+  private initializeCharts(): void {
+    if (this.initialized) return;
+    
+    console.log("Vérification des éléments DOM pour les graphiques...");
+    if (!this.eloStats?.nativeElement || !this.frequencyStats?.nativeElement || 
+        !this.gamesByStats?.nativeElement || !this.openingsStats?.nativeElement) {
+      console.warn("Certains éléments DOM ne sont pas prêts, nouvelle tentative dans 100ms");
+      setTimeout(() => this.initializeCharts(), 100);
+      return;
+    }
+    
+    console.log("Vérification des données disponibles:");
+    console.log(`- API utilisée: ${this.api?.constructor.name}`);
+    
+    // Vérifier si l'API est correctement initialisée
+    if (!this.api) {
+      console.error("API non disponible, impossible d'initialiser les graphiques");
+      return;
+    }
+    
+    // Tester les méthodes clés
+    const eloData = this.api.getElo(this.activeTimeClass);
+    console.log(`- Données ELO: ${eloData?.length || 0} entrées`);
+    
+    const openingsData = this.api.getOpenings();
+    console.log(`- Données Ouvertures: ${openingsData?.length || 0} entrées`);
+    
+    // Nettoyer les graphiques existants avant d'en créer de nouveaux
+    this.cleanupCharts();
+    
+    // Exécuter les opérations de graphiques en dehors de la zone
+    this.zone.runOutsideAngular(() => {
+      try {
+        // Initialiser tous les graphiques dans l'ordre
+        this.showEloStat(this.activeTimeClass, this.activePeriod);
+        this.showPlayFrequency();
+        this.showGamesBy();
+        this.showOpeningsStats(); // Ajout du graphique des ouvertures
+        
+        this.initialized = true;
+        
+        // Revenir dans la zone Angular pour déclencher la détection des changements
+        this.zone.run(() => {
+          this.cdr.detectChanges();
+        });
+      } catch (error) {
+        console.error('Erreur lors de l\'initialisation des graphiques:', error);
+        
+        if (error instanceof Error) {
+          console.error('Détails de l\'erreur:', {
+            message: error.message,
+            stack: error.stack,
+            api: this.api?.constructor.name
+          });
+        } else {
+          console.error('Erreur de type inconnu:', error);
+        }
+      }
+    });
   }
   
-  // Tester les méthodes clés
-  const eloData = this.api.getElo(this.activeTimeClass);
-  console.log(`- Données ELO: ${eloData?.length || 0} entrées`);
-  
-  const openingsData = this.api.getOpenings();
-  console.log(`- Données Ouvertures: ${openingsData?.length || 0} entrées`);
-  
-  // Exécuter les opérations de graphiques en dehors de la zone
-  this.zone.runOutsideAngular(() => {
-    try {
-      // Initialiser tous les graphiques dans l'ordre
-      this.showEloStat(this.activeTimeClass, this.activePeriod);
-      this.showPlayFrequency();
-      this.showGamesBy();
-      this.showOpeningsStats(); // Ajout du graphique des ouvertures
-      
-      this.initialized = true;
-      
-      // Revenir dans la zone Angular pour déclencher la détection des changements
-      this.zone.run(() => {
-        this.cdr.detectChanges();
-      });
-    } catch (error) {
-      console.error('Erreur lors de l\'initialisation des graphiques:', error);
-      
-      if (error instanceof Error) {
-        console.error('Détails de l\'erreur:', {
-          message: error.message,
-          stack: error.stack,
-          api: this.api?.constructor.name
-        });
-      } else {
-        console.error('Erreur de type inconnu:', error);
-      }
+  // Méthode pour nettoyer les graphiques avant d'en créer de nouveaux
+  private cleanupCharts(): void {
+    if (this.eloChart) {
+      this.eloChart.destroy();
+      this.eloChart = null;
     }
-  });
-}
+    
+    if (this.playFreqChart) {
+      this.playFreqChart.destroy();
+      this.playFreqChart = null;
+    }
+    
+    if (this.openingsChart) {
+      this.openingsChart.destroy();
+      this.openingsChart = null;
+    }
+    
+    this.chartGamesBy.forEach(chart => {
+      if (chart) chart.destroy();
+    });
+    this.chartGamesBy = [];
+  }
+
+
 
   formatDate(timestamp: number): string {
     const date = new Date(timestamp * 1000);
