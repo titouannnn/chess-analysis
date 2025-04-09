@@ -1,75 +1,71 @@
 # Chess Analysis
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.1.3.
+<p align="center">
+  <img src="src/assets/logo.png" alt="Chess Analysis Logo" width="350">
+</p>
 
-**Chess Analysis** est une plateforme web interactive qui fournit des analyses détaillées et des statistiques sur vos parties d'échecs, que ce soit sur **Chess.com** ou **Lichess.com**. Ce projet vous permet de visualiser vos performances sous forme de graphiques, de probabilités et d'autres visualisations de données.
+Chess Analysis est une application web développée avec Angular permettant d'analyser vos parties d'échecs provenant de Chess.com et Lichess.org.
 
-Ce projet a été développé dans le cadre de notre formation en **Licence Informatique**, plus précisément dans le module **Interface Homme-Machine (IHM)**.
+## 📋 Fonctionnalités
 
-## Fonctionnalités
+- **Multi-plateforme** : Analyse des parties depuis Chess.com et Lichess.org
+- **Statistiques ELO** : Suivi de l'évolution de votre ELO dans le temps
+- **Analyse d'ouvertures** : Découvrez vos ouvertures les plus performantes
+- **Fréquence de jeu** : Visualisez votre activité au fil des mois
+- **Analyse des fins de parties** : Statistiques sur vos victoires, défaites et nulles
+- **Recommandations de puzzles** : Suggestions d'exercices basées sur vos faiblesses
 
-- Analyse des parties d'échecs en ligne
-- Visualisation des statistiques sous forme de diagrammes et de probabilités
-- Support pour **Chess.com** et **Lichess.com**
+## 🚀 Installation
 
-## Installation
+### Prérequis
 
-1. Clonez le repository :
-   ```bash
-   git clone https://github.com/votre-repository/chess-analysis.git
+- Node.js (v16.x ou supérieur)
+- npm (v8.x ou supérieur)
+- Angular CLI (v16.x ou supérieur)
 
-## Development server
+### Étapes d'installation
 
-To start a local development server, run:
+1. Cloner ce dépôt
+```bash
+git clone https://github.com/VotreUsername/chess-analysis.git
+cd chess-analysis
+```
 
+2. Installer les dépendances
+```bash
+npm install
+```
+
+3. Lancer l'application en mode développement
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+4. Ouvrir votre navigateur à l'adresse `http://localhost:4200`
 
-## Code scaffolding
+## 🖥️ Utilisation
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. **Page d'accueil** : Saisissez votre nom d'utilisateur Chess.com ou Lichess
+2. **Statistiques** : Consultez vos statistiques d'ELO, d'ouvertures et de jeu
+3. **Filtres** : Affinez les statistiques par période (semaine, mois, année) ou par type de jeu (blitz, rapide, etc.)
 
-```bash
-ng generate component component-name
-```
+## 📊 Visualisations disponibles
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- **Graphique d'évolution ELO** : Suivez votre progression au fil du temps
+- **Fréquence de jeu** : Nombre de parties jouées par mois
+- **Statistiques d'ouvertures** : Vos performances avec différentes ouvertures
+- **Fins de partie** : Analyse des différentes façons dont vos parties se terminent
 
-```bash
-ng generate --help
-```
+## 🧩 Structure du projet
 
-## Building
+- `src/app` : Composants Angular de l'application
+- `src/api` : Services d'intégration avec les APIs Chess.com et Lichess
+- `src/analyse` : Services d'analyse des parties et des puzzles
+- `src/assets` : Ressources statiques (images, données locales)
 
-To build the project run:
+## 🛠️ Technologies utilisées
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Frontend** : Angular 16+
+- **Graphiques** : Chart.js
+- **APIs** : Chess.com API, Lichess API
+- **Analyse d'échecs** : chess.js
